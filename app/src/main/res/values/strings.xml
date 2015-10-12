@@ -2,4 +2,5 @@
     <string name="app_name">TronGame</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_game">GameActivity</string>
+    <string name="Bart">Bart</string>
 </resources>
