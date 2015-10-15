@@ -75,8 +75,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Stops listening for location updates.
      */
     private void stopLocationUpdate() {
-        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
-        isLocationTracking = false;
+        if(googleApiClient.isConnected() && isLocationTracking) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+            isLocationTracking = false;
+        }
     }
 
     public void onPause() {
