@@ -10,10 +10,19 @@ public class Map {
     // Store the GoogleMap object to draw on it later
     private GoogleMap map;
 
+    // Store the players currently in the game
+    private Player[] players;
+
     /**
-     * Class initializer*
+     * Class initializer
      */
-    public Map() {
+    public Map(String[] player_names) {
+
+        // Create the array of players
+        players = new Player[player_names.length];
+        for (int i=0; i<player_names.length; i++) {
+            players[i] = new Player(player_names[i]);
+        }
 
     }
 

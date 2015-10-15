@@ -23,8 +23,11 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Set the view
         setContentView(R.layout.activity_game);
 
+        // Get the players
+        String[] player_names = {"Player 1"};   // TODO add communication with start menu
+
         // Initialize the map storage object
-        map = new Map();
+        map = new Map(player_names);
 
         // Activate the map fragment defined in the content_game.xml layout
         MapFragment mapFragment =
