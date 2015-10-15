@@ -3,6 +3,8 @@ package cwa115.trongame.Map;
 
 import com.google.android.gms.maps.GoogleMap;
 
+import java.util.HashMap;
+
 /**
  * Stores information (e.g. item locations) of the map.
  */
@@ -10,22 +12,20 @@ public class Map {
     // Store the GoogleMap object to draw on it later
     private GoogleMap map;
 
-    // Store the players currently in the game  // TODO change to item hashmap
-    private Player[] players;
+    // Store the items currently in the game
+    private HashMap<String, DrawableMapItem> mapItems;
 
     /**
      * Class initializer
      */
-    public Map(String[] player_names) { // TODO input array of players
-
-        // Create the array of players
-        players = new Player[player_names.length];
-        for (int i=0; i<player_names.length; i++) {
-            players[i] = new Player(player_names[i]);
+    public Map(Player[] players) {
+        // Store the players
+        for (int i=0; i<players.length; i++) {
+            mapItems.put(players[i].get_id(),
+                    players[i]
+            );
         }
-
     }
-
 
     /**
      * Set the GoogleMap object

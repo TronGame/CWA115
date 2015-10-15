@@ -8,8 +8,10 @@ import android.support.v7.app.AppCompatActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
 
 import cwa115.trongame.Map.Map;
+import cwa115.trongame.Map.Player;
 
 public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
@@ -24,10 +26,12 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         setContentView(R.layout.activity_game);
 
         // Get the players
-        String[] player_names = {"Player 1"};   // TODO add communication with start menu
+        Player[] players = {
+                new Player("player_1", "Player 1", new LatLng(0.0, 0.0))
+        };
 
         // Initialize the map storage object
-        map = new Map(player_names);
+        map = new Map(players);
 
         // Activate the map fragment defined in the content_game.xml layout
         MapFragment mapFragment =
@@ -58,7 +62,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLocationChanged(Location location) {
-        
+
     }
 
     @Override
