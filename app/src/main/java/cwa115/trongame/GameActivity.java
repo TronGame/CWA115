@@ -1,6 +1,8 @@
 package cwa115.trongame;
 
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -14,8 +16,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class GameActivity extends AppCompatActivity
-    implements OnMapReadyCallback {
+public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +33,30 @@ public class GameActivity extends AppCompatActivity
         map.addMarker(new MarkerOptions()
                 .position(new LatLng(0, 0))
                 .title("Marker"));
+
+    }
+
+    @Override
+    public void onProviderEnabled(String str) {
+
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
 
     }
 
