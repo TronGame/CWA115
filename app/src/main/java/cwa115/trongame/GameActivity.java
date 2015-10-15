@@ -117,6 +117,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLocationChanged(Location location) {
-
+        // Player location
+        LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+        map.updatePlayer(myId, loc);
     }
 }

@@ -2,6 +2,7 @@ package cwa115.trongame.Map;
 
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.LatLng;
 
 import java.util.HashMap;
 
@@ -32,5 +33,16 @@ public class Map {
      */
     public void setMap(GoogleMap _map) {
         map = _map;
+    }
+
+    /**
+     * Update a player map item
+     * @param id
+     * @param location
+     */
+    public void updatePlayer(String id, LatLng location) {
+        Player player = (Player)mapItems.get(id);
+        player.setLocation(location);
+        player.draw(map);
     }
 }
