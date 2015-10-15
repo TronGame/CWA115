@@ -20,6 +20,7 @@ public class Map {
      * Class initializer
      */
     public Map(Player[] players) {
+        mapItems = new HashMap<String, DrawableMapItem>();
         // Store the players
         for (int i=0; i<players.length; i++) {
             mapItems.put(players[i].get_id(),
