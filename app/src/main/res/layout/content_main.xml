@@ -9,16 +9,29 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:showIn="@layout/activity_main" tools:context=".MainActivity">
 
-    <TextView android:text="Hello World!" android:layout_width="wrap_content"
+
+    <EditText
+        android:id="@+id/name_entry"
+        android:textSize="30dp"
+        android:hint="@string/player_name"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textView" />
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="70dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        />
+
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Start"
-        android:id="@+id/button"
+        android:text="@string/start"
+        android:id="@+id/start_button"
+        android:onClick="showGameActivity"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:onClick="showGameActivity" />
+        android:background = "@drawable/roundedbutton"
+        />
 </RelativeLayout>
