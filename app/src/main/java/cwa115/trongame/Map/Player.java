@@ -33,12 +33,13 @@ public class Player implements DrawableMapItem {
     }
 
     public void draw(GoogleMap map) {
-        if (marker != null) {
+        if(marker == null) {
             marker = map.addMarker(new MarkerOptions()
                     .position(location)
                     .title(name));
+        } else {
+            marker.setPosition(location);
         }
-        marker.setPosition(location);
     }
 
     public String get_id() {
