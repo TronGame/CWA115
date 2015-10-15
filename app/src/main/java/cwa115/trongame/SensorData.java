@@ -67,7 +67,7 @@ public final class SensorData {
 
         while(gyroscopeData.iterator().hasNext()){
             Float[] nextValue = gyroscopeData.iterator().next();
-
+            // TODO: count turnings
         }
         return count;
     }

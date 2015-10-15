@@ -28,10 +28,7 @@ public class DataQueue<E> implements Queue<E> {
 
     @Override
     public boolean addAll(Collection<? extends E> collection) {
-        boolean success = true;
-        for(E e : collection)
-            success &= add(e);
-        return success;
+        return this.mQueue.addAll(collection);
     }
 
     @Override
