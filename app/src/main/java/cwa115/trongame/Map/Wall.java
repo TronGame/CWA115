@@ -14,6 +14,7 @@ import java.util.ArrayList;
  */
 public class Wall implements DrawableMapItem {
 
+    private String id;
     private ArrayList<LatLng> points;
     private int lineWidth = 5;
 
@@ -21,7 +22,8 @@ public class Wall implements DrawableMapItem {
      * Construct from an array of points.
      * @param given_points points of the wall
      */
-    Wall(LatLng[] given_points) {
+    Wall(String _id, LatLng[] given_points) {
+        id = _id;
         points = new ArrayList<LatLng>(points);
     }
 
@@ -48,5 +50,9 @@ public class Wall implements DrawableMapItem {
             );
         }
 
+    }
+
+    public String get_id() {
+        return id;
     }
 }

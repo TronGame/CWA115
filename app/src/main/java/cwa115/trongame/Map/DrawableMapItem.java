@@ -8,7 +8,7 @@ import com.google.android.gms.maps.GoogleMap;
  */
 public interface DrawableMapItem {
 
-    // The object has to have an id
+    // The object has to have an id so that it can be found in the hashmap
     public String get_id();
 
     // Draw the item on the map
