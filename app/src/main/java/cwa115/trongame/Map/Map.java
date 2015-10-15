@@ -10,13 +10,13 @@ public class Map {
     // Store the GoogleMap object to draw on it later
     private GoogleMap map;
 
-    // Store the players currently in the game
+    // Store the players currently in the game  // TODO change to item hashmap
     private Player[] players;
 
     /**
      * Class initializer
      */
-    public Map(String[] player_names) {
+    public Map(String[] player_names) { // TODO input array of players
 
         // Create the array of players
         players = new Player[player_names.length];
