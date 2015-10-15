@@ -1,22 +1,31 @@
 package cwa115.trongame;
 
 import android.location.Location;
-import android.location.LocationListener;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.model.LatLng;
 
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 
-public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
+public class GameActivity extends AppCompatActivity implements OnMapReadyCallback,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        LocationListener {
 
     // The map storage object. This stores all the item and player information on the map
     private Map map;
+    private GoogleApiClient googleApiClient;
+    private LocationRequest locationRequest;
+    private String myId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,9 +34,10 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Set the view
         setContentView(R.layout.activity_game);
 
+        myId = "player_1";
         // Get the players
         Player[] players = {
-                new Player("player_1", "Player 1", new LatLng(0.0, 0.0))
+                new Player(myId, "Player 1", new LatLng(0.0, 0.0))
         };
 
         // Initialize the map storage object
@@ -37,6 +47,22 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         MapFragment mapFragment =
                 (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+
+        locationRequest = new LocationRequest();
+        locationRequest.setInterval(10000);
+        locationRequest.setFastestInterval(5000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    }
+
+    public void onPause() {
+        super.onPause();
+        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
     }
 
     /**
@@ -49,14 +75,20 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
-    public void onProviderEnabled(String str) {
-
-
+    public void onConnected(Bundle hint) {
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                googleApiClient, locationRequest, this
+        );
     }
 
     @Override
-    public void onProviderDisabled(String provider) {
+    public void onConnectionSuspended(int i) {
 
+    }
+
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
 
     }
 
@@ -64,11 +96,4 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onLocationChanged(Location location) {
 
     }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-
-    }
-
 }
