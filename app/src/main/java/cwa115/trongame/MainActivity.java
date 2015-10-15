@@ -1,5 +1,6 @@
 package cwa115.trongame;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -40,4 +41,9 @@ public class MainActivity extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void showGameActivity(View view) {
+        startActivity(new Intent(this, GameActivity.class));
+    }
+
 }
