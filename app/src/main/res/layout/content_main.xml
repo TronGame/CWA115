@@ -39,6 +39,6 @@
         android:onClick="showGameActivity"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/roundedButton"
+        android:background="@drawable/rounded_button"
         />
 </RelativeLayout>
