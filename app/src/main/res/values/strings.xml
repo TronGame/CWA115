@@ -4,6 +4,7 @@
     <string name="title_activity_game">GameActivity</string>
     <string name="player_name">Enter your name</string>
     <string name="start">START</string>
+    <string name="game_name">Trongame</string>
     <color name="grey">#c1c1c1</color>
     <color name="white">#ffffff</color>
 </resources>

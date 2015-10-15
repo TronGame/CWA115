@@ -25,7 +25,14 @@
         android:layout_alignStart="@+id/start_button"
         android:layout_marginBottom="61dp" />
 
-
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/game_name"
+        android:textSize="69dp"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="41dp" />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -37,8 +44,8 @@
         android:paddingBottom="80dp"
         android:paddingTop="80dp"
         android:onClick="showGameActivity"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
         android:background="@drawable/rounded_button"
-        />
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="90dp" />
 </RelativeLayout>
