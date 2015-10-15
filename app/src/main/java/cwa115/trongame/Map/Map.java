@@ -11,7 +11,7 @@ public class Map {
     private GoogleMap map;
 
     /**
-     * Class initializer
+     * Class initializer*
      */
     public Map() {
 
