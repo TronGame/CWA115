@@ -26,6 +26,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
     private String myId;
+    private boolean isLocationTracking = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,9 +61,33 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
+
+    /**
+     * Starts listening for location updates.
+     */
+    private void startLocationUpdate() {
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                googleApiClient, locationRequest, this
+        );
+    }
+
+    /**
+     * Stops listening for location updates.
+     */
+    private void stopLocationUpdate() {
+        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+        isLocationTracking = false;
+    }
+
     public void onPause() {
         super.onPause();
-        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+        stopLocationUpdate();
+    }
+
+    public void onResume() {
+        super.onResume();
+        if (googleApiClient.isConnected() && !isLocationTracking)
+            startLocationUpdate();
     }
 
     /**
@@ -76,9 +101,7 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onConnected(Bundle hint) {
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                googleApiClient, locationRequest, this
-        );
+        startLocationUpdate();
     }
 
     @Override
