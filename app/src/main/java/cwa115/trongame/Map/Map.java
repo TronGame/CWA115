@@ -1,4 +1,4 @@
-package cwa115.trongame;
+package cwa115.trongame.Map;
 
 
 import com.google.android.gms.maps.GoogleMap;
