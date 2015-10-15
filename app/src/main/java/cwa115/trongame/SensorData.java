@@ -1,15 +1,12 @@
 package cwa115.trongame;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Queue;
 
 /**
@@ -19,6 +16,8 @@ public final class SensorData {
 
     private final static int DATA_COUNT = 10;
     private final static float PROXIMITY_LIMIT = 10f;
+    private final static float GYROSCOPE_X_LIMIT = 0.5f;
+    private final static float GYROSCOPE_Y_LIMIT = 0.7f;
 
     private static SensorManager mSensorManager;
     private static Sensor LinearAccelerometer, Gyroscope, Proximity;
@@ -38,7 +37,14 @@ public final class SensorData {
         gyroscopeData = new DataQueue<>(DATA_COUNT);
         accelerationData = new DataQueue<>(DATA_COUNT);
 
+        Resume();
+    }
+
+    public static void Resume(){
         registerListeners();
+    }
+    public static void Pause(){
+        mSensorManager.unregisterListener(mSensorEventListener);
     }
 
     public static int ProximityCount(){
@@ -56,6 +62,16 @@ public final class SensorData {
         return count;
     }
 
+    public static int TurningCount(){
+        int count = 0;
+
+        while(gyroscopeData.iterator().hasNext()){
+            Float[] nextValue = gyroscopeData.iterator().next();
+
+        }
+        return count;
+    }
+
     private static void registerListeners(){
         mSensorManager.registerListener(mSensorEventListener, LinearAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
         mSensorManager.registerListener(mSensorEventListener, Gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
@@ -67,10 +83,10 @@ public final class SensorData {
         public void onSensorChanged(SensorEvent event) {
             switch(event.sensor.getType()){
                 case Sensor.TYPE_LINEAR_ACCELERATION:
-                    //accelerationData.offer(event.values);
+                    accelerationData.offer(new Float[]{event.values[0], event.values[1], event.values[2]});
                     break;
                 case Sensor.TYPE_GYROSCOPE:
-
+                    gyroscopeData.offer(new Float[]{event.values[0], event.values[1], event.values[2]});
                     break;
                 case Sensor.TYPE_PROXIMITY:
                     proximityData.offer(event.values[0]);
@@ -83,5 +99,11 @@ public final class SensorData {
 
         }
     };
+
+    // Testing the class:
+    public static void Test(Activity a){
+        a.setContentView(R.layout.layout_test);
+        // TODO: Show graphs of collected data
+    }
 
 }

@@ -1,6 +1,5 @@
 package cwa115.trongame;
 
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 
 import java.util.AbstractQueue;
@@ -19,7 +18,7 @@ public class DataQueue<E> implements Queue<E> {
 
     public DataQueue(int size){
         this.mSize = size;
-        this.mQueue = new ArrayBlockingQueue<E>(size);
+        this.mQueue = new ArrayBlockingQueue<>(size);
     }
 
     @Override
