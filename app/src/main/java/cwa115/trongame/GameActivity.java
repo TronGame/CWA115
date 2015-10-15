@@ -32,6 +32,7 @@ public class GameActivity extends AppCompatActivity
         map.addMarker(new MarkerOptions()
                 .position(new LatLng(0, 0))
                 .title("Marker"));
+
     }
 
 }

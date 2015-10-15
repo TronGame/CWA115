@@ -6,4 +6,7 @@ package cwa115.trongame;
  */
 public class Map {
 
+    public Map() {
+
+    }
 }
