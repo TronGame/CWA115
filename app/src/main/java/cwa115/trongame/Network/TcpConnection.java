@@ -8,7 +8,7 @@ import java.net.Socket;
 
 /**
  * Basic (blocking) TCP networking functionality.
- * @todo error handling
+ * TODO: error handling
  */
 public class TcpConnection {
     private Socket clientSocket;
