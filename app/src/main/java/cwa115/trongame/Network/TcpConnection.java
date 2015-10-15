@@ -15,6 +15,11 @@ public class TcpConnection {
     private BufferedWriter outStream;
     private BufferedReader inStream;
 
+    /**
+     * Constructor
+     * @param address IP address or hostname of the remote endpoint
+     * @param port port of the remote endpoint
+     */
     public TcpConnection(String address, int port) {
         try {
             clientSocket = new Socket(address, port);
@@ -26,6 +31,10 @@ public class TcpConnection {
         }
     }
 
+
+    /**
+     * Wait until the connection is established.
+     */
     public void waitForConnection()
     {
         try {
@@ -41,6 +50,10 @@ public class TcpConnection {
         }
     }
 
+    /**
+     * Reads a single line (up to \n) from the TCP stream.
+     * @return the received line as a String
+     */
     public String readLine() {
         try {
             return inStream.readLine();
@@ -50,6 +63,10 @@ public class TcpConnection {
         }
     }
 
+    /**
+     * Send a String message to the endpoint.
+     * @param str the message to send
+     */
     public void sendMessage(String str) {
         try {
             outStream.write(str);
