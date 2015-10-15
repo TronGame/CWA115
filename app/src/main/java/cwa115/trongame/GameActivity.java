@@ -1,6 +1,8 @@
 package cwa115.trongame;
 
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -14,8 +16,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class GameActivity extends AppCompatActivity
-    implements OnMapReadyCallback {
+public class GameActivity extends AppCompatActivity implements OnMapReadyCallback, LocationListener {
 
     // The map storage object. This stores all the item and player information on the map
     private Map map;
@@ -43,6 +44,30 @@ public class GameActivity extends AppCompatActivity
     public void onMapReady(GoogleMap map_fragment) {
         // Store the GoogleMap object in the map storage object.
         map.setMap(map_fragment);
+    }
+
+    @Override
+    public void onProviderEnabled(String str) {
+
+
+    }
+
+    @Override
+    public void onProviderDisabled(String provider) {
+
+
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+
+
+    }
+
+    @Override
+    public void onStatusChanged(String provider, int status, Bundle extras) {
+
+
     }
 
 }
