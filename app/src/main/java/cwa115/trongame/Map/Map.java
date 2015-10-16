@@ -15,21 +15,20 @@ public class Map {
 
     /**
      * Class initializer
+     * @param players array of players to be added to the map.
      */
     public Map(Player[] players) {
-        mapItems = new HashMap<String, DrawableMapItem>();
+        mapItems = new HashMap<>();
         // Store the players
-        for (int i=0; i<players.length; i++) {
-            mapItems.put(players[i].get_id(),
-                    players[i]
-            );
+        for(Player player : players) {
+            mapItems.put(player.get_id(), player);
         }
     }
 
     /**
      * Update a player map item
-     * @param id
-     * @param location
+     * @param id the player identifier (i.e. username)
+     * @param location player location, expressed as a (latitude, longitude) pair
      */
     public void updatePlayer(String id, LatLng location) {
         Player player = (Player)mapItems.get(id);
