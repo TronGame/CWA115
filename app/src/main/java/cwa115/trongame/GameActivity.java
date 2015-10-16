@@ -1,7 +1,12 @@
 package cwa115.trongame;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -13,6 +18,8 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
@@ -21,12 +28,15 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
+    private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
+
     // The map storage object. This stores all the item and player information on the map
     private Map map;
     private GoogleApiClient googleApiClient;
     private LocationRequest locationRequest;
     private String myId;
-    private boolean isLocationTracking = true;
+    private boolean isLocationTracking = false;
+    private MapFragment mapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,10 +54,8 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Initialize the map storage object
         map = new Map(players);
 
-        // Activate the map fragment defined in the content_game.xml layout
-        MapFragment mapFragment =
-                (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        // Store a reference to the map fragment defined in the content_game.xml layout
+        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
 
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -59,6 +67,41 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(5000);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        // Request permissions before doing anything else
+        requestPermissions();
+    }
+
+    /**
+     * Request permissions at runtime (required for Android 6.0).
+     */
+    void requestPermissions() {
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
+                // TODO: Show an explanation
+            // } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        PERMISSIONS_REQUEST_FINE_LOCATION
+                );
+            // }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[],
+                                           @NonNull int[] grantResults) {
+        switch(requestCode) {
+            case PERMISSIONS_REQUEST_FINE_LOCATION:
+                // TODO: check if the permission was granted, and do something when it was not
+                googleApiClient.connect();
+                break;
+
+            default:
+                // Some other permission was granted
+        }
     }
 
 
@@ -66,9 +109,12 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
      * Starts listening for location updates.
      */
     private void startLocationUpdate() {
-        LocationServices.FusedLocationApi.requestLocationUpdates(
-                googleApiClient, locationRequest, this
-        );
+        if(googleApiClient.isConnected() && !isLocationTracking) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(
+                    googleApiClient, locationRequest, this
+            );
+        }
+        isLocationTracking = true;
     }
 
     /**
@@ -93,12 +139,12 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     /**
-     * Activates when the google map object has started up and is ready to be controlled
+     * Activates when the GoogleMap object is ready for use (getMapAsync finishes)
+     * @param map_fragment note: cannot be stored since it will be destroyed when this callback exits
      */
     @Override
     public void onMapReady(GoogleMap map_fragment) {
-        // Store the GoogleMap object in the map storage object.
-        map.setMap(map_fragment);
+        map.draw(map_fragment);
     }
 
     @Override
@@ -122,5 +168,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Player location
         LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
         map.updatePlayer(myId, loc);
+        mapFragment.getMapAsync(this);
     }
 }

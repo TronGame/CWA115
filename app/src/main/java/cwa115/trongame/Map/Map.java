@@ -10,9 +10,6 @@ import java.util.HashMap;
  * Stores information (e.g. item locations) of the map.
  */
 public class Map {
-    // Store the GoogleMap object to draw on it later
-    private GoogleMap map;
-
     // Store the items currently in the game
     private HashMap<String, DrawableMapItem> mapItems;
 
@@ -30,13 +27,6 @@ public class Map {
     }
 
     /**
-     * Set the GoogleMap object
-     */
-    public void setMap(GoogleMap _map) {
-        map = _map;
-    }
-
-    /**
      * Update a player map item
      * @param id
      * @param location
@@ -44,6 +34,11 @@ public class Map {
     public void updatePlayer(String id, LatLng location) {
         Player player = (Player)mapItems.get(id);
         player.setLocation(location);
-        player.draw(map);
+    }
+
+    public void draw(GoogleMap map) {
+        for(DrawableMapItem item : mapItems.values()) {
+            item.draw(map);
+        }
     }
 }

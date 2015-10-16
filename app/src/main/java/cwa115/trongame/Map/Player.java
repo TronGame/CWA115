@@ -33,6 +33,8 @@ public class Player implements DrawableMapItem {
     }
 
     public void draw(GoogleMap map) {
+        if(map == null)
+            return;
         if(marker == null) {
             marker = map.addMarker(new MarkerOptions()
                     .position(location)
