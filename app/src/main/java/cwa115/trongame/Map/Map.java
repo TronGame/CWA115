@@ -7,6 +7,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -49,9 +50,7 @@ public class Map implements OnMapReadyCallback {
     }
 
     public void redraw(DrawableMapItem[] items) {
-        for (DrawableMapItem item : items) {
-            pendingItems.add(item);
-        }
+        pendingItems.addAll(Arrays.asList(items));
         mapFragment.getMapAsync(this);
     }
 
@@ -68,6 +67,7 @@ public class Map implements OnMapReadyCallback {
     public void onMapReady(GoogleMap map) {
         for(DrawableMapItem item : pendingItems) {
             item.draw(map);
-        };
+        }
+        pendingItems.clear();
     }
 }
