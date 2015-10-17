@@ -8,6 +8,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A set of connected points representing a wall.
@@ -22,9 +23,9 @@ public class Wall implements DrawableMapItem {
      * Construct from an array of points.
      * @param given_points points of the wall
      */
-    Wall(String _id, LatLng[] given_points) {
+    public Wall(String _id, LatLng[] given_points) {
         id = _id;
-        points = new ArrayList<LatLng>(points);
+        points = new ArrayList<>(Arrays.asList(given_points));
     }
 
     /**
@@ -52,7 +53,7 @@ public class Wall implements DrawableMapItem {
 
     }
 
-    public String get_id() {
+    public String getId() {
         return id;
     }
 }

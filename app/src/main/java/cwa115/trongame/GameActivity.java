@@ -21,10 +21,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
+import java.util.ArrayList;
+
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
+import cwa115.trongame.Map.Wall;
 
-public class GameActivity extends AppCompatActivity implements OnMapReadyCallback,
+public class GameActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
 
@@ -36,7 +39,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
     private LocationRequest locationRequest;
     private String myId;
     private boolean isLocationTracking = false;
-    private MapFragment mapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,18 +46,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Set the view
         setContentView(R.layout.activity_game);
-
-        myId = "player_1";
-        // Get the players
-        Player[] players = {
-                new Player(myId, "Player 1", new LatLng(0.0, 0.0))
-        };
-
-        // Initialize the map storage object
-        map = new Map(players);
-
-        // Store a reference to the map fragment defined in the content_game.xml layout
-        mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
 
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -70,6 +60,32 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         // Request permissions before doing anything else
         requestPermissions();
+
+        // Setup the map object
+        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+        map = new Map(mapFragment);
+
+        // Add players
+        myId = "player_1";
+        Player[] players = {
+                new Player(myId, "Player 1", new LatLng(0.0, 0.0))
+        };
+
+        for (Player player : players) {
+            map.addMapItem(player);
+        }
+        map.redraw(players);
+
+        // Test wall creation
+        LatLng[] wallPoints = {
+                new LatLng(0.0, 0.0),
+                new LatLng(0.0, 50.0),
+                new LatLng(50.0, 50.0)
+        };
+
+        Wall testWall = new Wall("test_wall", wallPoints);
+        map.addMapItem(testWall);
+        map.redraw(testWall);
     }
 
     /**
@@ -138,15 +154,6 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
             startLocationUpdate();
     }
 
-    /**
-     * Activates when the GoogleMap object is ready for use (getMapAsync finishes)
-     * @param map_fragment note: cannot be stored since it will be destroyed when this callback exits
-     */
-    @Override
-    public void onMapReady(GoogleMap map_fragment) {
-        map.draw(map_fragment);
-    }
-
     @Override
     public void onConnected(Bundle hint) {
         startLocationUpdate();
@@ -168,6 +175,5 @@ public class GameActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Player location
         LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
         map.updatePlayer(myId, loc);
-        mapFragment.getMapAsync(this);
     }
 }

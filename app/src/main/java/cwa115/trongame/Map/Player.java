@@ -44,7 +44,7 @@ public class Player implements DrawableMapItem {
         }
     }
 
-    public String get_id() {
+    public String getId() {
         return id;
     }
 }
