@@ -48,9 +48,14 @@ public class Map implements OnMapReadyCallback {
         redraw(id);
     }
 
-    public void redraw(DrawableMapItem[] items) {
-        for (DrawableMapItem item : items) {
-            pendingItems.add(item);
+    /**
+     * Redraw a set of items
+     * @param itemIds item ids to redraw
+     */
+    public void redraw(String[] itemIds) {
+        for (String itemId : itemIds) {
+            DrawableMapItem item = mapItems.get(itemId);
+            if (item != null) { pendingItems.add(itemId); }
         }
         mapFragment.getMapAsync(this);
     }
@@ -72,8 +77,10 @@ public class Map implements OnMapReadyCallback {
      */
     @Override
     public void onMapReady(GoogleMap map) {
-        for(DrawableMapItem item : pendingItems) {
-            item.draw(map);
-        };
+        for(String itemId : pendingItems) {
+            DrawableMapItem item = mapItems.get(itemId);
+            if (item != null) { item.draw(map); }
+        }
+        pendingItems.clear();
     }
 }
