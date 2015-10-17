@@ -1,6 +1,5 @@
 package cwa115.trongame.Map;
 
-
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -10,31 +9,32 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Stores information (e.g. item locations) of the map.
+ * Stores information (e.g. item locations) of the map
+ * and controls the map view that shows the items
  */
 public class Map implements OnMapReadyCallback {
-    // Store the map fragment to draw on
-    private MapFragment mapFragment;
 
-    // Store the items currently in the game
-    private HashMap<String, DrawableMapItem> mapItems;
-
-    // Store the items that have to be redrawn on the map
-    private ArrayList<DrawableMapItem> pendingItems;
+    private MapFragment mapFragment;                    // MapFragment used to draw on
+    private HashMap<String, DrawableMapItem> mapItems;  // Stores the items currently on the map
+    private ArrayList<String> pendingItems;    // The items that still need to be redrawn
 
     /**
      * Class initializer
      * @param _mapFragment the map fragment object used to draw on
      */
     public Map(MapFragment _mapFragment) {
+        mapFragment = _mapFragment;
         mapItems = new HashMap<>();
         pendingItems = new ArrayList<>();
-
-        mapFragment = _mapFragment;
     }
 
+    /**
+     * Add a map item to draw on the map
+     * @param item the item that needs to be added
+     */
     public void addMapItem(DrawableMapItem item) {
         mapItems.put(item.getId(), item);
+        redraw(item.getId());
     }
 
     /**
@@ -45,18 +45,29 @@ public class Map implements OnMapReadyCallback {
     public void updatePlayer(String id, LatLng location) {
         Player player = (Player)mapItems.get(id);
         player.setLocation(location);
-        redraw(player);
+        redraw(id);
     }
 
-    public void redraw(DrawableMapItem[] items) {
-        for (DrawableMapItem item : items) {
-            pendingItems.add(item);
+    /**
+     * Redraw a set of items
+     * @param itemIds item ids to redraw
+     */
+    public void redraw(String[] itemIds) {
+        for (String itemId : itemIds) {
+            DrawableMapItem item = mapItems.get(itemId);
+            if (item != null) { pendingItems.add(itemId); }
         }
         mapFragment.getMapAsync(this);
     }
 
-    public void redraw(DrawableMapItem item) {
-        pendingItems.add(item);
+    /**
+     * Redraw a set of items
+     * @param itemId item id to redraw
+     */
+    public void redraw(String itemId) {
+        DrawableMapItem item = mapItems.get(itemId);
+        if (item != null) { pendingItems.add(itemId); }
+
         mapFragment.getMapAsync(this);
     }
 
@@ -66,8 +77,9 @@ public class Map implements OnMapReadyCallback {
      */
     @Override
     public void onMapReady(GoogleMap map) {
-        for(DrawableMapItem item : pendingItems) {
-            item.draw(map);
-        };
+        for(String itemId : pendingItems) {
+            DrawableMapItem item = mapItems.get(itemId);
+            if (item != null) { item.draw(map); }
+        }
     }
 }

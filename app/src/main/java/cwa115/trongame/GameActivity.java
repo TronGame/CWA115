@@ -13,15 +13,9 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-
-import java.util.ArrayList;
 
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
@@ -33,12 +27,13 @@ public class GameActivity extends AppCompatActivity implements
 
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
 
-    // The map storage object. This stores all the item and player information on the map
-    private Map map;
-    private GoogleApiClient googleApiClient;
-    private LocationRequest locationRequest;
-    private String myId;
-    private boolean isLocationTracking = false;
+    private Map map;                                // Controls the map view
+    private GoogleApiClient googleApiClient;        // Controls location tracking
+
+    private LocationRequest locationRequest;        // Contains data used by the location listener
+    private boolean isLocationTracking = false;     // Is the location listener tracking
+
+    private String myId;                            // Player id
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,12 +42,14 @@ public class GameActivity extends AppCompatActivity implements
         // Set the view
         setContentView(R.layout.activity_game);
 
+        // Create the googleApiClient
         googleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
+                .addConnectionCallbacks(this)           // Connect onConnected(&Suspended) function
+                .addOnConnectionFailedListener(this)    // Add onConnectionFailed function
                 .addApi(LocationServices.API)
                 .build();
 
+        // Set the location tracker's settings
         locationRequest = new LocationRequest();
         locationRequest.setInterval(10000);
         locationRequest.setFastestInterval(5000);
@@ -66,15 +63,15 @@ public class GameActivity extends AppCompatActivity implements
         map = new Map(mapFragment);
 
         // Add players
+        // (this data is normally recieved from main activity)
         myId = "player_1";
         Player[] players = {
                 new Player(myId, "Player 1", new LatLng(0.0, 0.0))
         };
 
         for (Player player : players) {
-            map.addMapItem(player);
+            map.addMapItem(player);         // Add the players to the map object
         }
-        map.redraw(players);
 
         // Test wall creation
         LatLng[] wallPoints = {
@@ -85,8 +82,11 @@ public class GameActivity extends AppCompatActivity implements
 
         Wall testWall = new Wall("test_wall", wallPoints);
         map.addMapItem(testWall);
-        map.redraw(testWall);
-    }
+}
+
+    // ---------------------------------------------------------------------------------------------
+    // Permission functionality
+    // ---------------------------------------------------------------------------------------------
 
     /**
      * Request permissions at runtime (required for Android 6.0).
@@ -106,6 +106,9 @@ public class GameActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Is called when the permission request is answered
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String permissions[],
                                            @NonNull int[] grantResults) {
@@ -120,6 +123,10 @@ public class GameActivity extends AppCompatActivity implements
         }
     }
 
+
+    // ---------------------------------------------------------------------------------------------
+    // Location Tracking functionality
+    // ---------------------------------------------------------------------------------------------
 
     /**
      * Starts listening for location updates.
@@ -143,36 +150,54 @@ public class GameActivity extends AppCompatActivity implements
         }
     }
 
+    /**
+     * Is called when the application is paused
+     */
     public void onPause() {
         super.onPause();
         stopLocationUpdate();
     }
 
+    /**
+     * Is called when the application is resumed
+     */
     public void onResume() {
         super.onResume();
         if (googleApiClient.isConnected() && !isLocationTracking)
             startLocationUpdate();
     }
 
+    /**
+     * Is called when the googleApiClient is connected
+     */
     @Override
     public void onConnected(Bundle hint) {
         startLocationUpdate();
     }
 
+    /**
+     * Is called when the googleApiClient is no longer connected
+     */
     @Override
     public void onConnectionSuspended(int i) {
 
     }
 
-
+    /**
+     * Is called when the googleApiclient can't connect
+     * @param connectionResult the result of the connection attempt
+     */
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
     }
 
+    /**
+     * Is called when the device's location is changed
+     * @param location the new location of the device
+     */
     @Override
     public void onLocationChanged(Location location) {
-        // Player location
         LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
         map.updatePlayer(myId, loc);
     }
