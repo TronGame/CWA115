@@ -55,8 +55,8 @@ public class GameActivity extends AppCompatActivity implements
 
         // Set the location tracker's settings
         locationRequest = new LocationRequest();
-        locationRequest.setInterval(100);
-        locationRequest.setFastestInterval(50);
+        locationRequest.setInterval(1000);
+        locationRequest.setFastestInterval(500);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         // Request permissions before doing anything else

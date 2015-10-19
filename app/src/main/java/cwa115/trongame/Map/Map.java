@@ -21,6 +21,7 @@ public class Map implements OnMapReadyCallback {
     private MapFragment mapFragment;                        // MapFragment used to draw on
 
     private HashMap<String, DrawableMapItem> mapItems;      // Stores the items currently on the map
+    private ArrayList<Wall> walls;                           // Stores the walls currently on the map
     private ArrayList<DrawableMapItem> pendingItemsDraw;    // The items that still need to be redrawn
     private ArrayList<DrawableMapItem> pendingItemsClear;   // The items that still need to be cleared
 
@@ -33,6 +34,7 @@ public class Map implements OnMapReadyCallback {
     public Map(MapFragment _mapFragment) {
         mapFragment = _mapFragment;
         mapItems = new HashMap<>();
+        walls = new ArrayList<>();
         pendingItemsDraw = new ArrayList<>();
         pendingItemsClear = new ArrayList<>();
 
@@ -45,6 +47,9 @@ public class Map implements OnMapReadyCallback {
      * @param item the item that needs to be added
      */
     public void addMapItem(DrawableMapItem item) {
+        if (item instanceof Wall)
+            walls.add((Wall)item);
+
         mapItems.put(item.getId(), item);
         redraw(item.getId());
     }
@@ -55,7 +60,9 @@ public class Map implements OnMapReadyCallback {
      */
     public void removeMapItem(String itemId) {
         clear(itemId);
-        mapItems.remove(itemId);
+        DrawableMapItem item = mapItems.remove(itemId);
+        if (item instanceof Wall)
+            walls.remove(item);
     }
 
     /**

@@ -11,7 +11,7 @@ import java.net.URL;
  * A SnapToRoads Google API request.
  * TODO: Support multiple request types
  */
-class ApiRequest {
+public class ApiRequest {
     private boolean interpolate = true;
     private String key;
     private LatLng[] points;
