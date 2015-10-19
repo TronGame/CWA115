@@ -16,11 +16,13 @@ public class ApiResponse {
 
     private ArrayList<LatLng> points;
 
+
     /**
      * Construct from a given JsonReader
      * @param reader the given JsonReader object
      */
     public ApiResponse(JsonReader reader) {
+        points = new ArrayList<>();
         // Read
         try {
             reader.beginObject();
