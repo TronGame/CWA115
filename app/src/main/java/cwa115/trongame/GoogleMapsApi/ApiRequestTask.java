@@ -31,7 +31,6 @@ public class ApiRequestTask implements Runnable {
      * @param handlerClass handler to call when the request finishes
      * @param apiRequest the request to run
      */
-    ApiRequestTask(Handler handlerClass, ApiRequest apiRequest) {
     public ApiRequestTask(Handler handlerClass, ApiRequest apiRequest) {
         callback = handlerClass;
         request = apiRequest;
