@@ -16,6 +16,8 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import cwa115.trongame.R;
+
 /**
  * Sends a Google Maps API request using HTTPS.
  */
@@ -35,7 +37,7 @@ public class ApiRequestTask implements Runnable {
             connection.setRequestMethod("GET");
             // TODO: Make user agent configurable
             connection.setRequestProperty(
-                    "User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0;Windows98;DigExt)"
+                    "User-Agent", String.valueOf(R.string.user_agent)
             );
             connection.setDoInput(true);
             connection.connect();
