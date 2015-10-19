@@ -1,5 +1,6 @@
 package cwa115.trongame.Map;
 
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Message;
@@ -46,7 +47,7 @@ public class Wall implements DrawableMapItem, Handler.Callback {
 
         ApiRequest request = new ApiRequest(
                 true,
-                String.valueOf(R.string.google_maps_key_server),
+                Resources.getSystem().getString(R.string.google_maps_key_server),
                 points.toArray(new LatLng[points.size()]));
 
         ApiRequestTask task = new ApiRequestTask(new Handler(this), request);

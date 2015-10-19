@@ -1,5 +1,6 @@
 package cwa115.trongame.GoogleMapsApi;
 
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,7 +46,7 @@ public class ApiRequestTask implements Runnable {
             connection.setRequestMethod("GET");
             // TODO: Make user agent configurable
             connection.setRequestProperty(
-                    "User-Agent", String.valueOf(R.string.user_agent)
+                    "User-Agent", Resources.getSystem().getString(R.string.user_agent)
             );
             connection.setDoInput(true);
             connection.connect();
