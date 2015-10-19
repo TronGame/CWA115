@@ -92,6 +92,10 @@ public final class SensorData {
                     break;
                 case Sensor.TYPE_GYROSCOPE:
                     gyroscopeData.offer(new Float[]{event.values[0], event.values[1], event.values[2]});
+                    if(testing){
+                        plot.updateDataQueue(gyroscopeQueueId, gyroscopeData, new int[]{0,2});
+                        Log.d("SENSORDATA", gyroscopeData.toString());
+                    }
                     break;
                 case Sensor.TYPE_PROXIMITY:
                     proximityData.offer(event.values[0]);
@@ -113,13 +117,14 @@ public final class SensorData {
     private static boolean testing = false;
     private static PlotView plot;
     private static int proximityQueueId;
+    private static int[] gyroscopeQueueId;
     public static void Test(Activity a){
         a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         a.setContentView(R.layout.layout_test);
         plot = (PlotView)a.findViewById(R.id.test_plot);
         testing = true;
         proximityQueueId = plot.addDataQueue(proximityData, Color.BLUE);
-        //plot.addDataQueue(gyroscopeData, new int[]{0,2}, new int[]{Color.RED, Color.GREEN});
+        gyroscopeQueueId = plot.addDataQueue(gyroscopeData, new int[]{0,2}, new int[]{Color.RED, Color.GREEN});
     }
 
 }

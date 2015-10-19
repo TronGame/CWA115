@@ -117,6 +117,8 @@ public class GameActivity extends AppCompatActivity implements
                         PERMISSIONS_REQUEST_FINE_LOCATION
                 );
             // }
+        } else {
+            googleApiClient.connect();
         }
     }
 
