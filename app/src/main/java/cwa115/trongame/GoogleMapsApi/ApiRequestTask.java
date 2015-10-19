@@ -1,6 +1,9 @@
 package cwa115.trongame.GoogleMapsApi;
 
 import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.util.JsonReader;
 
@@ -16,12 +19,19 @@ import javax.net.ssl.HttpsURLConnection;
 /**
  * Sends a Google Maps API request using HTTPS.
  */
-public class ApiRequestTask extends AsyncTask<ApiRequest, Void, ApiResponse> {
+public class ApiRequestTask implements Runnable {
 
-    @Override
-    protected ApiResponse doInBackground(ApiRequest... requests) {
+    private Handler callback;
+    private ApiRequest request;
+
+    ApiRequestTask(Handler handlerClass, ApiRequest apiRequest) {
+        callback = handlerClass;
+        request = apiRequest;
+    }
+
+    public void run() {
         try {
-            HttpsURLConnection connection = (HttpsURLConnection)requests[0].getUrl().openConnection();
+            HttpsURLConnection connection = (HttpsURLConnection)request.getUrl().openConnection();
             connection.setRequestMethod("GET");
             // TODO: Make user agent configurable
             connection.setRequestProperty(
@@ -36,19 +46,20 @@ public class ApiRequestTask extends AsyncTask<ApiRequest, Void, ApiResponse> {
                     JsonReader reader = new JsonReader(
                             new InputStreamReader(connection.getInputStream())
                     );
-                    return new ApiResponse(reader);
+                    sendResponse(reader);
                 default:
-                    return null; // TODO: error handling
+                    sendResponse(null); // TODO: error handling
             }
         } catch(IOException e) {
-            return null; // TODO: error handling
+            sendResponse(null); // TODO: error handling
         }
     }
 
-    @Override
-    protected void onPostExecute(ApiResponse result) {
-
+    public void sendResponse(JsonReader reader) {
+        ApiResponse response = new ApiResponse(reader);
+        Message m = new Message();
+        m.setData(response.getBundle());
+        callback.sendMessage(m);
     }
-
 
 }

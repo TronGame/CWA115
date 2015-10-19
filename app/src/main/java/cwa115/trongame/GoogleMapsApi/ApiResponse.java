@@ -1,5 +1,6 @@
 package cwa115.trongame.GoogleMapsApi;
 
+import android.os.Bundle;
 import android.util.JsonReader;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -38,6 +39,14 @@ public class ApiResponse {
         } catch(IOException e) {
             error = true;
         }
+    }
+
+    public ApiResponse(Bundle b) {
+        error = b.getBoolean("error");
+        double[] latitudes = b.getDoubleArray("latitudes");
+        double[] longitudes = b.getDoubleArray("longitudes");
+        for(int i = 0; i < latitudes.length; ++i)
+            points.add(new LatLng(latitudes[i], longitudes[i]));
     }
 
     private void readPoint(JsonReader reader) {
@@ -85,6 +94,20 @@ public class ApiResponse {
 
     public boolean hasError() {
         return error;
+    }
+
+    public Bundle getBundle() {
+        Bundle b = new Bundle();
+        double[] latitudes = new double[points.size()];
+        double[] longitudes = new double[points.size()];
+        for(int i = 0; i < points.size(); ++i) {
+            latitudes[i] = points.get(i).latitude;
+            longitudes[i] = points.get(i).longitude;
+        }
+        b.putDoubleArray("latitudes", latitudes);
+        b.putDoubleArray("longitudes", longitudes);
+        b.putBoolean("error", error);
+        return b;
     }
 
 }
