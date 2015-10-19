@@ -9,4 +9,7 @@
     <string name="title_activity_room">RoomActivity</string>
     <string name="number_of_players">Number of players</string>
     <string name="hosting">HOST</string>
+    <string name="Unlimited_walls">Unlimited walls</string>
+    <string name="item">Items</string>
+    <string name="item_wall_breaker">Wall breaker</string>
 </resources>
