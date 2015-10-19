@@ -14,4 +14,7 @@ public interface DrawableMapItem {
     // Draw the item on the map
     public void draw(GoogleMap map);
 
+    // Clear the item from the map
+    public void clear(GoogleMap map);
+
 }
