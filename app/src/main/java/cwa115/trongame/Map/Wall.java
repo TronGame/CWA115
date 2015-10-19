@@ -1,6 +1,8 @@
 package cwa115.trongame.Map;
 
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Message;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
@@ -10,15 +12,21 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import cwa115.trongame.GoogleMapsApi.ApiRequest;
+import cwa115.trongame.GoogleMapsApi.ApiRequestTask;
+import cwa115.trongame.GoogleMapsApi.ApiResponse;
+import cwa115.trongame.R;
+
 /**
  * A set of connected points representing a wall.
  */
-public class Wall implements DrawableMapItem {
+public class Wall implements DrawableMapItem, Handler.Callback {
 
     private String id;
     private ArrayList<LatLng> points;
     private int lineWidth = 5;
     private Polyline line;
+    private Thread pointSnapThread;
 
     /**
      * Construct from an array of points.
@@ -35,6 +43,15 @@ public class Wall implements DrawableMapItem {
      */
     public void addPoint(LatLng point) {
         points.add(point);
+
+        ApiRequest request = new ApiRequest(
+                true,
+                String.valueOf(R.string.google_maps_key_server),
+                points.toArray(new LatLng[points.size()]));
+
+        ApiRequestTask task = new ApiRequestTask(new Handler(this), request);
+        pointSnapThread = new Thread(task);
+        pointSnapThread.start();
     }
 
     /**
@@ -43,6 +60,9 @@ public class Wall implements DrawableMapItem {
      */
     @Override
     public void draw(GoogleMap map) {
+        if (line != null)
+            line.remove();
+
         for(int i = 0; i < points.size() - 1; ++i) {
             line = map.addPolyline(
                     new PolylineOptions()
@@ -51,7 +71,6 @@ public class Wall implements DrawableMapItem {
                     .color(Color.BLUE)
             );
         }
-
     }
 
     public void clear(GoogleMap map) {
@@ -60,5 +79,11 @@ public class Wall implements DrawableMapItem {
 
     public String getId() {
         return id;
+    }
+
+    public boolean handleMessage(Message message) {
+        ApiResponse response = new ApiResponse(message.getData());
+        points = response.getPoints();
+        return true;
     }
 }

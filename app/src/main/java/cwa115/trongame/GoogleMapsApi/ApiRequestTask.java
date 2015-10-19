@@ -26,7 +26,7 @@ public class ApiRequestTask implements Runnable {
     private Handler callback;
     private ApiRequest request;
 
-    ApiRequestTask(Handler handlerClass, ApiRequest apiRequest) {
+    public ApiRequestTask(Handler handlerClass, ApiRequest apiRequest) {
         callback = handlerClass;
         request = apiRequest;
     }
