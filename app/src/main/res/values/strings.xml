@@ -11,4 +11,5 @@
     <string name="title_activity_hosting">HostingActivity</string>
     <string name="title_activity_room">RoomActivity</string>
     <string name="title_activity_test">testActivity</string>
+    <string name="hosting">HOST</string>
 </resources>
