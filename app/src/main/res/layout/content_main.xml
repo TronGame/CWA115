@@ -14,16 +14,16 @@
     <EditText
         android:id="@+id/name_entry"
         android:textSize="30dp"
+        android:gravity="center"
         android:hint="@string/enter_name"
-        android:layout_width="wrap_content"
+        android:layout_width="400dp"
         android:layout_height="35dp"
         android:paddingLeft="10dp"
         android:paddingRight="10dp"
         android:background="@color/basicWhite"
+        android:layout_marginBottom="57dp"
         android:layout_above="@+id/start_button"
-        android:layout_alignLeft="@+id/start_button"
-        android:layout_alignStart="@+id/start_button"
-        android:layout_marginBottom="61dp" />
+        android:layout_centerHorizontal="true" />
 
     <TextView
         android:layout_width="wrap_content"
