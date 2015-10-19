@@ -55,8 +55,8 @@ public class GameActivity extends AppCompatActivity implements
 
         // Set the location tracker's settings
         locationRequest = new LocationRequest();
-        locationRequest.setInterval(10000);
-        locationRequest.setFastestInterval(5000);
+        locationRequest.setInterval(100);
+        locationRequest.setFastestInterval(50);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         // Request permissions before doing anything else
@@ -214,6 +214,7 @@ public class GameActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
         map.updatePlayer(myId, loc);
+        map.updateCamera(loc);
 
         // Test wall creation
         if (creatingWall) {
