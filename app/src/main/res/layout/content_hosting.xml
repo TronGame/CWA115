@@ -21,9 +21,11 @@
         android:id="@+id/editText"
         android:textSize="30dp"
         android:gravity="center"
+        android:textColor="@color/basicBlack"
         android:background="@color/basicWhite"/>
 
     <TextView
+        android:textColor="@color/basicBlack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/number_of_players"
@@ -35,6 +37,7 @@
         android:id="@+id/textView" />
 
     <TextView
+        android:textColor="@color/basicBlack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="50dp"
@@ -43,10 +46,12 @@
         android:layout_alignTop="@+id/textView"
         android:layout_alignRight="@+id/editText"
         android:layout_alignEnd="@+id/editText"
-        android:id="@+id/textView3" />
+        android:id="@+id/textView3"
+        />
     <!-- the Textview above will be changed to a editText once we make a online version-->
 
     <TextView
+        android:textColor="@color/basicBlack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/Unlimited_walls"
@@ -68,6 +73,7 @@
 
 
     <TextView
+        android:textColor="@color/basicBlack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/item_wall_breaker"

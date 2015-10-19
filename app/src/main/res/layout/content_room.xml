@@ -7,6 +7,37 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:showIn="@layout/activity_room" tools:context="cwa115.trongame.RoomActivity">
+    tools:showIn="@layout/activity_room" tools:context="cwa115.trongame.RoomActivity"
+    android:background="@color/basicGrey">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/default_roomname"
+        android:textColor="@color/basicBlack"
+        android:id="@+id/roomname"
+        android:textSize="35dp"
+        android:layout_marginBottom="10dp"/>
 
+    <ListView
+        android:id="@+id/lobby_list"
+        android:layout_width="match_parent"
+        android:layout_height="399dp"
+        android:background="@color/basicWhite"
+        android:layout_weight="0.65"
+        android:layout_below="@+id/roomname"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <Button
+
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/default_readybutton"
+        android:textColor="@color/basicBlack"
+        android:textSize="30dp"
+        android:background="@drawable/rounded_button"
+        android:layout_below="@+id/lobby_list"
+        android:layout_marginTop="10dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 </RelativeLayout>

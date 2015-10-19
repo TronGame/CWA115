@@ -12,6 +12,7 @@
     >
 
     <EditText
+        android:textColor="@color/basicBlack"
         android:id="@+id/name_entry"
         android:textSize="30dp"
         android:gravity="center"
@@ -29,6 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/game_name"
+        android:textColor="@color/basicBlack"
         android:textSize="69dp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
