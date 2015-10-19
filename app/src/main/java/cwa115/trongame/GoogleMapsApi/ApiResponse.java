@@ -15,6 +15,7 @@ import java.util.ArrayList;
 public class ApiResponse {
 
     private ArrayList<LatLng> points;
+    private boolean error;
 
 
     /**
@@ -22,6 +23,9 @@ public class ApiResponse {
      * @param reader the given JsonReader object
      */
     public ApiResponse(JsonReader reader) {
+        if(reader == null)
+            error = true;
+
         points = new ArrayList<>();
         // Read
         try {
@@ -32,7 +36,7 @@ public class ApiResponse {
             reader.endArray();
             reader.endObject();
         } catch(IOException e) {
-            // ...
+            error = true;
         }
     }
 
@@ -42,14 +46,16 @@ public class ApiResponse {
             while(reader.hasNext()) {
                 String name = reader.nextName();
                 if(name == "location") {
-                    points.add(readLocation(reader));
+                    LatLng location = readLocation(reader);
+                    if(location != null)
+                        points.add(location);
                 } else {
                     reader.skipValue();
                 }
             }
-                reader.endObject();
+            reader.endObject();
         } catch(IOException e) {
-            // ...
+            error = true;
         }
     }
 
@@ -68,6 +74,7 @@ public class ApiResponse {
             return new LatLng(latitude, longitude);
         } catch(IOException e) {
             // TODO: Meaningful return statement
+            error = true;
             return null;
         }
     }
@@ -76,5 +83,8 @@ public class ApiResponse {
         return points;
     }
 
+    public boolean hasError() {
+        return error;
+    }
 
 }
