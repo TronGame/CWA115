@@ -8,6 +8,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -16,6 +18,8 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.model.LatLng;
+
+import java.util.ArrayList;
 
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
@@ -72,17 +76,27 @@ public class GameActivity extends AppCompatActivity implements
         for (Player player : players) {
             map.addMapItem(player);         // Add the players to the map object
         }
+    }
 
-        // Test wall creation
-        LatLng[] wallPoints = {
-                new LatLng(0.0, 0.0),
-                new LatLng(0.0, 50.0),
-                new LatLng(50.0, 50.0)
-        };
+    // Test Wall creation
+    private boolean creatingWall = false;
+    private Wall testWall;
 
-        Wall testWall = new Wall("test_wall", wallPoints);
-        map.addMapItem(testWall);
-}
+    public void createWall(View view) {
+        if (!creatingWall) {
+            creatingWall = true;
+            testWall = new Wall("test_wall", new LatLng[0]);
+            map.addMapItem(testWall);
+            Button button = (Button) view.findViewById(R.id.wallButton);
+            button.setText("Stop Creating Wall");
+        }
+        else {
+            creatingWall = false;
+            testWall = null;
+            Button button = (Button) view.findViewById(R.id.wallButton);
+            button.setText("Create Wall");
+        }
+    }
 
     // ---------------------------------------------------------------------------------------------
     // Permission functionality
@@ -200,5 +214,11 @@ public class GameActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
         map.updatePlayer(myId, loc);
+
+        // Test wall creation
+        if (creatingWall) {
+            testWall.addPoint(loc);
+            map.redraw(testWall.getId());
+        }
     }
 }

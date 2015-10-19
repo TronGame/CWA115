@@ -1,18 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
-    android:layout_height="match_parent" android:paddingLeft="@dimen/map_horizontal_margin"
-    android:paddingRight="@dimen/map_horizontal_margin"
-    android:paddingTop="@dimen/map_vertical_margin"
-    android:paddingBottom="@dimen/map_vertical_margin"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:showIn="@layout/activity_game" tools:context="cwa115.trongame.GameActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+
+    tools:showIn="@layout/activity_game"
+    tools:context="cwa115.trongame.GameActivity">
 
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         android:name="com.google.android.gms.maps.MapFragment"
         android:id="@+id/map"
-        android:layout_width="match_parent"
+        android:layout_width="fill_parent"
         android:layout_height="match_parent"/>
+
+    <Button xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/wallButton"
+        android:layout_width="100pt"
+        android:layout_height="20pt"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:paddingTop="@dimen/map_vertical_margin"
+        android:paddingRight="@dimen/map_vertical_margin"
+        android:text="Create Wall"
+        android:onClick="createWall"/>
 
 </RelativeLayout>
