@@ -18,6 +18,7 @@ public class Wall implements DrawableMapItem {
     private String id;
     private ArrayList<LatLng> points;
     private int lineWidth = 5;
+    private Polyline line;
 
     /**
      * Construct from an array of points.
@@ -43,7 +44,7 @@ public class Wall implements DrawableMapItem {
     @Override
     public void draw(GoogleMap map) {
         for(int i = 0; i < points.size() - 1; ++i) {
-            Polyline line = map.addPolyline(
+            line = map.addPolyline(
                     new PolylineOptions()
                     .add(points.get(i), points.get(i + 1))
                     .width(lineWidth)
@@ -51,6 +52,10 @@ public class Wall implements DrawableMapItem {
             );
         }
 
+    }
+
+    public void clear(GoogleMap map) {
+        line.remove();
     }
 
     public String getId() {
