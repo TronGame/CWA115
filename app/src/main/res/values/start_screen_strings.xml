@@ -1,14 +1,11 @@
 <resources>
     <string name="app_name">TronGame</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_game">GameActivity</string>
-    <string name="player_name">Enter your name</string>
+    <string name="enter_name">Enter your name</string>
     <string name="start">START</string>
-    <string name="game_name">Trongame</string>
-    <color name="grey">#c1c1c1</color>
-    <color name="white">#ffffff</color>
+    <string name="hosting_name">Enter the name of your game</string>
     <string name="title_activity_lobby">LobbyActivity</string>
     <string name="title_activity_hosting">HostingActivity</string>
     <string name="title_activity_room">RoomActivity</string>
-    <string name="title_activity_test">testActivity</string>
+    <string name="number_of_players">Number of players</string>
 </resources>
