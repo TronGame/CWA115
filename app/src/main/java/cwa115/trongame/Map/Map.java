@@ -16,7 +16,7 @@ public class Map implements OnMapReadyCallback {
 
     private MapFragment mapFragment;                    // MapFragment used to draw on
     private HashMap<String, DrawableMapItem> mapItems;  // Stores the items currently on the map
-    private ArrayList<String> pendingItems;    // The items that still need to be redrawn
+    private ArrayList<DrawableMapItem> pendingItems;    // The items that still need to be redrawn
 
     /**
      * Class initializer
@@ -55,18 +55,20 @@ public class Map implements OnMapReadyCallback {
     public void redraw(String[] itemIds) {
         for (String itemId : itemIds) {
             DrawableMapItem item = mapItems.get(itemId);
-            if (item != null) { pendingItems.add(itemId); }
+            if(item != null)
+                pendingItems.add(item);
         }
         mapFragment.getMapAsync(this);
     }
 
     /**
-     * Redraw a set of items
+     * Redraw a single item
      * @param itemId item id to redraw
      */
     public void redraw(String itemId) {
         DrawableMapItem item = mapItems.get(itemId);
-        if (item != null) { pendingItems.add(itemId); }
+        if(item != null)
+            pendingItems.add(item);
 
         mapFragment.getMapAsync(this);
     }
@@ -77,10 +79,8 @@ public class Map implements OnMapReadyCallback {
      */
     @Override
     public void onMapReady(GoogleMap map) {
-        for(String itemId : pendingItems) {
-            DrawableMapItem item = mapItems.get(itemId);
-            if (item != null) { item.draw(map); }
-        }
+        for(DrawableMapItem item : pendingItems)
+            item.draw(map);
         pendingItems.clear();
     }
 }
