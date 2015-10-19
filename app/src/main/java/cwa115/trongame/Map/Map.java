@@ -1,8 +1,11 @@
 package cwa115.trongame.Map;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -13,11 +16,15 @@ import java.util.HashMap;
  * and controls the map view that shows the items
  */
 public class Map implements OnMapReadyCallback {
+    private int MapZoom = 15;
 
     private MapFragment mapFragment;                        // MapFragment used to draw on
+
     private HashMap<String, DrawableMapItem> mapItems;      // Stores the items currently on the map
     private ArrayList<DrawableMapItem> pendingItemsDraw;    // The items that still need to be redrawn
     private ArrayList<DrawableMapItem> pendingItemsClear;   // The items that still need to be cleared
+
+    private CameraUpdate cameraUpdate;                      // The next camera position update
 
     /**
      * Class initializer
@@ -28,6 +35,9 @@ public class Map implements OnMapReadyCallback {
         mapItems = new HashMap<>();
         pendingItemsDraw = new ArrayList<>();
         pendingItemsClear = new ArrayList<>();
+
+        cameraUpdate = CameraUpdateFactory.zoomTo(MapZoom);
+        mapFragment.getMapAsync(this);
     }
 
     /**
@@ -109,12 +119,22 @@ public class Map implements OnMapReadyCallback {
         mapFragment.getMapAsync(this);
     }
 
+    public void updateCamera(LatLng position) {
+        cameraUpdate = CameraUpdateFactory.newLatLng(position);
+        mapFragment.getMapAsync(this);
+    }
+
     /**
      * Activates when the GoogleMap object is ready for use (getMapAsync finishes)
      * @param map note: cannot be stored since it will be destroyed when this callback exits
      */
     @Override
     public void onMapReady(GoogleMap map) {
+        if (cameraUpdate != null) {
+            map.animateCamera(cameraUpdate);
+            cameraUpdate = null;
+        }
+
         for(DrawableMapItem item : pendingItemsDraw)
             item.draw(map);
 
