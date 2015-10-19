@@ -6,4 +6,5 @@
     <color name="basicGrey">#c1c1c1</color>
     <color name="basicWhite">#ffffff</color>
     <color name="facebookBlue">#3b5998</color>
+    <color name="basicBlack">#000000</color>
 </resources>
