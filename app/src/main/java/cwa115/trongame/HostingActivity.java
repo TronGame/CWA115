@@ -1,5 +1,6 @@
 package cwa115.trongame;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -14,5 +15,7 @@ public class HostingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hosting);
     }
-
+    public void showRoomActivity(View view) {
+        startActivity(new Intent(this, HostingActivity.class));
+    }
 }

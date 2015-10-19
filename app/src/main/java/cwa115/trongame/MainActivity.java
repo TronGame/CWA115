@@ -56,5 +56,8 @@ public class MainActivity extends AppCompatActivity {
     public void showGameActivity(View view) {
         startActivity(new Intent(this, GameActivity.class));
     }
+    public void showLobbyActivity(View view) {
+        startActivity(new Intent(this, LobbyActivity.class));
+    }
 
 }

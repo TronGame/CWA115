@@ -45,9 +45,18 @@
         android:paddingRight="40dp"
         android:paddingBottom="80dp"
         android:paddingTop="80dp"
-        android:onClick="showGameActivity"
+        android:onClick="showLobbyActivity"
         android:background="@drawable/round_button"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="90dp" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Developpers shortcut"
+        android:background="@color/basicWhite"
+        android:layout_alignParentBottom="true"
+        android:padding="5dp"
+        android:layout_centerHorizontal="true"
+        android:onClick="showGameActivity"/>
 </RelativeLayout>
