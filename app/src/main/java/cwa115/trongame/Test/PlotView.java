@@ -70,10 +70,10 @@ public class PlotView extends View {
         Iterator<Float[]> iterator = dataQueue.iterator();
         for(int i=0;i<dataQueue.size();i++){
             Float[] subData = iterator.next();
-            for(int vectorId : vectorIds) {
-                data[vectorId][2*i] = (float)i;
-                data[vectorId][2*i+1] = subData[vectorId];
-                updateMinMaxY(subData[vectorId]);
+            for(int j=0;j<vectorIds.length;j++) {
+                data[j][2*i] = (float)i;
+                data[j][2*i+1] = subData[vectorIds[j]];
+                updateMinMaxY(subData[vectorIds[j]]);
             }
         }
         return data;
@@ -97,7 +97,7 @@ public class PlotView extends View {
         return NEXT_ID;
     }
     public void updateDataQueue(int queueId, DataQueue<Float> updatedQueue){
-        dataPoints.setValueAt(queueId, extractDataFromQueue(updatedQueue));
+        dataPoints.put(queueId, extractDataFromQueue(updatedQueue));
         invalidate();
     }
     public void removeDataQueue(int queueId){
@@ -127,7 +127,7 @@ public class PlotView extends View {
     public void updateDataQueue(int[] queueIds, DataQueue<Float[]> updatedQueue, int[] vectorIds){
         Float[][] data = extractDataFromQueue(updatedQueue, vectorIds);
         for(int i=0;i<queueIds.length;i++){
-            dataPoints.setValueAt(queueIds[i], data[i]);
+            dataPoints.put(queueIds[i], data[i]);
         }
         invalidate();
     }
@@ -151,17 +151,18 @@ public class PlotView extends View {
         c.drawLine(1f, zeroY, getWidth(), zeroY, axe);// Draw x-axis
         c.drawText("x", getWidth() - 5, zeroY - 5, label);
         c.drawText("y", 5f, 5f, label);
+        c.drawText("minY: " + minY + " ; maxY: " + maxY, getWidth()/2, 10f, label);
 
         // Draw the dataPoints:
         for(int i=0;i<dataPoints.size();i++) {
             int key = dataPoints.keyAt(i);
             Float[] data = dataPoints.get(key);
-            for(int j=0;j<data.length;j++) {
-                // float x = data[2*j]
-                // float y = data[2*j+1]
+            for(int j=0;j<data.length;j+=2) {
+                // float x = data[j]
+                // float y = data[j+1]
                 // realX = getWidth() * x * 2 / data.length
-                // realY = getHeight() * y / (maxY - minY) = y * relativeY
-                c.drawCircle(getWidth() * 2 * data[2 * j] / data.length, relativeY * data[2 * j + 1], 3f, dataColors.get(key));
+                // realY = zeroY - getHeight() * y / (maxY - minY) = maxY * relativeY - y * relativeY = (maxY - y) * relativeY
+                c.drawCircle(getWidth() * 2 * data[j] / data.length, relativeY * (maxY - data[j + 1]), 3f, dataColors.get(key));
             }
         }
     }
