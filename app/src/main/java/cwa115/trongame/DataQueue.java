@@ -74,7 +74,7 @@ public class DataQueue<E> implements Queue<E> {
 
     @Override
     public int size() {
-        return this.mSize;// Or this.mQueue.size() ??
+        return this.mQueue.size();
     }
 
     @NonNull
@@ -114,5 +114,13 @@ public class DataQueue<E> implements Queue<E> {
     @Override
     public E peek() {
         return this.mQueue.peek();
+    }
+
+    @Override
+    public String toString() {
+        String s = "[";
+        for(E el : this.mQueue)
+            s += el.toString() + ",";
+        return s.substring(0,s.length()-1) + "]";
     }
 }

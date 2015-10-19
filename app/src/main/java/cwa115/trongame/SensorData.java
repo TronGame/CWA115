@@ -2,12 +2,17 @@ package cwa115.trongame;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.util.Log;
 
 import java.util.Queue;
+
+import cwa115.trongame.Test.PlotView;
 
 /**
  * Created by Bram on 15-10-2015.
@@ -22,8 +27,8 @@ public final class SensorData {
     private static SensorManager mSensorManager;
     private static Sensor LinearAccelerometer, Gyroscope, Proximity;
 
-    private static Queue<Float> proximityData;
-    private static Queue<Float[]> gyroscopeData, accelerationData;
+    private static DataQueue<Float> proximityData;
+    private static DataQueue<Float[]> gyroscopeData, accelerationData;
 
     private SensorData(){}
 
@@ -90,6 +95,10 @@ public final class SensorData {
                     break;
                 case Sensor.TYPE_PROXIMITY:
                     proximityData.offer(event.values[0]);
+                    if(testing){
+                        plot.updateDataQueue(proximityQueueId, proximityData);
+                        Log.d("SENSORDATA", proximityData.toString());
+                    }
                     break;
             }
         }
@@ -101,9 +110,16 @@ public final class SensorData {
     };
 
     // Testing the class:
+    private static boolean testing = false;
+    private static PlotView plot;
+    private static int proximityQueueId;
     public static void Test(Activity a){
+        a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         a.setContentView(R.layout.layout_test);
-        // TODO: Show graphs of collected data
+        plot = (PlotView)a.findViewById(R.id.test_plot);
+        testing = true;
+        proximityQueueId = plot.addDataQueue(proximityData, Color.BLUE);
+        //plot.addDataQueue(gyroscopeData, new int[]{0,2}, new int[]{Color.RED, Color.GREEN});
     }
 
 }
