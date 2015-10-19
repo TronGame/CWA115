@@ -44,6 +44,10 @@ public class Player implements DrawableMapItem {
         }
     }
 
+    public void clear(GoogleMap map) {
+        marker.remove();
+    }
+
     public String getId() {
         return id;
     }

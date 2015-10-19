@@ -14,9 +14,10 @@ import java.util.HashMap;
  */
 public class Map implements OnMapReadyCallback {
 
-    private MapFragment mapFragment;                    // MapFragment used to draw on
-    private HashMap<String, DrawableMapItem> mapItems;  // Stores the items currently on the map
-    private ArrayList<String> pendingItems;    // The items that still need to be redrawn
+    private MapFragment mapFragment;                        // MapFragment used to draw on
+    private HashMap<String, DrawableMapItem> mapItems;      // Stores the items currently on the map
+    private ArrayList<DrawableMapItem> pendingItemsDraw;    // The items that still need to be redrawn
+    private ArrayList<DrawableMapItem> pendingItemsClear;   // The items that still need to be cleared
 
     /**
      * Class initializer
@@ -25,7 +26,8 @@ public class Map implements OnMapReadyCallback {
     public Map(MapFragment _mapFragment) {
         mapFragment = _mapFragment;
         mapItems = new HashMap<>();
-        pendingItems = new ArrayList<>();
+        pendingItemsDraw = new ArrayList<>();
+        pendingItemsClear = new ArrayList<>();
     }
 
     /**
@@ -35,6 +37,15 @@ public class Map implements OnMapReadyCallback {
     public void addMapItem(DrawableMapItem item) {
         mapItems.put(item.getId(), item);
         redraw(item.getId());
+    }
+
+    /**
+     * Remove an item from the map
+     * @param itemId The item that needs to be removed
+     */
+    public void removeMapItem(String itemId) {
+        clear(itemId);
+        mapItems.remove(itemId);
     }
 
     /**
@@ -55,18 +66,45 @@ public class Map implements OnMapReadyCallback {
     public void redraw(String[] itemIds) {
         for (String itemId : itemIds) {
             DrawableMapItem item = mapItems.get(itemId);
-            if (item != null) { pendingItems.add(itemId); }
+            if(item != null)
+                pendingItemsDraw.add(item);
         }
         mapFragment.getMapAsync(this);
     }
 
     /**
-     * Redraw a set of items
+     * Redraw a single item
      * @param itemId item id to redraw
      */
     public void redraw(String itemId) {
         DrawableMapItem item = mapItems.get(itemId);
-        if (item != null) { pendingItems.add(itemId); }
+        if(item != null)
+            pendingItemsDraw.add(item);
+
+        mapFragment.getMapAsync(this);
+    }
+
+    /**
+     * Redraw a set of items
+     * @param itemIds item ids to redraw
+     */
+    public void clear(String[] itemIds) {
+        for (String itemId : itemIds) {
+            DrawableMapItem item = mapItems.get(itemId);
+            if(item != null)
+                pendingItemsClear.add(item);
+        }
+        mapFragment.getMapAsync(this);
+    }
+
+    /**
+     * Clear a single item
+     * @param itemId item id to redraw
+     */
+    public void clear(String itemId) {
+        DrawableMapItem item = mapItems.get(itemId);
+        if(item != null)
+            pendingItemsClear.add(item);
 
         mapFragment.getMapAsync(this);
     }
@@ -77,10 +115,13 @@ public class Map implements OnMapReadyCallback {
      */
     @Override
     public void onMapReady(GoogleMap map) {
-        for(String itemId : pendingItems) {
-            DrawableMapItem item = mapItems.get(itemId);
-            if (item != null) { item.draw(map); }
-        }
-        pendingItems.clear();
+        for(DrawableMapItem item : pendingItemsDraw)
+            item.draw(map);
+
+        for(DrawableMapItem item : pendingItemsClear)
+            item.clear(map);
+
+        pendingItemsClear.clear();
+        pendingItemsDraw.clear();
     }
 }
