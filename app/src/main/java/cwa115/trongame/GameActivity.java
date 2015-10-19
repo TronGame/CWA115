@@ -106,7 +106,7 @@ public class GameActivity extends AppCompatActivity implements
      * Request permissions at runtime (required for Android 6.0).
      */
     void requestPermissions() {
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS)
+        if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
             // if(ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
