@@ -36,7 +36,7 @@ public class ApiResponse {
                 readPoint(reader);
             reader.endArray();
             reader.endObject();
-        } catch(IOException e) {
+        } catch(Exception e) { // NullPointerException or IOException
             error = true;
         }
     }
@@ -62,7 +62,7 @@ public class ApiResponse {
             reader.beginObject();
             while(reader.hasNext()) {
                 String name = reader.nextName();
-                if(name == "location") {
+                if(name.equals("location")) {
                     LatLng location = readLocation(reader);
                     if(location != null)
                         points.add(location);
@@ -88,9 +88,9 @@ public class ApiResponse {
             double latitude = 0, longitude = 0;
             while(reader.hasNext()) {
                 String id = reader.nextName();
-                if(id == "latitude")
+                if(id.equals("latitude"))
                     latitude = reader.nextDouble();
-                else if(id == "longitude")
+                else if(id.equals("longitude"))
                     longitude = reader.nextDouble();
             }
             reader.endObject();
