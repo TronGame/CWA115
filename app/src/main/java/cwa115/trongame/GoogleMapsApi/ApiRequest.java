@@ -16,12 +16,21 @@ class ApiRequest {
     private String key;
     private LatLng[] points;
 
+    /**
+     * Constructor
+     * @param interpolate should the API match the curvature of the road
+     * @param key the API key
+     * @param points the set of points given as an argument to the API
+     */
     public ApiRequest(boolean interpolate, String key, LatLng[] points) {
         this.interpolate = interpolate;
         this.key = key;
         this.points = points;
     }
 
+    /**
+     * @return the HTTPS URL for the API request
+     */
     public URL getUrl() {
         String urlString = "https://roads.googleapis.com/v1/snapToRoads";
         urlString += "&interpolate=" + (interpolate ? "true" : "false");
@@ -34,6 +43,9 @@ class ApiRequest {
         }
     }
 
+    /**
+     * @return the set of points as a list
+     */
     public String getPath() {
         return TextUtils.join("|", points);
     }

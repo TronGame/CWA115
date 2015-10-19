@@ -26,11 +26,19 @@ public class ApiRequestTask implements Runnable {
     private Handler callback;
     private ApiRequest request;
 
+    /**
+     * Constructor
+     * @param handlerClass handler to call when the request finishes
+     * @param apiRequest the request to run
+     */
     ApiRequestTask(Handler handlerClass, ApiRequest apiRequest) {
         callback = handlerClass;
         request = apiRequest;
     }
 
+    /**
+     * Run the request on the calling thread.
+     */
     public void run() {
         try {
             HttpsURLConnection connection = (HttpsURLConnection)request.getUrl().openConnection();
@@ -57,6 +65,10 @@ public class ApiRequestTask implements Runnable {
         }
     }
 
+    /**
+     * Parse the JSON response and invoke the callback
+     * @param reader the JsonReader constructed from the input stream of the request result
+     */
     public void sendResponse(JsonReader reader) {
         ApiResponse response = new ApiResponse(reader);
         Message m = new Message();

@@ -41,6 +41,10 @@ public class ApiResponse {
         }
     }
 
+    /**
+     * Construct from a Bundle (serialized data)
+     * @param b the given bundle of serialized data
+     */
     public ApiResponse(Bundle b) {
         error = b.getBoolean("error");
         double[] latitudes = b.getDoubleArray("latitudes");
@@ -49,6 +53,10 @@ public class ApiResponse {
             points.add(new LatLng(latitudes[i], longitudes[i]));
     }
 
+    /**
+     * Reads a single point object from the JSON data.
+     * @param reader the JSON parser
+     */
     private void readPoint(JsonReader reader) {
         try {
             reader.beginObject();
@@ -59,6 +67,7 @@ public class ApiResponse {
                     if(location != null)
                         points.add(location);
                 } else {
+                    // Ignore everything which is not a location
                     reader.skipValue();
                 }
             }
@@ -68,6 +77,11 @@ public class ApiResponse {
         }
     }
 
+    /**
+     * Reads a single location from the JSON data
+     * @param reader the JSON parser
+     * @return the coordinates (latitude, longitude) that were read
+     */
     private LatLng readLocation(JsonReader reader) {
         try {
             reader.beginObject();
@@ -88,14 +102,23 @@ public class ApiResponse {
         }
     }
 
+    /**
+     * @return a list of points in the response
+     */
     public ArrayList<LatLng> getPoints() {
         return points;
     }
 
+    /**
+     * @return true if there was an error, false otherwise
+     */
     public boolean hasError() {
         return error;
     }
 
+    /**
+     * @return the ApiResponse as a Bundle (serialized)
+     */
     public Bundle getBundle() {
         Bundle b = new Bundle();
         double[] latitudes = new double[points.size()];
