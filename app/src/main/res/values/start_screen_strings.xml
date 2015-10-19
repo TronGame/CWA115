@@ -3,7 +3,7 @@
     <string name="action_settings">Settings</string>
     <string name="enter_name">Enter your name</string>
     <string name="start">START</string>
-    <string name="hosting_name">Enter the name of your game</string>
+    <string name="hosting_name">Game name</string>
     <string name="title_activity_lobby">LobbyActivity</string>
     <string name="title_activity_hosting">HostingActivity</string>
     <string name="title_activity_room">RoomActivity</string>
