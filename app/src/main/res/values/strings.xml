@@ -7,4 +7,8 @@
     <string name="game_name">Trongame</string>
     <color name="grey">#c1c1c1</color>
     <color name="white">#ffffff</color>
+    <string name="title_activity_lobby">LobbyActivity</string>
+    <string name="title_activity_hosting">HostingActivity</string>
+    <string name="title_activity_room">RoomActivity</string>
+    <string name="title_activity_test">testActivity</string>
 </resources>
