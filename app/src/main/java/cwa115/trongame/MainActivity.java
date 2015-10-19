@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize SensorData
         SensorData.Initialize(this);
-        SensorData.Test(this); // Only for testing purposes
+        // SensorData.Test(this); // Only for testing purposes
     }
 
     @Override
