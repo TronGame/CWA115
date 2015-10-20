@@ -1,7 +1,5 @@
 package cwa115.trongame.GoogleMapsApi;
 
-import android.text.TextUtils;
-
 import com.google.android.gms.maps.model.LatLng;
 
 import java.net.MalformedURLException;
@@ -35,6 +33,7 @@ public class ApiRequest {
         String urlString = "https://roads.googleapis.com/v1/snapToRoads";
         urlString += "&interpolate=" + (interpolate ? "true" : "false");
         urlString += "&key=" + key;
+        urlString += "&points=" + getPath();
         try {
             return new URL(urlString);
         } catch(MalformedURLException e) {
@@ -47,6 +46,13 @@ public class ApiRequest {
      * @return the set of points as a list
      */
     public String getPath() {
-        return TextUtils.join("|", points);
+        String path = "";
+        for(int i = 0; i < points.length; ++i) {
+            path += Double.toString(points[i].latitude) + ",";
+            path += Double.toString(points[i].longitude);
+            if(i != points.length - 1)
+                path += "|";
+        }
+        return path;
     }
 }
