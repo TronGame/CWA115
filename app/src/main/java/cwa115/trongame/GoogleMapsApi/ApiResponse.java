@@ -6,7 +6,6 @@ import android.util.JsonReader;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
@@ -49,6 +48,7 @@ public class ApiResponse {
         error = b.getBoolean("error");
         double[] latitudes = b.getDoubleArray("latitudes");
         double[] longitudes = b.getDoubleArray("longitudes");
+        points = new ArrayList<>();
         for(int i = 0; i < latitudes.length; ++i)
             points.add(new LatLng(latitudes[i], longitudes[i]));
     }
