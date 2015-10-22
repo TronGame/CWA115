@@ -3,6 +3,32 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <CheckBox
+            android:id="@+id/proxCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Proximity"
+            android:checked="true" />
+
+        <CheckBox
+            android:id="@+id/gyroCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Gyroscope"
+            android:checked="true" />
+
+        <CheckBox
+            android:id="@+id/accelCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Acceleration"
+            android:checked="true" />
+    </LinearLayout>
+
     <cwa115.trongame.Test.PlotView
         android:id="@+id/test_plot"
         android:layout_width="match_parent"
