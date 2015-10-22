@@ -16,6 +16,6 @@ public class HostingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_hosting);
     }
     public void showRoomActivity(View view) {
-        startActivity(new Intent(this, HostingActivity.class));
+        startActivity(new Intent(this, RoomActivity.class));
     }
 }

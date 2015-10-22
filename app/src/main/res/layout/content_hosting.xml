@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/basicGrey"
+    android:background="@drawable/basic_background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -22,7 +22,7 @@
         android:textSize="30sp"
         android:gravity="center"
         android:textColor="@color/basicBlack"
-        android:background="@color/basicWhite"/>
+        android:background="@drawable/rounded_textview"/>
 
     <TextView
         android:textColor="@color/basicBlack"
