@@ -8,6 +8,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.maps.GeoApiContext;
+import com.google.maps.RoadsApi;
+import com.google.maps.model.SnappedPoint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,14 +23,14 @@ import cwa115.trongame.Utils.Vector2D;
 /**
  * A set of connected points representing a wall.
  */
-public class Wall implements DrawableMapItem, Handler.Callback {
+public class Wall implements DrawableMapItem {
 
     private String id;
     private ArrayList<LatLng> points;
     private int lineWidth = 5;
     private Polyline line;
-    private Thread pointSnapThread;
     private String apiKey;
+    private GeoApiContext context;
 
     /**
      * Construct from an array of points.
@@ -36,7 +39,7 @@ public class Wall implements DrawableMapItem, Handler.Callback {
     public Wall(String _id, LatLng[] points, String apiKey) {
         id = _id;
         this.points = new ArrayList<>(Arrays.asList(points));
-        this.apiKey = apiKey;
+        this.context = new GeoApiContext().setApiKey(apiKey);
     }
 
     /**
@@ -46,15 +49,21 @@ public class Wall implements DrawableMapItem, Handler.Callback {
     public void addPoint(LatLng point) {
         points.add(point);
 
-        ApiRequest request = new ApiRequest(
-                true,
-                apiKey,
-                points.toArray(new LatLng[points.size()])
-        );
+        com.google.maps.model.LatLng[] convertedPoints =
+                new com.google.maps.model.LatLng[points.size()];
 
-        ApiRequestTask task = new ApiRequestTask(new Handler(this), request);
-        pointSnapThread = new Thread(task);
-        pointSnapThread.start();
+        for (int i=0; i<points.size(); i++)
+            convertedPoints[i] = new com.google.maps.model.LatLng(
+                    points.get(i).latitude,
+                    points.get(i).longitude);
+
+        try {
+            SnappedPoint[] points = RoadsApi.snapToRoads(
+                    context,
+                    false,
+                    convertedPoints
+            ).await();
+        } catch (Exception e) {}
     }
 
     /**
@@ -82,12 +91,6 @@ public class Wall implements DrawableMapItem, Handler.Callback {
 
     public String getId() {
         return id;
-    }
-
-    public boolean handleMessage(Message message) {
-        ApiResponse response = new ApiResponse(message.getData());
-        points = response.getPoints();
-        return true;
     }
 
     /**
