@@ -21,7 +21,7 @@ public class Map implements OnMapReadyCallback {
     private MapFragment mapFragment;                        // MapFragment used to draw on
 
     private HashMap<String, DrawableMapItem> mapItems;      // Stores the items currently on the map
-    private ArrayList<Wall> walls;                           // Stores the walls currently on the map
+    private ArrayList<Wall> walls;                          // Stores the walls currently on the map
     private ArrayList<DrawableMapItem> pendingItemsDraw;    // The items that still need to be redrawn
     private ArrayList<DrawableMapItem> pendingItemsClear;   // The items that still need to be cleared
 
