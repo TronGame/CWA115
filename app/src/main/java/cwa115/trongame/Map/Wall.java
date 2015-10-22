@@ -1,8 +1,6 @@
 package cwa115.trongame.Map;
 
 import android.graphics.Color;
-import android.os.Handler;
-import android.os.Message;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
@@ -15,9 +13,6 @@ import com.google.maps.model.SnappedPoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import cwa115.trongame.GoogleMapsApi.ApiRequest;
-import cwa115.trongame.GoogleMapsApi.ApiRequestTask;
-import cwa115.trongame.GoogleMapsApi.ApiResponse;
 import cwa115.trongame.Utils.Vector2D;
 
 /**
@@ -43,27 +38,38 @@ public class Wall implements DrawableMapItem {
     }
 
     /**
+     * Convert points to com.google.maps.model.model.LatLng[].
+     * @return the converted points
+     */
+    private com.google.maps.model.LatLng[] getConvertedPoints() {
+        com.google.maps.model.LatLng[] convertedPoints =
+                new com.google.maps.model.LatLng[points.size()];
+
+        for(int i = 0; i<points.size(); i++)
+            convertedPoints[i] = new com.google.maps.model.LatLng(
+                    points.get(i).latitude,
+                    points.get(i).longitude
+            );
+        return convertedPoints;
+
+    }
+
+    /**
      * Extend the wall with one point.
      * @param point the given point
      */
     public void addPoint(LatLng point) {
         points.add(point);
 
-        com.google.maps.model.LatLng[] convertedPoints =
-                new com.google.maps.model.LatLng[points.size()];
-
-        for (int i=0; i<points.size(); i++)
-            convertedPoints[i] = new com.google.maps.model.LatLng(
-                    points.get(i).latitude,
-                    points.get(i).longitude);
-
         try {
             SnappedPoint[] points = RoadsApi.snapToRoads(
                     context,
                     false,
-                    convertedPoints
+                    getConvertedPoints()
             ).await();
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            // TODO: Error handling
+        }
     }
 
     /**
