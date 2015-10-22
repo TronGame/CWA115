@@ -1,8 +1,6 @@
 package cwa115.trongame.Map;
 
-import android.content.res.Resources;
 import android.graphics.Color;
-import android.graphics.Point;
 import android.os.Handler;
 import android.os.Message;
 
@@ -17,7 +15,6 @@ import java.util.Arrays;
 import cwa115.trongame.GoogleMapsApi.ApiRequest;
 import cwa115.trongame.GoogleMapsApi.ApiRequestTask;
 import cwa115.trongame.GoogleMapsApi.ApiResponse;
-import cwa115.trongame.R;
 import cwa115.trongame.Utils.Vector2D;
 
 /**
@@ -30,14 +27,16 @@ public class Wall implements DrawableMapItem, Handler.Callback {
     private int lineWidth = 5;
     private Polyline line;
     private Thread pointSnapThread;
+    private String apiKey;
 
     /**
      * Construct from an array of points.
-     * @param given_points points of the wall
+     * @param points points of the wall
      */
-    public Wall(String _id, LatLng[] given_points) {
+    public Wall(String _id, LatLng[] points, String apiKey) {
         id = _id;
-        points = new ArrayList<>(Arrays.asList(given_points));
+        this.points = new ArrayList<>(Arrays.asList(points));
+        this.apiKey = apiKey;
     }
 
     /**
@@ -49,8 +48,9 @@ public class Wall implements DrawableMapItem, Handler.Callback {
 
         ApiRequest request = new ApiRequest(
                 true,
-                Resources.getSystem().getString(R.string.google_maps_key_server),
-                points.toArray(new LatLng[points.size()]));
+                apiKey,
+                points.toArray(new LatLng[points.size()])
+        );
 
         ApiRequestTask task = new ApiRequestTask(new Handler(this), request);
         pointSnapThread = new Thread(task);

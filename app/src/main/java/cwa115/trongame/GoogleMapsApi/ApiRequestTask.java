@@ -1,6 +1,5 @@
 package cwa115.trongame.GoogleMapsApi;
 
-import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Message;
 import android.util.JsonReader;
@@ -10,13 +9,12 @@ import java.io.InputStreamReader;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import cwa115.trongame.R;
-
 /**
  * Sends a Google Maps API request using HTTPS.
  */
 public class ApiRequestTask implements Runnable {
 
+    private static final String DEFAULT_USER_AGENT = "Mozilla/4.0 (compatible; MSIE 5.0;Windows98;DigExt)";
     private Handler callback;
     private ApiRequest request;
     private String userAgent;
@@ -41,7 +39,7 @@ public class ApiRequestTask implements Runnable {
         callback = handlerClass;
         request = apiRequest;
         if(userAgent == null)
-            this.userAgent = Resources.getSystem().getString(R.string.user_agent);
+            this.userAgent = DEFAULT_USER_AGENT;
         else
             this.userAgent = userAgent;
     }

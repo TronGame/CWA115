@@ -13,13 +13,11 @@ import android.widget.Button;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.maps.model.LatLng;
-
-import java.util.ArrayList;
 
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
@@ -85,7 +83,9 @@ public class GameActivity extends AppCompatActivity implements
     public void createWall(View view) {
         if (!creatingWall) {
             creatingWall = true;
-            testWall = new Wall("test_wall", new LatLng[0]);
+            testWall = new Wall(
+                    "test_wall", new LatLng[0], getString(R.string.google_maps_key_server)
+            );
             map.addMapItem(testWall);
             Button button = (Button) view.findViewById(R.id.wallButton);
             button.setText("Stop Creating Wall");
