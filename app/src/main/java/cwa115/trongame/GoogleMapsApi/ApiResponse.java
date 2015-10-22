@@ -30,6 +30,7 @@ public class ApiResponse {
         // Read
         try {
             reader.beginObject();
+            reader.nextName();
             reader.beginArray();
             while(reader.hasNext())
                 readPoint(reader);

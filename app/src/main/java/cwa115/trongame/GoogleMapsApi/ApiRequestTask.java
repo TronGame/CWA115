@@ -6,8 +6,7 @@ import android.util.JsonReader;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-
-import javax.net.ssl.HttpsURLConnection;
+import java.net.URLConnection;
 
 /**
  * Sends a Google Maps API request using HTTPS.
@@ -49,25 +48,22 @@ public class ApiRequestTask implements Runnable {
      */
     public void run() {
         try {
-            HttpsURLConnection connection = (HttpsURLConnection)request.getUrl().openConnection();
-            connection.setRequestMethod("GET");
-            // TODO: Make user agent configurable
-            connection.setRequestProperty(
-                    "User-Agent", userAgent
-            );
+            URLConnection connection = request.getUrl().openConnection();
+            //connection.setRequestMethod("GET");
+            connection.setRequestProperty("User-Agent", userAgent);
             connection.setDoInput(true);
             connection.connect();
 
-            switch(connection.getResponseCode()) {
-                case 200:
-                case 201:
+            //switch(connection.getResponseCode()) {
+            //    case 200:
+            //    case 201:
                     JsonReader reader = new JsonReader(
                             new InputStreamReader(connection.getInputStream())
                     );
                     sendResponse(reader);
-                default:
+            //    default:
                     sendResponse(null); // TODO: error handling
-            }
+            //}
         } catch(IOException e) {
             sendResponse(null); // TODO: error handling
         }

@@ -30,10 +30,10 @@ public class ApiRequest {
      * @return the HTTPS URL for the API request
      */
     public URL getUrl() {
-        String urlString = "https://roads.googleapis.com/v1/snapToRoads";
+        String urlString = "https://roads.googleapis.com/v1/snapToRoads?";
+        urlString += "path=" + getPath();
         urlString += "&interpolate=" + (interpolate ? "true" : "false");
         urlString += "&key=" + key;
-        urlString += "&points=" + getPath();
         try {
             return new URL(urlString);
         } catch(MalformedURLException e) {

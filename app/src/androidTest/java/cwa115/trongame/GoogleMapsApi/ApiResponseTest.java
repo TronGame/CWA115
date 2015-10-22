@@ -14,8 +14,8 @@ public class ApiResponseTest extends TestCase {
     double[] longitudes = { 0, 1 };
     double[] latitudes = { 0, 1 };
     String data = "{\"snappedPoints\":["
-            + "{\"location\":{\"latitude\":0, \"longitude\":0},"
-            + "{\"location\":{\"latitude\":1, \"longitude\":1}]}";
+            + "{\"location\":{\"latitude\":0, \"longitude\":0},\"originalIndex\": 0},"
+            + "{\"location\":{\"latitude\":1, \"longitude\":1}}]}";
 
     public void testGetPoints() throws Exception {
         JsonReader reader = new JsonReader(
