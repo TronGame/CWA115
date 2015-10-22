@@ -24,7 +24,6 @@ public class Wall implements DrawableMapItem {
     private ArrayList<LatLng> points;
     private int lineWidth = 5;
     private Polyline line;
-    private String apiKey;
     private GeoApiContext context;
 
     /**
@@ -35,6 +34,35 @@ public class Wall implements DrawableMapItem {
         id = _id;
         this.points = new ArrayList<>(Arrays.asList(points));
         this.context = new GeoApiContext().setApiKey(apiKey);
+    }
+
+    /**
+     * Extend the wall with one point.
+     * @param point the given point
+     */
+    public void addPoint(LatLng point) {
+        points.add(point);
+
+        SnappedPoint[] snappedPoints = new SnappedPoint[points.size()];
+        try {
+            snappedPoints = RoadsApi.snapToRoads(
+                    context,
+                    false,
+                    getConvertedPoints()
+            ).await();
+        } catch (Exception e) {}
+
+        points = snappedPointsToPoints(snappedPoints);
+    }
+
+    private ArrayList<LatLng> snappedPointsToPoints(SnappedPoint[] snappedPoints) {
+        ArrayList<LatLng> result = new ArrayList<>();
+        for (int i = 0; i<snappedPoints.length; i++)
+            result.add(new LatLng(
+                    snappedPoints[i].location.lat,
+                    snappedPoints[i].location.lng));
+
+        return result;
     }
 
     /**
@@ -52,24 +80,6 @@ public class Wall implements DrawableMapItem {
             );
         return convertedPoints;
 
-    }
-
-    /**
-     * Extend the wall with one point.
-     * @param point the given point
-     */
-    public void addPoint(LatLng point) {
-        points.add(point);
-
-        try {
-            SnappedPoint[] points = RoadsApi.snapToRoads(
-                    context,
-                    false,
-                    getConvertedPoints()
-            ).await();
-        } catch (Exception e) {
-            // TODO: Error handling
-        }
     }
 
     /**
