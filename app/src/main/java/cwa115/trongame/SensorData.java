@@ -9,7 +9,12 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
+import android.util.SparseArray;
 
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Queue;
 
 import cwa115.trongame.Test.PlotView;
@@ -22,13 +27,27 @@ public final class SensorData {
     private final static int DATA_COUNT = 10;
     private final static float PROXIMITY_LIMIT = 10f;
     private final static float GYROSCOPE_X_LIMIT = 0.5f;
-    private final static float GYROSCOPE_Y_LIMIT = 0.7f;
+    private final static float GYROSCOPE_Z_LIMIT = 0.7f;
 
     private static SensorManager mSensorManager;
     private static Sensor LinearAccelerometer, Gyroscope, Proximity;
 
     private static DataQueue<Float> proximityData;
     private static DataQueue<Float[]> gyroscopeData, accelerationData;
+    private static HashMap<SensorFlag, DataQueue> sensorData;
+
+    private static EnumSet<SensorFlag> activeSensors;
+
+    public enum SensorFlag{
+        NONE(0),
+        PROXIMITY(1<<0),
+        GYROSCOPE(1<<1),
+        ACCELEROMETER(1<<2);
+
+        private final int id;
+        SensorFlag(int id) { this.id = id; }
+        public int getValue() { return id; }
+    }
 
     private SensorData(){}
 
@@ -41,6 +60,12 @@ public final class SensorData {
         proximityData = new DataQueue<>(DATA_COUNT);
         gyroscopeData = new DataQueue<>(DATA_COUNT);
         accelerationData = new DataQueue<>(DATA_COUNT);
+        sensorData = new LinkedHashMap<>();
+        sensorData.put(SensorFlag.PROXIMITY, proximityData);
+        sensorData.put(SensorFlag.ACCELEROMETER, accelerationData);
+        sensorData.put(SensorFlag.GYROSCOPE, gyroscopeData);
+
+        activeSensors = EnumSet.noneOf(SensorFlag.class);
 
         Resume();
     }
@@ -49,10 +74,25 @@ public final class SensorData {
         registerListeners();
     }
     public static void Pause(){
-        mSensorManager.unregisterListener(mSensorEventListener);
+        unregisterListeners();
+    }
+    public static EnumSet<SensorFlag> StartSensorTracking(SensorFlag... requestedSensors){
+        activeSensors.addAll(Arrays.asList(requestedSensors));
+        refreshListeners();
+        return activeSensors;
+    }
+    public static EnumSet<SensorFlag> StopSensorTracking(SensorFlag... sensors){
+        for(SensorFlag sensor : sensors) {
+            activeSensors.remove(sensor);
+            sensorData.get(sensor).clear();
+        }
+        refreshListeners();
+        return activeSensors;
     }
 
-    public static int ProximityCount(){
+    public static int ProximityCount() throws Exception {
+        if(!activeSensors.contains(SensorFlag.PROXIMITY))
+            throw new Exception("Proximity data isn't tracked at this moment!");
         int count = 0;
         boolean lastClose = false;
         while(proximityData.iterator().hasNext()){
@@ -67,20 +107,38 @@ public final class SensorData {
         return count;
     }
 
-    public static int TurningCount(){
+    public static int TurningCount() throws Exception {
+        if(!activeSensors.contains(SensorFlag.GYROSCOPE))
+            throw new Exception("Gyroscope data isn't tracked at this moment!");
         int count = 0;
+        boolean lastXPositiveLastZNegative = false;
 
         while(gyroscopeData.iterator().hasNext()){
             Float[] nextValue = gyroscopeData.iterator().next();
-            // TODO: count turnings
+            if(lastXPositiveLastZNegative && nextValue[0] < -GYROSCOPE_X_LIMIT && nextValue[2] > GYROSCOPE_Z_LIMIT){
+                lastXPositiveLastZNegative = false;
+                count++;
+            }else if(!lastXPositiveLastZNegative && nextValue[0] > GYROSCOPE_X_LIMIT && nextValue[2] < -GYROSCOPE_Z_LIMIT){
+                lastXPositiveLastZNegative = true;
+            }
         }
         return count;
     }
 
     private static void registerListeners(){
-        mSensorManager.registerListener(mSensorEventListener, LinearAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-        mSensorManager.registerListener(mSensorEventListener, Gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
-        mSensorManager.registerListener(mSensorEventListener, Proximity, SensorManager.SENSOR_DELAY_NORMAL);
+        if(activeSensors.contains(SensorFlag.ACCELEROMETER))
+            mSensorManager.registerListener(mSensorEventListener, LinearAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+        if(activeSensors.contains(SensorFlag.GYROSCOPE))
+            mSensorManager.registerListener(mSensorEventListener, Gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+        if(activeSensors.contains(SensorFlag.PROXIMITY))
+            mSensorManager.registerListener(mSensorEventListener, Proximity, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+    private static void unregisterListeners(){
+        mSensorManager.unregisterListener(mSensorEventListener);
+    }
+    private static void refreshListeners(){
+        unregisterListeners();
+        registerListeners();
     }
 
     private static SensorEventListener mSensorEventListener = new SensorEventListener() {
@@ -125,6 +183,7 @@ public final class SensorData {
         testing = true;
         proximityQueueId = plot.addDataQueue(proximityData, Color.BLUE);
         gyroscopeQueueId = plot.addDataQueue(gyroscopeData, new int[]{0,2}, new int[]{Color.RED, Color.GREEN});
+        StartSensorTracking(SensorFlag.GYROSCOPE, SensorFlag.PROXIMITY);
     }
 
 }
