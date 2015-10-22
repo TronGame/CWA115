@@ -15,7 +15,7 @@
         android:text="@string/default_roomname"
         android:textColor="@color/basicBlack"
         android:id="@+id/roomname"
-        android:textSize="35dp"
+        android:textSize="35sp"
         android:layout_marginBottom="10dp"/>
 
     <ListView
@@ -23,21 +23,22 @@
         android:layout_width="match_parent"
         android:layout_height="399dp"
         android:background="@color/basicWhite"
-        android:layout_weight="0.65"
         android:layout_below="@+id/roomname"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
     <Button
+        android:padding="5dp"
         android:onClick="showGameActivity"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/default_readybutton"
         android:textColor="@color/basicBlack"
-        android:textSize="30dp"
+        android:textSize="30sp"
         android:background="@drawable/rounded_button"
         android:layout_below="@+id/lobby_list"
         android:layout_marginTop="10dp"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:id="@+id/readyButton"/>
 </RelativeLayout>

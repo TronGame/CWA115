@@ -14,7 +14,7 @@
     <EditText
         android:textColor="@color/basicBlack"
         android:id="@+id/name_entry"
-        android:textSize="30dp"
+        android:textSize="30sp"
         android:gravity="center"
         android:hint="@string/enter_name"
         android:layout_width="400dp"
@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:text="@string/game_name"
         android:textColor="@color/basicBlack"
-        android:textSize="69dp"
+        android:textSize="69sp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="41dp" />
@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:text="@string/start"
         android:id="@+id/start_button"
-        android:textSize="50dp"
+        android:textSize="50sp"
         android:paddingLeft="40dp"
         android:paddingRight="40dp"
         android:paddingBottom="80dp"
@@ -59,4 +59,5 @@
         android:padding="5dp"
         android:layout_centerHorizontal="true"
         android:onClick="showGameActivity"/>
+
 </RelativeLayout>
