@@ -12,7 +12,7 @@
     <string name="Unlimited_walls">Unlimited walls</string>
     <string name="item">Items</string>
     <string name="item_wall_breaker">Wall breaker</string>
-    <string name="games_available">Games_available</string>
+    <string name="games_available">Games available</string>
     <string name="default_roomname">Default roomname</string>
     <string name="default_readybutton">Ready/Start game</string>
 </resources>
