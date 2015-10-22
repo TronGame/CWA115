@@ -10,6 +10,9 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 import android.util.SparseArray;
+import android.view.View;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -147,11 +150,15 @@ public final class SensorData {
             switch(event.sensor.getType()){
                 case Sensor.TYPE_LINEAR_ACCELERATION:
                     accelerationData.offer(new Float[]{event.values[0], event.values[1], event.values[2]});
+                    if(testing){
+                        plot.updateDataQueue(accelerationQueueId, accelerationData, new int[]{0,1,2});
+                        Log.d("SENSORDATA", accelerationData.toString());
+                    }
                     break;
                 case Sensor.TYPE_GYROSCOPE:
                     gyroscopeData.offer(new Float[]{event.values[0], event.values[1], event.values[2]});
                     if(testing){
-                        plot.updateDataQueue(gyroscopeQueueId, gyroscopeData, new int[]{0,2});
+                        plot.updateDataQueue(gyroscopeQueueId, gyroscopeData, new int[]{0,1,2});
                         Log.d("SENSORDATA", gyroscopeData.toString());
                     }
                     break;
@@ -176,14 +183,40 @@ public final class SensorData {
     private static PlotView plot;
     private static int proximityQueueId;
     private static int[] gyroscopeQueueId;
+    private static int[] accelerationQueueId;
     public static void Test(Activity a){
         a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         a.setContentView(R.layout.layout_test);
         plot = (PlotView)a.findViewById(R.id.test_plot);
+        ((CheckBox)a.findViewById(R.id.proxCheckBox)).setOnCheckedChangeListener(onCheckedChangeListener);
+        ((CheckBox)a.findViewById(R.id.accelCheckBox)).setOnCheckedChangeListener(onCheckedChangeListener);
+        ((CheckBox)a.findViewById(R.id.gyroCheckBox)).setOnCheckedChangeListener(onCheckedChangeListener);
         testing = true;
-        proximityQueueId = plot.addDataQueue(proximityData, Color.BLUE);
-        gyroscopeQueueId = plot.addDataQueue(gyroscopeData, new int[]{0,2}, new int[]{Color.RED, Color.GREEN});
-        StartSensorTracking(SensorFlag.GYROSCOPE, SensorFlag.PROXIMITY);
+        proximityQueueId = plot.addDataQueue(proximityData, Color.YELLOW);
+        gyroscopeQueueId = plot.addDataQueue(gyroscopeData, new int[]{0,1,2}, new int[]{Color.RED, Color.GREEN, Color.BLUE});
+        accelerationQueueId = plot.addDataQueue(accelerationData, new int[]{0,1,2}, new int[]{Color.MAGENTA, Color.rgb(255,127,0), Color.CYAN});
+        StartSensorTracking(SensorFlag.GYROSCOPE, SensorFlag.PROXIMITY, SensorFlag.ACCELEROMETER);
     }
+    private static CompoundButton.OnCheckedChangeListener onCheckedChangeListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            SensorFlag sensor = SensorFlag.NONE;
+            switch(buttonView.getId()){
+                case R.id.proxCheckBox:
+                    sensor = SensorFlag.PROXIMITY;
+                    break;
+                case R.id.accelCheckBox:
+                    sensor = SensorFlag.ACCELEROMETER;
+                    break;
+                case R.id.gyroCheckBox:
+                    sensor = SensorFlag.GYROSCOPE;
+                    break;
+            }
+            if(isChecked)
+                StartSensorTracking(sensor);
+            else
+                StopSensorTracking(sensor);
+        }
+    };
 
 }
