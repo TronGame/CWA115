@@ -32,7 +32,7 @@
         android:textStyle="bold"
         android:text="@string/game_name"
         android:textColor="@color/basicBlack"
-        android:textSize="69dp"
+        android:textSize="69sp"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="41dp" />
