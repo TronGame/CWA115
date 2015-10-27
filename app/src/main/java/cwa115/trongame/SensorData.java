@@ -157,12 +157,12 @@ public final class SensorData {
                     }
                     break;
                 case Sensor.TYPE_PROXIMITY:
-                    boolean lastClose = (proximityData.peek() <= PROXIMITY_LIMIT);
+                    boolean lastClose = !proximityData.isEmpty() && (proximityData.peek() <= PROXIMITY_LIMIT);
                     proximityData.offer(event.values[0]);
                     boolean close = (proximityData.peek() <= PROXIMITY_LIMIT);
                     if(!lastClose && close)
                         ++proximityCount;
-
+                    Log.d("SENSORDATA", proximityData.toString());
                     if(testing){
                         plot.updateDataQueue(proximityQueueId, proximityData);
                         Log.d("SENSORDATA", proximityData.toString());
