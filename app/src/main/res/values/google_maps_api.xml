@@ -1,6 +1,6 @@
 <resources>
     <string name="google_maps_key_android" translatable="false" templateMergeStrategy="preserve">
-          AIzaSyDQIwcNiS1igvWHdzQXuXwKJguRbPd1HLM
+        AIzaSyCnlvkCZPkp_EkyfJiwf_5f7-a86tnPHxQ
     </string>
     <string name="google_maps_key_server" translatable="false" templateMergeStrategy="preserve">
           AIzaSyBCT-9-ApbKK22DlqOMywuMLnOe6mblRik

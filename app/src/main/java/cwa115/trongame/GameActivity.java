@@ -44,6 +44,10 @@ public class GameActivity extends AppCompatActivity implements
         // Set the view
         setContentView(R.layout.activity_game);
 
+        // Initialize SensorData
+        SensorData.Initialize(this);
+        SensorData.StartSensorTracking(SensorData.SensorFlag.PROXIMITY);
+
         // Create the googleApiClient
         googleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)           // Connect onConnected(&Suspended) function
@@ -171,6 +175,7 @@ public class GameActivity extends AppCompatActivity implements
      */
     public void onPause() {
         super.onPause();
+        SensorData.Pause();
         stopLocationUpdate();
     }
 
@@ -179,6 +184,7 @@ public class GameActivity extends AppCompatActivity implements
      */
     public void onResume() {
         super.onResume();
+        SensorData.Resume();
         if (googleApiClient.isConnected() && !isLocationTracking)
             startLocationUpdate();
     }
@@ -200,7 +206,7 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     /**
-     * Is called when the googleApiclient can't connect
+     * Is called when the googleApiClient can't connect
      * @param connectionResult the result of the connection attempt
      */
     @Override
@@ -214,6 +220,17 @@ public class GameActivity extends AppCompatActivity implements
      */
     @Override
     public void onLocationChanged(Location location) {
+        // First check if creatingWall should be toggled
+        try {
+            int count = SensorData.ProximityCount();
+            // If the count is divisible by 4, all toggles cancel
+            if(count >= 2 && count % 4 != 0)
+                findViewById(R.id.wallButton).performClick();
+            SensorData.ResetProximityCount();
+        } catch(Exception e) {
+            // Proximity not available
+        }
+
         LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
         map.updatePlayer(myId, loc);
         map.updateCamera(loc);

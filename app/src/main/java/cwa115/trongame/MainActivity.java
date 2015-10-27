@@ -13,22 +13,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Initialize SensorData
-        SensorData.Initialize(this);
-        //SensorData.Test(this); // Only for testing purposes
     }
 
     @Override
     protected void onPause(){
         super.onPause();
-        SensorData.Pause();
     }
 
     @Override
     protected void onResume(){
         super.onResume();
-        SensorData.Resume();
     }
 
     @Override

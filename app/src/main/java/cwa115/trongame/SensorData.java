@@ -9,8 +9,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
-import android.util.SparseArray;
-import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
@@ -18,12 +16,11 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Queue;
 
 import cwa115.trongame.Test.PlotView;
 
 /**
- * Created by Bram on 15-10-2015.
+ * Facade for data collected from various sensors.
  */
 public final class SensorData {
 
@@ -34,6 +31,8 @@ public final class SensorData {
 
     private static SensorManager mSensorManager;
     private static Sensor LinearAccelerometer, Gyroscope, Proximity;
+
+    private static int proximityCount;
 
     private static DataQueue<Float> proximityData;
     private static DataQueue<Float[]> gyroscopeData, accelerationData;
@@ -96,18 +95,13 @@ public final class SensorData {
     public static int ProximityCount() throws Exception {
         if(!activeSensors.contains(SensorFlag.PROXIMITY))
             throw new Exception("Proximity data isn't tracked at this moment!");
-        int count = 0;
-        boolean lastClose = false;
-        while(proximityData.iterator().hasNext()){
-            float nextValue = proximityData.iterator().next();
-            if(!lastClose && nextValue <= PROXIMITY_LIMIT){
-                lastClose = true;
-                count++;
-            }else if(lastClose && nextValue > PROXIMITY_LIMIT){
-                lastClose = false;
-            }
-        }
-        return count;
+        return proximityCount;
+    }
+
+    public static void ResetProximityCount() throws Exception {
+        if(!activeSensors.contains(SensorFlag.PROXIMITY))
+            throw new Exception("Proximity data isn't tracked at this moment!");
+        proximityCount = 0;
     }
 
     public static int TurningCount() throws Exception {
@@ -163,7 +157,12 @@ public final class SensorData {
                     }
                     break;
                 case Sensor.TYPE_PROXIMITY:
+                    boolean lastClose = (proximityData.peek() <= PROXIMITY_LIMIT);
                     proximityData.offer(event.values[0]);
+                    boolean close = (proximityData.peek() <= PROXIMITY_LIMIT);
+                    if(!lastClose && close)
+                        ++proximityCount;
+
                     if(testing){
                         plot.updateDataQueue(proximityQueueId, proximityData);
                         Log.d("SENSORDATA", proximityData.toString());
@@ -184,6 +183,7 @@ public final class SensorData {
     private static int proximityQueueId;
     private static int[] gyroscopeQueueId;
     private static int[] accelerationQueueId;
+
     public static void Test(Activity a){
         a.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         a.setContentView(R.layout.layout_test);
