@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -225,9 +224,10 @@ public class GameActivity extends AppCompatActivity implements
         try {
             int count = SensorData.ProximityCount();
             // If the count is divisible by 4, all toggles cancel
-            if(count >= 2 && count % 4 != 0)
+            if(count >= 2 && count % 4 != 0) {
                 findViewById(R.id.wallButton).performClick();
-            SensorData.ResetProximityCount();
+                SensorData.ResetProximityCount();
+            }
         } catch(Exception e) {
             // Proximity not available
         }

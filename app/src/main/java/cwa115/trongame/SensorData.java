@@ -25,7 +25,6 @@ import cwa115.trongame.Test.PlotView;
 public final class SensorData {
 
     private final static int DATA_COUNT = 10;
-    private final static float PROXIMITY_LIMIT = 10f;
     private final static float GYROSCOPE_X_LIMIT = 0.5f;
     private final static float GYROSCOPE_Z_LIMIT = 0.7f;
 
@@ -33,6 +32,7 @@ public final class SensorData {
     private static Sensor LinearAccelerometer, Gyroscope, Proximity;
 
     private static int proximityCount;
+    private static boolean lastClose;
 
     private static DataQueue<Float> proximityData;
     private static DataQueue<Float[]> gyroscopeData, accelerationData;
@@ -157,12 +157,13 @@ public final class SensorData {
                     }
                     break;
                 case Sensor.TYPE_PROXIMITY:
-                    boolean lastClose = !proximityData.isEmpty() && (proximityData.peek() <= PROXIMITY_LIMIT);
+                    final float PROXIMITY_LIMIT = event.sensor.getMaximumRange() / 2;
+
                     proximityData.offer(event.values[0]);
-                    boolean close = (proximityData.peek() <= PROXIMITY_LIMIT);
+                    boolean close = (event.values[0] < PROXIMITY_LIMIT);
                     if(!lastClose && close)
                         ++proximityCount;
-                    Log.d("SENSORDATA", proximityData.toString());
+                    lastClose = close;
                     if(testing){
                         plot.updateDataQueue(proximityQueueId, proximityData);
                         Log.d("SENSORDATA", proximityData.toString());
