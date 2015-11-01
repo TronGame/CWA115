@@ -1,4 +1,4 @@
-package cwa115.trongame;
+package cwa115.trongame.Test;
 
 import android.app.Activity;
 import android.content.Context;
@@ -9,6 +9,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
+import android.util.SparseArray;
+import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 
@@ -16,15 +18,23 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Queue;
 
+import cwa115.trongame.R;
+import cwa115.trongame.Test.DataQueue;
 import cwa115.trongame.Test.PlotView;
 
 /**
- * Facade for data collected from various sensors.
+ * Created by Bram on 15-10-2015.
+ *
+ * Update 1-11-2015:
+ * This class will only be used for further testing and sensor calibration purposes, see the
+ * SensorDataObservable class for the updated version.
  */
 public final class SensorData {
 
     private final static int DATA_COUNT = 10;
+    private final static float PROXIMITY_LIMIT = 10f;
     private final static float GYROSCOPE_X_LIMIT = 0.5f;
     private final static float GYROSCOPE_Z_LIMIT = 0.7f;
 

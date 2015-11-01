@@ -22,6 +22,7 @@ import com.google.android.gms.maps.model.LatLng;
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
+import cwa115.trongame.Test.SensorData;
 
 public class GameActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,

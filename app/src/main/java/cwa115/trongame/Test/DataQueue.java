@@ -1,4 +1,4 @@
-package cwa115.trongame;
+package cwa115.trongame.Test;
 
 import android.support.annotation.NonNull;
 

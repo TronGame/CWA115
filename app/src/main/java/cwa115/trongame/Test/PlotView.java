@@ -10,8 +10,6 @@ import android.view.View;
 
 import java.util.Iterator;
 
-import cwa115.trongame.DataQueue;
-
 /**
  * Created by Bram on 15-10-2015.
  */
