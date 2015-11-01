@@ -28,36 +28,6 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
     // Observers
     private HashMap<SensorFlag, List<SensorDataObserver>> observers;
 
-    // Easy way to refer to 1 or more sensors (using EnumSet)
-    public enum SensorFlag{
-        NONE(0),
-        PROXIMITY(1<<0),
-        GYROSCOPE(1<<1),
-        ACCELEROMETER(1<<2);
-
-        private final int id;
-        SensorFlag(int id) { this.id = id; }
-        public int getValue() { return id; }
-
-        /**
-         * Retrieve SensorFlag based on corresponding sensorId (SENSOR.TYPE_XXX)
-         * @param sensorId The sensorType
-         * @return The corresponding SensorFlag
-         */
-        public static SensorFlag fromSensor(int sensorId){
-            switch (sensorId){
-                case Sensor.TYPE_PROXIMITY:
-                    return PROXIMITY;
-                case Sensor.TYPE_GYROSCOPE:
-                    return GYROSCOPE;
-                case Sensor.TYPE_LINEAR_ACCELERATION:
-                    return ACCELEROMETER;
-                default:
-                    return NONE;
-            }
-        }
-    }
-
     /**
      * Constructor of the SensorDataObservable class. This class listens to sensorChanged events of
      * the current activeSensors (set by the startSensorTracking method) and notifies the listed

@@ -22,7 +22,10 @@ import com.google.android.gms.maps.model.LatLng;
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
-import cwa115.trongame.Test.SensorData;
+import cwa115.trongame.Utils.ProximityObserver;
+import cwa115.trongame.Utils.SensorDataObservable;
+import cwa115.trongame.Utils.SensorDataObserver;
+import cwa115.trongame.Utils.SensorFlag;
 
 public class GameActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
@@ -38,6 +41,9 @@ public class GameActivity extends AppCompatActivity implements
 
     private String myId;                            // Player id
 
+    private SensorDataObservable sensorDataObservable;// The sensorDataObservable
+    private SensorDataObserver proximityObserver;   // The proximityObserver
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,9 +51,10 @@ public class GameActivity extends AppCompatActivity implements
         // Set the view
         setContentView(R.layout.activity_game);
 
-        // Initialize SensorData
-        SensorData.Initialize(this);
-        SensorData.StartSensorTracking(SensorData.SensorFlag.PROXIMITY);
+        // Initialize sensorDataObservable and proximityObserver
+        sensorDataObservable = new SensorDataObservable(this);
+        proximityObserver = new ProximityObserver(sensorDataObservable, 2);
+        sensorDataObservable.startSensorTracking(SensorFlag.PROXIMITY, proximityObserver);
 
         // Create the googleApiClient
         googleApiClient = new GoogleApiClient.Builder(this)
@@ -176,7 +183,7 @@ public class GameActivity extends AppCompatActivity implements
      */
     public void onPause() {
         super.onPause();
-        SensorData.Pause();
+        sensorDataObservable.Pause();
         stopLocationUpdate();
     }
 
@@ -185,7 +192,7 @@ public class GameActivity extends AppCompatActivity implements
      */
     public void onResume() {
         super.onResume();
-        SensorData.Resume();
+        sensorDataObservable.Resume();
         if (googleApiClient.isConnected() && !isLocationTracking)
             startLocationUpdate();
     }
@@ -219,16 +226,18 @@ public class GameActivity extends AppCompatActivity implements
      * Is called when the device's location is changed
      * @param location the new location of the device
      */
+
     @Override
     public void onLocationChanged(Location location) {
         // First check if creatingWall should be toggled
         try {
-            int count = SensorData.ProximityCount();
+            /*int count = SensorData.ProximityCount();
             // If the count is divisible by 4, all toggles cancel
             if(count >= 2 && count % 4 != 0) {
                 findViewById(R.id.wallButton).performClick();
                 SensorData.ResetProximityCount();
-            }
+            }*/
+            // TODO: move this code to ProximityObserver class
         } catch(Exception e) {
             // Proximity not available
         }
