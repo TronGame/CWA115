@@ -7,8 +7,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.GeoApiContext;
-import com.google.maps.GeocodingApi;
-import com.google.maps.GeocodingApiRequest;
 import com.google.maps.PendingResult;
 import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
@@ -26,9 +24,11 @@ public class Wall implements DrawableMapItem {
 
     private String id;
     private ArrayList<LatLng> points;
-    private int lineWidth = 5;
+    private ArrayList<LatLng> notSnappedPoints;
+    private int lineWidth = 35;
     private Polyline line;
     private GeoApiContext context;
+    private PendingResult<SnappedPoint[]> req;
 
     /**
      * Construct from an array of points.
@@ -36,7 +36,8 @@ public class Wall implements DrawableMapItem {
      */
     public Wall(String _id, LatLng[] points, GeoApiContext context) {
         id = _id;
-        this.points = new ArrayList<>(Arrays.asList(points));
+        this.points = new ArrayList<>();
+        this.notSnappedPoints = new ArrayList<>(Arrays.asList(points));
         this.context = context;
     }
 
@@ -45,18 +46,23 @@ public class Wall implements DrawableMapItem {
      * @param point the given point
      */
     public void addPoint(LatLng point) {
-        points.add(point);
+        notSnappedPoints.add(point);
 
-        PendingResult req = RoadsApi.snapToRoads(
+        if (req != null) {
+            req.cancel();
+        }
+
+        req = RoadsApi.snapToRoads(
                     context,
                     true,
-                    LatLngConversion.getConvertedPoints(this.points)
+                    LatLngConversion.getConvertedPoints(this.notSnappedPoints)
         );
 
         req.setCallback(new PendingResult.Callback<SnappedPoint[]>() {
             @Override
             public void onResult(SnappedPoint[] result) {
                 points = LatLngConversion.snappedPointsToPoints(result);
+                req = null;
             }
 
             @Override
