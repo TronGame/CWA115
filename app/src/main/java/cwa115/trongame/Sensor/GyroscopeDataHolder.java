@@ -1,6 +1,8 @@
-package cwa115.trongame.Utils;
+package cwa115.trongame.Sensor;
 
 import android.hardware.SensorEvent;
+
+import cwa115.trongame.Sensor.SensorDataHolder;
 
 /**
  * Created by Bram on 1-11-2015.

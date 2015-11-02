@@ -1,6 +1,4 @@
-package cwa115.trongame.Utils;
-
-import java.util.Observable;
+package cwa115.trongame.Sensor;
 
 /**
  * Created by Bram on 1-11-2015.

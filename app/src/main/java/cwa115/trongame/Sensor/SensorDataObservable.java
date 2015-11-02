@@ -1,4 +1,4 @@
-package cwa115.trongame.Utils;
+package cwa115.trongame.Sensor;
 
 import android.content.Context;
 import android.hardware.Sensor;

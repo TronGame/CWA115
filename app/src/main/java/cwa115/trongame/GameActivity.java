@@ -22,9 +22,9 @@ import com.google.android.gms.maps.model.LatLng;
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
-import cwa115.trongame.Utils.SensorDataObservable;
-import cwa115.trongame.Utils.SensorDataObserver;
-import cwa115.trongame.Utils.SensorFlag;
+import cwa115.trongame.Sensor.SensorDataObservable;
+import cwa115.trongame.Sensor.SensorDataObserver;
+import cwa115.trongame.Sensor.SensorFlag;
 
 public class GameActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
