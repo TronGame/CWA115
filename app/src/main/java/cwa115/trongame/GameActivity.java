@@ -27,8 +27,6 @@ import com.google.maps.PendingResult;
 import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
 
-import java.util.ArrayList;
-
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
@@ -43,7 +41,7 @@ public class GameActivity extends AppCompatActivity implements
         LocationListener, SensorDataObserver, Handler.Callback {
 
     private class DisplayNotification extends AsyncTask<Void, Float, Void> {
-        private static final long STEP_COUNT = 10;
+        private static final long STEP_COUNT = 20;
         private static final float NO_ALPHA_DECREASE_FRACTION = .25f;
         private String message;
         private long msDelay;
@@ -103,7 +101,7 @@ public class GameActivity extends AppCompatActivity implements
 
     private static final long NOTIFICATION_DISPLAY_TIME = 2500; // In milliseconds
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
-    private static final double LOCATION_THRESHOLD = 1e-6;
+    private static final double LOCATION_THRESHOLD = 1e-5;
 
     private Map map;                                // Controls the map view
     private GoogleApiClient googleApiClient;        // Controls location tracking
@@ -305,10 +303,43 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     /**
+     * Asynchronously sends a SnapToRoad request.
+     * The callback GameActivity.handleMessage will be invoked when the snapped location is
+     *  obtained.
+     */
+    private void snapLocationToRoad() {
+        if(req != null)
+            req.cancel();
+
+        req = RoadsApi.snapToRoads(context, true, LatLngConversion.getConvertedPoint(gpsLoc));
+
+        req.setCallback(new PendingResult.Callback<SnappedPoint[]>() {
+            /**
+             * Note: this method is *not* executed on the main thread, so it is
+             *  not safe to access objects that live on the main thread here
+             * (the mainHandler object is guaranteed not be used on the main thread)
+             * @param result the points that were snapped to the nearest road
+             */
+            @Override
+            public void onResult(SnappedPoint[] result) {
+                LatLng snappedLoc = LatLngConversion.snappedPointsToPoints(result).get(0);
+
+                Message msg = new Message();
+                msg.setData(LatLngConversion.getBundleFromPoint(snappedLoc));
+                mainHandler.sendMessage(msg);
+            }
+
+            @Override
+            public void onFailure(Throwable e) {
+                return;
+            }
+        });
+    }
+
+    /**
      * Is called when the device's location is changed
      * @param location the new location of the device
      */
-
     @Override
     public void onLocationChanged(Location location) {
         LatLng newGpsLoc = new LatLng(location.getLatitude(), location.getLongitude());
@@ -316,43 +347,7 @@ public class GameActivity extends AppCompatActivity implements
 
         if (distance >= LOCATION_THRESHOLD) {
             gpsLoc = newGpsLoc;
-
-            if (req != null) {
-                req.cancel();
-            }
-
-            req = RoadsApi.snapToRoads(
-                    context,
-                    true,
-                    LatLngConversion.getConvertedPoints(
-                            new ArrayList<LatLng>() {{add(gpsLoc);}}
-                    )
-            );
-
-            req.setCallback(new PendingResult.Callback<SnappedPoint[]>() {
-                /**
-                 * Note: this method is *not* executed on the main thread, so it is
-                 *  not safe to access objects that live on the main thread here
-                 * (the mainHandler object is guaranteed not be used on the main thread)
-                 * @param result the points that were snapped to the nearest road
-                 */
-                @Override
-                public void onResult(SnappedPoint[] result) {
-                    LatLng snappedLoc = LatLngConversion.snappedPointsToPoints(result).get(0);
-
-                    Bundle bundle = new Bundle();
-                    bundle.putDouble("lat", snappedLoc.latitude);
-                    bundle.putDouble("lng", snappedLoc.longitude);
-                    Message msg = new Message();
-                    msg.setData(bundle);
-                    mainHandler.sendMessage(msg);
-                }
-
-                @Override
-                public void onFailure(Throwable e) {
-                    return;
-                }
-            });
+            snapLocationToRoad();
         }
     }
 
@@ -372,8 +367,7 @@ public class GameActivity extends AppCompatActivity implements
 
     @Override
     public boolean handleMessage(Message msg) {
-        Bundle bundle = msg.getData();
-        snappedGpsLoc = new LatLng(bundle.getDouble("lat"), bundle.getDouble("lng"));
+        snappedGpsLoc = LatLngConversion.getPointFromBundle(msg.getData());
         map.updatePlayer(myId, snappedGpsLoc);
         map.updateCamera(snappedGpsLoc);
 

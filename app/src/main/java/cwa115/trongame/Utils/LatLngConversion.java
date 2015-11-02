@@ -1,14 +1,51 @@
 package cwa115.trongame.Utils;
 
+import android.os.Bundle;
+
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.model.SnappedPoint;
 
 import java.util.ArrayList;
 
 /**
- * Created by Peter on 02/11/2015.
+ * Offers various utility functions to convert LatLng objects.
  */
 public class LatLngConversion {
+
+    /**
+     * Creates a Bundle from a LatLng object.
+     * @param point the point to be converted to a Bundle object
+     * @return the newly created Bundle
+     */
+    public static Bundle getBundleFromPoint(LatLng point) {
+        Bundle bundle = new Bundle();
+        bundle.putDouble("lat", point.latitude);
+        bundle.putDouble("lng", point.longitude);
+        return bundle;
+    }
+
+    /**
+     * Extracts a LatLng object from a given Bundle.
+     * @param bundle the Bundle containing the point
+     * @return the extracted Point
+     */
+    public static LatLng getPointFromBundle(Bundle bundle) {
+        return new LatLng(bundle.getDouble("lat"), bundle.getDouble("lng"));
+    }
+
+
+    /**
+     * Convert a single LatLng to a com.google.maps.model.LatLng
+     * @param point the point to convert
+     * @return the converted point
+     */
+    public static com.google.maps.model.LatLng getConvertedPoint(LatLng point) {
+        return new com.google.maps.model.LatLng(
+                point.latitude,
+                point.longitude
+        );
+    }
+
     /**
      * Convert points to com.google.maps.model.model.LatLng[].
      * @return the converted points
@@ -18,12 +55,8 @@ public class LatLngConversion {
                 new com.google.maps.model.LatLng[points.size()];
 
         for(int i = 0; i<points.size(); i++)
-            convertedPoints[i] = new com.google.maps.model.LatLng(
-                    points.get(i).latitude,
-                    points.get(i).longitude
-            );
+            convertedPoints[i] = getConvertedPoint(points.get(i));
         return convertedPoints;
-
     }
 
 
