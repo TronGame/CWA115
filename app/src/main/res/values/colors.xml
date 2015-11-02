@@ -10,4 +10,5 @@
     <color name="transparentWhite">#98ffffff</color>
     <color name="tronBlueLight">#c0f2fa</color>
     <color name="tronBlue">#18CAE6</color>
+    <color name="notificationRed">#FF0000</color>
 </resources>
