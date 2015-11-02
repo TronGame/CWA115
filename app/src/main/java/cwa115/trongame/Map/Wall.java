@@ -7,12 +7,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.GeoApiContext;
+import com.google.maps.GeocodingApi;
+import com.google.maps.GeocodingApiRequest;
+import com.google.maps.PendingResult;
 import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import cwa115.trongame.Utils.LatLngConversion;
 import cwa115.trongame.Utils.Vector2D;
 
 /**
@@ -30,10 +34,10 @@ public class Wall implements DrawableMapItem {
      * Construct from an array of points.
      * @param points points of the wall
      */
-    public Wall(String _id, LatLng[] points, String apiKey) {
+    public Wall(String _id, LatLng[] points, GeoApiContext context) {
         id = _id;
         this.points = new ArrayList<>(Arrays.asList(points));
-        this.context = new GeoApiContext().setApiKey(apiKey);
+        this.context = context;
     }
 
     /**
@@ -43,44 +47,37 @@ public class Wall implements DrawableMapItem {
     public void addPoint(LatLng point) {
         points.add(point);
 
-        SnappedPoint[] snappedPoints = new SnappedPoint[points.size()];
-        try {
-            snappedPoints = RoadsApi.snapToRoads(
+        PendingResult req = RoadsApi.snapToRoads(
                     context,
-                    false,
-                    getConvertedPoints()
-            ).await();
-        } catch (Exception e) {}
+                    true,
+                    LatLngConversion.getConvertedPoints(this.points)
+        );
 
-        points = snappedPointsToPoints(snappedPoints);
+        req.setCallback(new PendingResult.Callback<SnappedPoint[]>() {
+            @Override
+            public void onResult(SnappedPoint[] result) {
+                points = LatLngConversion.snappedPointsToPoints(result);
+            }
+
+            @Override
+            public void onFailure(Throwable e) {
+
+            }
+        });
+
+//        SnappedPoint[] snappedPoints = new SnappedPoint[points.size()];
+//
+//        try {
+//            snappedPoints = RoadsApi.snapToRoads(
+//                    context,
+//                    true,
+//                    LatLngConversion.getConvertedPoints(this.points)
+//            ).await();
+//        } catch (Exception e) {}
+//
+//        points = LatLngConversion.snappedPointsToPoints(snappedPoints);
     }
 
-    private ArrayList<LatLng> snappedPointsToPoints(SnappedPoint[] snappedPoints) {
-        ArrayList<LatLng> result = new ArrayList<>();
-        for (int i = 0; i<snappedPoints.length; i++)
-            result.add(new LatLng(
-                    snappedPoints[i].location.lat,
-                    snappedPoints[i].location.lng));
-
-        return result;
-    }
-
-    /**
-     * Convert points to com.google.maps.model.model.LatLng[].
-     * @return the converted points
-     */
-    private com.google.maps.model.LatLng[] getConvertedPoints() {
-        com.google.maps.model.LatLng[] convertedPoints =
-                new com.google.maps.model.LatLng[points.size()];
-
-        for(int i = 0; i<points.size(); i++)
-            convertedPoints[i] = new com.google.maps.model.LatLng(
-                    points.get(i).latitude,
-                    points.get(i).longitude
-            );
-        return convertedPoints;
-
-    }
 
     /**
      * Draws the Wall on the map.

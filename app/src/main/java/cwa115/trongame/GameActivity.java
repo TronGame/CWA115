@@ -18,6 +18,9 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.maps.GeoApiContext;
+import com.google.maps.RoadsApi;
+import com.google.maps.model.SnappedPoint;
 
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
@@ -42,6 +45,8 @@ public class GameActivity extends AppCompatActivity implements
     private boolean isLocationTracking = false;     // Is the location listener tracking
 
     private String myId;                            // Player id
+
+    private GeoApiContext context;
 
     private SensorDataObservable sensorDataObservable;// The sensorDataObservable
 
@@ -76,6 +81,9 @@ public class GameActivity extends AppCompatActivity implements
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
         map = new Map(mapFragment);
 
+        context = new GeoApiContext().setApiKey(
+                getString(R.string.google_maps_key_server));
+
         // Add players
         // (this data is normally recieved from main activity)
         myId = "player_1";
@@ -92,8 +100,7 @@ public class GameActivity extends AppCompatActivity implements
         if (!creatingWall) {
             creatingWall = true;
             testWall = new Wall(
-                    "test_wall", new LatLng[0], getString(R.string.google_maps_key_server)
-            );
+                    "test_wall", new LatLng[0], context);
             map.addMapItem(testWall);
             Button button = (Button) view.findViewById(R.id.wallButton);
             button.setText("Stop Creating Wall");
@@ -225,6 +232,7 @@ public class GameActivity extends AppCompatActivity implements
     @Override
     public void onLocationChanged(Location location) {
         LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+
         map.updatePlayer(myId, loc);
         map.updateCamera(loc);
 
