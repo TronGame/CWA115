@@ -20,10 +20,9 @@ public abstract class SensorDataHolder {
      * @return The (updated) value of usefulDataCount
      */
     public int pushNewData(SensorEvent sensorEvent){
-        if(isUsefulNewData(lastData, sensorEvent)){
+        if(isUsefulNewData(lastData, sensorEvent))
             usefulDataCount++;
-            lastData = sensorEvent.values;
-        }
+        lastData = sensorEvent.values.clone();
         return usefulDataCount;
     }
 
@@ -31,7 +30,7 @@ public abstract class SensorDataHolder {
      * This method resets the holder; clearing usefulDataCount and setting lastData to an empty float[3]
      */
     public void reset(){
-        lastData = new float[3];
+        // lastData = new float[3];
         usefulDataCount = 0;
     }
 

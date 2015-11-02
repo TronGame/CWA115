@@ -35,6 +35,9 @@ public class GameActivity extends AppCompatActivity implements
     private Map map;                                // Controls the map view
     private GoogleApiClient googleApiClient;        // Controls location tracking
 
+    private boolean creatingWall = false;
+    private Wall testWall;
+
     private LocationRequest locationRequest;        // Contains data used by the location listener
     private boolean isLocationTracking = false;     // Is the location listener tracking
 
@@ -85,10 +88,6 @@ public class GameActivity extends AppCompatActivity implements
         }
     }
 
-    // Test Wall creation
-    private boolean creatingWall = false;
-    private Wall testWall;
-
     public void createWall(View view) {
         if (!creatingWall) {
             creatingWall = true;
@@ -98,8 +97,7 @@ public class GameActivity extends AppCompatActivity implements
             map.addMapItem(testWall);
             Button button = (Button) view.findViewById(R.id.wallButton);
             button.setText("Stop Creating Wall");
-        }
-        else {
+        } else {
             creatingWall = false;
             testWall = null;
             Button button = (Button) view.findViewById(R.id.wallButton);
@@ -248,6 +246,6 @@ public class GameActivity extends AppCompatActivity implements
 
     @Override
     public int getCountLimit() {
-        return 2;
+        return 1;
     }
 }

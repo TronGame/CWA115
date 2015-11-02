@@ -15,11 +15,10 @@ public class ProximityDataHolder extends SensorDataHolder {
         float[] newSensorData = newSensorEvent.values;
         float proximityLimit = newSensorEvent.sensor.getMaximumRange() / 2;
 
-        if(newSensorData == null)
-            return false;// Do not allow empty new data
+        if(lastSensorData == null)
+            return false;// Do not allow empty last data
 
-        return lastSensorData == null ||
-                (lastSensorData[0] < proximityLimit && newSensorData[0] >= proximityLimit);
+        return lastSensorData[0] <= proximityLimit && newSensorData[0] > proximityLimit;
     }
 
     @Override
