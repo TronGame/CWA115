@@ -5,11 +5,12 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -39,7 +40,22 @@ import cwa115.trongame.Utils.Vector2D;
 
 public class GameActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        LocationListener, SensorDataObserver {
+        LocationListener, SensorDataObserver, Handler.Callback {
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        Bundle bundle = msg.getData();
+        snappedGpsLoc = new LatLng(bundle.getDouble("lat"), bundle.getDouble("lng"));
+        map.updatePlayer(myId, snappedGpsLoc);
+        map.updateCamera(snappedGpsLoc);
+
+        // Test wall creation
+        if (creatingWall) {
+            testWall.addPoint(snappedGpsLoc);
+            map.redraw(testWall.getId());
+        }
+        return false;
+    }
 
     private class DisplayNotification extends AsyncTask<Void, Float, Void> {
         private static final long STEP_COUNT = 10;
@@ -102,7 +118,7 @@ public class GameActivity extends AppCompatActivity implements
 
     private static final long NOTIFICATION_DISPLAY_TIME = 2500; // In milliseconds
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
-    private static final double LOCATION_THRESHOLD = 0.005;
+    private static final double LOCATION_THRESHOLD = 0;
 
     private Map map;                                // Controls the map view
     private GoogleApiClient googleApiClient;        // Controls location tracking
@@ -310,9 +326,9 @@ public class GameActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         LatLng newGpsLoc = new LatLng(location.getLatitude(), location.getLongitude());
         double distance = new Vector2D(newGpsLoc).subtract(new Vector2D(gpsLoc)).getLength();
+        final Handler mainHandler = new Handler(this);
 
-        // TODO make this syncronous
-        if (distance > LOCATION_THRESHOLD) {
+        if (distance >= LOCATION_THRESHOLD) {
             gpsLoc = newGpsLoc;
 
             if (req != null) {
@@ -330,18 +346,14 @@ public class GameActivity extends AppCompatActivity implements
             req.setCallback(new PendingResult.Callback<SnappedPoint[]>() {
                 @Override
                 public void onResult(SnappedPoint[] result) {
-                    snappedGpsLoc = LatLngConversion.snappedPointsToPoints(result).get(0);
+                    LatLng snappedLoc = LatLngConversion.snappedPointsToPoints(result).get(0);
 
-                    map.updatePlayer(myId, snappedGpsLoc);
-                    map.updateCamera(snappedGpsLoc);
-
-                    // Test wall creation
-                    if (creatingWall) {
-                        testWall.addPoint(snappedGpsLoc);
-                        map.redraw(testWall.getId());
-                    }
-
-                    req = null;
+                    Bundle bundle = new Bundle();
+                    bundle.putDouble("lat", snappedLoc.latitude);
+                    bundle.putDouble("lng", snappedLoc.longitude);
+                    Message msg = new Message();
+                    msg.setData(bundle);
+                    mainHandler.sendMessage(msg);
                 }
 
                 @Override
