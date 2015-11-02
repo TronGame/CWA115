@@ -1,5 +1,7 @@
 package cwa115.trongame.Utils;
 
+import android.hardware.SensorEvent;
+
 /**
  * Created by Bram on 1-11-2015.
  */
@@ -14,13 +16,13 @@ public abstract class SensorDataHolder {
 
     /**
      * This method will push the new registered sensorData if it's useful. If isUsefulNewData returns true, usefulDataCount is incremented by 1
-     * @param sensorData The new registered sensorData
+     * @param sensorEvent The new registered sensorEvent
      * @return The (updated) value of usefulDataCount
      */
-    public int pushNewData(float[] sensorData){
-        if(isUsefulNewData(lastData, sensorData)){
+    public int pushNewData(SensorEvent sensorEvent){
+        if(isUsefulNewData(lastData, sensorEvent)){
             usefulDataCount++;
-            lastData = sensorData;
+            lastData = sensorEvent.values;
         }
         return usefulDataCount;
     }
@@ -44,10 +46,10 @@ public abstract class SensorDataHolder {
     /**
      * This function should be implemented by inheritors
      * @param lastSensorData float[3] containing the last useful sensorData, can be an empty float!
-     * @param newSensorData float[3] containing the new pushed sensorData
+     * @param newEvent SensorEvent containing the newly pushed sensorData and information
      * @return boolean determining whether the newSensorData is useful or not
      */
-    protected abstract boolean isUsefulNewData(float[] lastSensorData, float[] newSensorData);
+    protected abstract boolean isUsefulNewData(float[] lastSensorData, SensorEvent newEvent);
 
     /**
      * This method should be implemented by inheritors

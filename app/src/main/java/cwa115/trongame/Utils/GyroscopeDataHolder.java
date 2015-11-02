@@ -1,5 +1,7 @@
 package cwa115.trongame.Utils;
 
+import android.hardware.SensorEvent;
+
 /**
  * Created by Bram on 1-11-2015.
  */
@@ -10,7 +12,8 @@ public class GyroscopeDataHolder extends SensorDataHolder {
     private final static float GYROSCOPE_Z_LIMIT = 0.7f;
 
     @Override
-    protected boolean isUsefulNewData(float[] lastSensorData, float[] newSensorData) {
+    protected boolean isUsefulNewData(float[] lastSensorData, SensorEvent newSensorEvent) {
+        float[] newSensorData = newSensorEvent.values;
         if(newSensorData == null) return false;// Do not allow empty new data
         return lastSensorData == null ||
                 (lastSensorData[0] > GYROSCOPE_X_LIMIT && lastSensorData[2] < -GYROSCOPE_Z_LIMIT && newSensorData[0] < -GYROSCOPE_X_LIMIT && newSensorData[2] > GYROSCOPE_Z_LIMIT) ||

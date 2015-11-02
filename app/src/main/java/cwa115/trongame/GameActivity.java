@@ -22,14 +22,13 @@ import com.google.android.gms.maps.model.LatLng;
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
-import cwa115.trongame.Utils.ProximityObserver;
 import cwa115.trongame.Utils.SensorDataObservable;
 import cwa115.trongame.Utils.SensorDataObserver;
 import cwa115.trongame.Utils.SensorFlag;
 
 public class GameActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        LocationListener {
+        LocationListener, SensorDataObserver {
 
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
 
@@ -42,7 +41,6 @@ public class GameActivity extends AppCompatActivity implements
     private String myId;                            // Player id
 
     private SensorDataObservable sensorDataObservable;// The sensorDataObservable
-    private SensorDataObserver proximityObserver;   // The proximityObserver
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,8 +51,7 @@ public class GameActivity extends AppCompatActivity implements
 
         // Initialize sensorDataObservable and proximityObserver
         sensorDataObservable = new SensorDataObservable(this);
-        proximityObserver = new ProximityObserver(sensorDataObservable, 2);
-        sensorDataObservable.startSensorTracking(SensorFlag.PROXIMITY, proximityObserver);
+        sensorDataObservable.startSensorTracking(SensorFlag.PROXIMITY, this);
 
         // Create the googleApiClient
         googleApiClient = new GoogleApiClient.Builder(this)
@@ -229,19 +226,6 @@ public class GameActivity extends AppCompatActivity implements
 
     @Override
     public void onLocationChanged(Location location) {
-        // First check if creatingWall should be toggled
-        try {
-            /*int count = SensorData.ProximityCount();
-            // If the count is divisible by 4, all toggles cancel
-            if(count >= 2 && count % 4 != 0) {
-                findViewById(R.id.wallButton).performClick();
-                SensorData.ResetProximityCount();
-            }*/
-            // TODO: move this code to ProximityObserver class
-        } catch(Exception e) {
-            // Proximity not available
-        }
-
         LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
         map.updatePlayer(myId, loc);
         map.updateCamera(loc);
@@ -251,5 +235,19 @@ public class GameActivity extends AppCompatActivity implements
             testWall.addPoint(loc);
             map.redraw(testWall.getId());
         }
+    }
+
+
+    @Override
+    public void update(SensorDataObservable observable, Object data) {
+        if(observable != sensorDataObservable)
+            return;
+        int proximityCount = (int)data;
+        findViewById(R.id.wallButton).performClick();
+    }
+
+    @Override
+    public int getCountLimit() {
+        return 2;
     }
 }

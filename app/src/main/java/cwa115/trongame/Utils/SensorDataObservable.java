@@ -154,7 +154,7 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
         SensorFlag changedSensor = SensorFlag.fromSensor(event.sensor.getType());// Get changed sensor
         SensorDataHolder changedSensorData = sensorData.get(changedSensor);// Get its data
 
-        changedSensorData.pushNewData(event.values);// Push new data
+        changedSensorData.pushNewData(event);// Push new data
 
         for(SensorDataObserver o : observers.get(changedSensor)){
             if(o.getCountLimit()<=changedSensorData.getCount())
