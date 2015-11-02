@@ -308,9 +308,8 @@ public class GameActivity extends AppCompatActivity implements
      *  obtained.
      */
     private void snapLocationToRoad() {
-        if(req != null)
-            req.cancel();
-
+        // If req already exists, it is overridden
+        // TODO: cancel requests? (Seems to do networking, so it might throw and crash)
         req = RoadsApi.snapToRoads(context, true, LatLngConversion.getConvertedPoint(gpsLoc));
 
         req.setCallback(new PendingResult.Callback<SnappedPoint[]>() {
