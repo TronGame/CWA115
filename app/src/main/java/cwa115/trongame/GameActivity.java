@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -21,6 +22,11 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.GeoApiContext;
+import com.google.maps.PendingResult;
+import com.google.maps.RoadsApi;
+import com.google.maps.model.SnappedPoint;
+
+import java.util.ArrayList;
 
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
@@ -28,6 +34,8 @@ import cwa115.trongame.Map.Wall;
 import cwa115.trongame.Sensor.SensorDataObservable;
 import cwa115.trongame.Sensor.SensorDataObserver;
 import cwa115.trongame.Sensor.SensorFlag;
+import cwa115.trongame.Utils.LatLngConversion;
+import cwa115.trongame.Utils.Vector2D;
 
 public class GameActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
@@ -94,9 +102,13 @@ public class GameActivity extends AppCompatActivity implements
 
     private static final long NOTIFICATION_DISPLAY_TIME = 2500; // In milliseconds
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
+    private static final double LOCATION_THRESHOLD = 0.005;
 
     private Map map;                                // Controls the map view
     private GoogleApiClient googleApiClient;        // Controls location tracking
+    private LatLng gpsLoc;
+    private LatLng snappedGpsLoc;
+    private PendingResult<SnappedPoint[]> req;
 
     private boolean creatingWall = false;
     private Wall testWall;
@@ -154,6 +166,9 @@ public class GameActivity extends AppCompatActivity implements
         for (Player player : players) {
             map.addMapItem(player);         // Add the players to the map object
         }
+
+        snappedGpsLoc = new LatLng(0, 0);
+        gpsLoc = new LatLng(0, 0);
     }
 
     public void createWall(View view) {
@@ -293,15 +308,47 @@ public class GameActivity extends AppCompatActivity implements
 
     @Override
     public void onLocationChanged(Location location) {
-        LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+        LatLng newGpsLoc = new LatLng(location.getLatitude(), location.getLongitude());
+        double distance = new Vector2D(newGpsLoc).subtract(new Vector2D(gpsLoc)).getLength();
 
-        map.updatePlayer(myId, loc);
-        map.updateCamera(loc);
+        // TODO make this syncronous
+        if (distance > LOCATION_THRESHOLD) {
+            gpsLoc = newGpsLoc;
 
-        // Test wall creation
-        if (creatingWall) {
-            testWall.addPoint(loc);
-            map.redraw(testWall.getId());
+            if (req != null) {
+                req.cancel();
+            }
+
+            req = RoadsApi.snapToRoads(
+                    context,
+                    true,
+                    LatLngConversion.getConvertedPoints(
+                            new ArrayList<LatLng>() {{add(gpsLoc);}}
+                    )
+            );
+
+            req.setCallback(new PendingResult.Callback<SnappedPoint[]>() {
+                @Override
+                public void onResult(SnappedPoint[] result) {
+                    snappedGpsLoc = LatLngConversion.snappedPointsToPoints(result).get(0);
+
+                    map.updatePlayer(myId, snappedGpsLoc);
+                    map.updateCamera(snappedGpsLoc);
+
+                    // Test wall creation
+                    if (creatingWall) {
+                        testWall.addPoint(snappedGpsLoc);
+                        map.redraw(testWall.getId());
+                    }
+
+                    req = null;
+                }
+
+                @Override
+                public void onFailure(Throwable e) {
+                    return;
+                }
+            });
         }
     }
 

@@ -98,7 +98,13 @@ public class Map implements OnMapReadyCallback {
         if(item != null)
             pendingItemsDraw.add(item);
 
-        mapFragment.getMapAsync(this);
+        try {
+            mapFragment.getMapAsync(this);
+        } catch (Exception e) {
+            return;
+        }
+
+        return;
     }
 
     /**

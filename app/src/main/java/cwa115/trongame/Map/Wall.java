@@ -58,6 +58,7 @@ public class Wall implements DrawableMapItem {
                     LatLngConversion.getConvertedPoints(this.notSnappedPoints)
         );
 
+        // WARNING: This can cause huuuuge problems for various reasons
         req.setCallback(new PendingResult.Callback<SnappedPoint[]>() {
             @Override
             public void onResult(SnappedPoint[] result) {
@@ -70,18 +71,6 @@ public class Wall implements DrawableMapItem {
 
             }
         });
-
-//        SnappedPoint[] snappedPoints = new SnappedPoint[points.size()];
-//
-//        try {
-//            snappedPoints = RoadsApi.snapToRoads(
-//                    context,
-//                    true,
-//                    LatLngConversion.getConvertedPoints(this.points)
-//            ).await();
-//        } catch (Exception e) {}
-//
-//        points = LatLngConversion.snappedPointsToPoints(snappedPoints);
     }
 
 
