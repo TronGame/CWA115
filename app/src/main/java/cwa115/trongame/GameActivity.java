@@ -19,8 +19,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.GeoApiContext;
-import com.google.maps.RoadsApi;
-import com.google.maps.model.SnappedPoint;
 
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
@@ -88,7 +86,7 @@ public class GameActivity extends AppCompatActivity implements
         // (this data is normally recieved from main activity)
         myId = "player_1";
         Player[] players = {
-                new Player(myId, "Player 1", new LatLng(0.0, 0.0))
+                new Player(myId, GameSettings.getPlayerName(), new LatLng(0.0, 0.0))
         };
 
         for (Player player : players) {

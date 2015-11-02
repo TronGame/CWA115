@@ -3,11 +3,10 @@ package cwa115.trongame;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-
-import cwa115.trongame.Test.SensorData;
+import android.view.View;
+import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,9 +55,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showGameActivity(View view) {
+        EditText nameBox = (EditText) findViewById(R.id.name_entry);
+        GameSettings.setPlayerName(nameBox.getText().toString());
         startActivity(new Intent(this, GameActivity.class));
     }
     public void showLobbyActivity(View view) {
+        EditText nameBox = (EditText) findViewById(R.id.name_entry);
+        GameSettings.setPlayerName(nameBox.getText().toString());
         startActivity(new Intent(this, LobbyActivity.class));
     }
 
