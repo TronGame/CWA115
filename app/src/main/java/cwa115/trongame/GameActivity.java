@@ -42,21 +42,6 @@ public class GameActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         LocationListener, SensorDataObserver, Handler.Callback {
 
-    @Override
-    public boolean handleMessage(Message msg) {
-        Bundle bundle = msg.getData();
-        snappedGpsLoc = new LatLng(bundle.getDouble("lat"), bundle.getDouble("lng"));
-        map.updatePlayer(myId, snappedGpsLoc);
-        map.updateCamera(snappedGpsLoc);
-
-        // Test wall creation
-        if (creatingWall) {
-            testWall.addPoint(snappedGpsLoc);
-            map.redraw(testWall.getId());
-        }
-        return false;
-    }
-
     private class DisplayNotification extends AsyncTask<Void, Float, Void> {
         private static final long STEP_COUNT = 10;
         private static final float NO_ALPHA_DECREASE_FRACTION = .25f;
@@ -118,13 +103,14 @@ public class GameActivity extends AppCompatActivity implements
 
     private static final long NOTIFICATION_DISPLAY_TIME = 2500; // In milliseconds
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
-    private static final double LOCATION_THRESHOLD = 0;
+    private static final double LOCATION_THRESHOLD = 1e-6;
 
     private Map map;                                // Controls the map view
     private GoogleApiClient googleApiClient;        // Controls location tracking
     private LatLng gpsLoc;
     private LatLng snappedGpsLoc;
     private PendingResult<SnappedPoint[]> req;
+    private Handler mainHandler;
 
     private boolean creatingWall = false;
     private Wall testWall;
@@ -185,6 +171,7 @@ public class GameActivity extends AppCompatActivity implements
 
         snappedGpsLoc = new LatLng(0, 0);
         gpsLoc = new LatLng(0, 0);
+        mainHandler = new Handler(this);
     }
 
     public void createWall(View view) {
@@ -326,7 +313,6 @@ public class GameActivity extends AppCompatActivity implements
     public void onLocationChanged(Location location) {
         LatLng newGpsLoc = new LatLng(location.getLatitude(), location.getLongitude());
         double distance = new Vector2D(newGpsLoc).subtract(new Vector2D(gpsLoc)).getLength();
-        final Handler mainHandler = new Handler(this);
 
         if (distance >= LOCATION_THRESHOLD) {
             gpsLoc = newGpsLoc;
@@ -344,6 +330,12 @@ public class GameActivity extends AppCompatActivity implements
             );
 
             req.setCallback(new PendingResult.Callback<SnappedPoint[]>() {
+                /**
+                 * Note: this method is *not* executed on the main thread, so it is
+                 *  not safe to access objects that live on the main thread here
+                 * (the mainHandler object is guaranteed not be used on the main thread)
+                 * @param result the points that were snapped to the nearest road
+                 */
                 @Override
                 public void onResult(SnappedPoint[] result) {
                     LatLng snappedLoc = LatLngConversion.snappedPointsToPoints(result).get(0);
@@ -376,6 +368,21 @@ public class GameActivity extends AppCompatActivity implements
     @Override
     public int getCountLimit() {
         return 1;
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        Bundle bundle = msg.getData();
+        snappedGpsLoc = new LatLng(bundle.getDouble("lat"), bundle.getDouble("lng"));
+        map.updatePlayer(myId, snappedGpsLoc);
+        map.updateCamera(snappedGpsLoc);
+
+        // Test wall creation
+        if (creatingWall) {
+            testWall.addPoint(snappedGpsLoc);
+            map.redraw(testWall.getId());
+        }
+        return false;
     }
 
     public void hideNotification(View view) {
