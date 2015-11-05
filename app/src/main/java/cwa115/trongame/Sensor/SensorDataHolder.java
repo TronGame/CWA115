@@ -2,14 +2,21 @@ package cwa115.trongame.Sensor;
 
 import android.hardware.SensorEvent;
 
+import cwa115.trongame.Test.DataQueue;
+
 /**
  * Created by Bram on 1-11-2015.
  */
 public abstract class SensorDataHolder {
 
+    //private DataQueue<float[]> lastData;
     private float[] lastData;
     private int usefulDataCount;
 
+    /*public SensorDataHolder(int dataSize){
+        reset();
+        lastData = new DataQueue<>(dataSize);
+    }*/
     public SensorDataHolder(){
         reset();
     }
@@ -22,6 +29,7 @@ public abstract class SensorDataHolder {
     public int pushNewData(SensorEvent sensorEvent){
         if(isUsefulNewData(lastData, sensorEvent))
             usefulDataCount++;
+        //lastData.offer(sensorEvent.values.clone());
         lastData = sensorEvent.values.clone();
         return usefulDataCount;
     }
@@ -30,7 +38,15 @@ public abstract class SensorDataHolder {
      * This method resets the holder; clearing usefulDataCount and setting lastData to an empty float[3]
      */
     public void reset(){
-        // lastData = new float[3];
+        //lastData.clear();
+        lastData = new float[3];
+        clearUsefulDataCount();
+    }
+
+    /**
+     * This method clears usefulDataCount
+     */
+    public void clearUsefulDataCount(){
         usefulDataCount = 0;
     }
 
@@ -49,6 +65,7 @@ public abstract class SensorDataHolder {
      * @return boolean determining whether the newSensorData is useful or not
      */
     protected abstract boolean isUsefulNewData(float[] lastSensorData, SensorEvent newEvent);
+    //protected abstract boolean isUsefulNewData(DataQueue<float[]> lastSensorData, SensorEvent newEvent);
 
     /**
      * This method should be implemented by inheritors
