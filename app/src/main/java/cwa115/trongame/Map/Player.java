@@ -1,9 +1,12 @@
 package cwa115.trongame.Map;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import cwa115.trongame.GameSettings;
 
 /**
  * Created by Peter on 15/10/2015.
@@ -38,7 +41,9 @@ public class Player implements DrawableMapItem {
         if(marker == null) {
             marker = map.addMarker(new MarkerOptions()
                     .position(location)
-                    .title(name));
+                    .title(name)
+                    .icon(BitmapDescriptorFactory.fromResource(GameSettings.getPlayerMarkerImage()))
+            );
         } else {
             marker.setPosition(location);
         }

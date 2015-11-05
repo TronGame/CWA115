@@ -15,6 +15,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        GameSettings.setPlayerMarkerImage(R.mipmap.markerk);
         // Initialize SensorData
         //SensorData.Initialize(this);
         //SensorData.Test(this); // Only for testing purposes

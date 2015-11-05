@@ -7,6 +7,7 @@ package cwa115.trongame;
 public final class GameSettings {
 
     private static String playerName;
+    private static int playerMarkerImage;
 
     public static void setPlayerName(String name) {
         playerName = name;
@@ -16,4 +17,11 @@ public final class GameSettings {
         return playerName;
     }
 
+    public static void setPlayerMarkerImage(int markerId) {
+        playerMarkerImage = markerId;
+    }
+
+    public static int getPlayerMarkerImage() {
+        return playerMarkerImage;
+    }
 }
