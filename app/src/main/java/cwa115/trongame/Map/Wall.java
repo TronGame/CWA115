@@ -94,7 +94,9 @@ public class Wall implements DrawableMapItem {
     }
 
     public void clear(GoogleMap map) {
-        line.remove();
+        if (line != null) {
+            line.remove();
+        }
     }
 
     public String getId() {

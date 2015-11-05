@@ -13,6 +13,10 @@ public class GyroscopeDataHolder extends SensorDataHolder {
     private final static float GYROSCOPE_X_LIMIT = 0.5f;
     private final static float GYROSCOPE_Z_LIMIT = 0.7f;
 
+    public GyroscopeDataHolder(){
+        //super(1);
+    }
+
     @Override
     protected boolean isUsefulNewData(float[] lastSensorData, SensorEvent newSensorEvent) {
         float[] newSensorData = newSensorEvent.values;
