@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,12 +46,19 @@ public class GameActivity extends AppCompatActivity implements
 
     private static final long NOTIFICATION_DISPLAY_TIME = 2500; // In milliseconds
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
-    private static final double LOCATION_THRESHOLD = 1e-5;
 
     private Map map;                                // Controls the map view
     private GoogleApiClient googleApiClient;        // Controls location tracking
+
+    private static final double LOCATION_THRESHOLD = 0.863256867*Math.pow(10, -4)/10;  // About 1m
+    private static final double MAX_ROAD_DISTANCE = 0.863256867*Math.pow(10, -4);   // About 10m
+    private static final double MAX_WALL_DISTANCE = 0.863256867*Math.pow(10, -4)/10;   // About 1m
+
     private LatLng gpsLoc;
     private LatLng snappedGpsLoc;
+    private LatLng lastSnappedGpsLoc;
+    private double travelledDistance;
+
     private PendingResult<SnappedPoint[]> req;
     private Handler mainHandler;
 
@@ -101,7 +109,7 @@ public class GameActivity extends AppCompatActivity implements
                 getString(R.string.google_maps_key_server));
 
         // Add players
-        // (this data is normally recieved from main activity)
+        // (this data is normally received from main activity)
         myId = "player_1";
         Player[] players = {
                 new Player(myId, GameSettings.getPlayerName(), new LatLng(0.0, 0.0))
@@ -112,7 +120,9 @@ public class GameActivity extends AppCompatActivity implements
         }
 
         snappedGpsLoc = new LatLng(0, 0);
+        lastSnappedGpsLoc = new LatLng(0, 0);
         gpsLoc = new LatLng(0, 0);
+        travelledDistance = 0.0;
         mainHandler = new Handler(this);
     }
 
@@ -274,7 +284,7 @@ public class GameActivity extends AppCompatActivity implements
 
             @Override
             public void onFailure(Throwable e) {
-                return;
+                Log.d("ERROR", e.toString());
             }
         });
     }
@@ -288,12 +298,13 @@ public class GameActivity extends AppCompatActivity implements
         LatLng newGpsLoc = new LatLng(location.getLatitude(), location.getLongitude());
         double distance = new Vector2D(newGpsLoc).subtract(new Vector2D(gpsLoc)).getLength();
 
-        if (distance >= LOCATION_THRESHOLD) {
+        Log.d("VALUE", "Distance " + String.valueOf(distance));
+
+        if (distance >= LOCATION_THRESHOLD) {   // TODO change LOCATION_THRESHOLD to a value different from 0.0
             gpsLoc = newGpsLoc;
             snapLocationToRoad();
         }
     }
-
 
     @Override
     public void update(SensorDataObservable observable, Object data) {
@@ -311,14 +322,46 @@ public class GameActivity extends AppCompatActivity implements
     @Override
     public boolean handleMessage(Message msg) {
         snappedGpsLoc = LatLngConversion.getPointFromBundle(msg.getData());
-        map.updatePlayer(myId, snappedGpsLoc);
-        map.updateCamera(snappedGpsLoc);
+        double snappedDistance = new Vector2D(gpsLoc).subtract(new Vector2D(snappedGpsLoc)).getLength();
+        Log.d("VALUE", "Snapped Distance "+String.valueOf(snappedDistance));
 
-        // Test wall creation
-        if (creatingWall) {
-            testWall.addPoint(snappedGpsLoc);
-            map.redraw(testWall.getId());
+        if (snappedDistance < MAX_ROAD_DISTANCE * 2) {
+            map.updatePlayer(myId, snappedGpsLoc);
+            map.updateCamera(snappedGpsLoc);
+
+            double distance = 0.0;
+            if (!(lastSnappedGpsLoc.longitude == 0 && lastSnappedGpsLoc.latitude == 0)) {
+                distance = new Vector2D(lastSnappedGpsLoc).subtract(new Vector2D(snappedGpsLoc)).getLength();
+            }
+            travelledDistance += distance;
+
+            TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
+            distanceView.setText(String.valueOf(travelledDistance));
+
+            lastSnappedGpsLoc = snappedGpsLoc;
+
+            if (testWall != null) {
+                double distanceToWall = testWall.getDistanceTo(snappedGpsLoc);
+                if (distanceToWall < MAX_WALL_DISTANCE) {
+                    // TODO: show notification
+                    showNotification("To close to wall (Game Over)", Toast.LENGTH_LONG);
+                }
+            }
+
+            // Test wall creation
+            if (creatingWall) {
+                testWall.addPoint(snappedGpsLoc);
+                map.redraw(testWall.getId());
+            }
+
+        } else {
+            map.updatePlayer(myId, gpsLoc);
+            map.updateCamera(gpsLoc);
+
+            // TODO show notification that the distance to the road is to much
+            showNotification("To far from road (Game Over)", Toast.LENGTH_LONG);
         }
+
         return false;
     }
 

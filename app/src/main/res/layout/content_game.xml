@@ -17,7 +17,7 @@
         android:layout_height="match_parent"/>
 
     <LinearLayout
-        android:layout_width="100pt"
+        android:layout_width="70pt"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:paddingTop="@dimen/map_vertical_margin"
@@ -31,6 +31,17 @@
             android:layout_height="20pt"
             android:text="Create Wall"
             android:onClick="createWall"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="10pt"
+            android:text="Travelled Distance"/>
+
+        <TextView
+            android:id="@+id/travelledDistance"
+            android:layout_width="match_parent"
+            android:layout_height="10pt"
+            android:text="0.0"/>
 
     </LinearLayout>
 
