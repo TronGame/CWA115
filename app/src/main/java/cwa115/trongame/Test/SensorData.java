@@ -212,21 +212,45 @@ public final class SensorData {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
             SensorFlag sensor = SensorFlag.NONE;
+            DataQueue data = new DataQueue(1);
             switch(buttonView.getId()){
                 case R.id.proxCheckBox:
                     sensor = SensorFlag.PROXIMITY;
+                    if(isChecked)
+                        StartSensorTracking(sensor);
+                    else{
+                        StopSensorTracking(sensor);
+                        proximityData.clear();
+                        plot.updateDataQueue(proximityQueueId, proximityData);
+                    }
                     break;
                 case R.id.accelCheckBox:
                     sensor = SensorFlag.ACCELEROMETER;
+                    if(isChecked)
+                        StartSensorTracking(sensor);
+                    else{
+                        StopSensorTracking(sensor);
+                        accelerationData.clear();
+                        plot.updateDataQueue(accelerationQueueId, accelerationData, new int[]{0,1,2});
+                    }
                     break;
                 case R.id.gyroCheckBox:
                     sensor = SensorFlag.GYROSCOPE;
+                    if(isChecked)
+                        StartSensorTracking(sensor);
+                    else{
+                        StopSensorTracking(sensor);
+                        gyroscopeData.clear();
+                        plot.updateDataQueue(gyroscopeQueueId, gyroscopeData, new int[]{0,1,2});
+                    }
                     break;
             }
             if(isChecked)
                 StartSensorTracking(sensor);
-            else
+            else {
                 StopSensorTracking(sensor);
+                data.clear();
+            }
         }
     };
 

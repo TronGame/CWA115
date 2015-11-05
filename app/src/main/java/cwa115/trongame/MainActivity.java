@@ -8,6 +8,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 
+import cwa115.trongame.Test.SensorData;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
