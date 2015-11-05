@@ -144,6 +144,13 @@ public class GameActivity extends AppCompatActivity implements
         }
     }
 
+    public void clearWall(View view) {
+        if (testWall != null) {
+            map.clear(testWall.getId());
+            testWall = new Wall("test_wall", new LatLng[0], context);
+        }
+    }
+
     // ---------------------------------------------------------------------------------------------
     // Permission functionality
     // ---------------------------------------------------------------------------------------------

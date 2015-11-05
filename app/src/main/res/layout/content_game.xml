@@ -32,6 +32,12 @@
             android:text="@string/wall_button_on_text"
             android:onClick="createWall"/>
 
+        <Button xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="20pt"
+            android:text="Clear Walls"
+            android:onClick="clearWall"/>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="10pt"
