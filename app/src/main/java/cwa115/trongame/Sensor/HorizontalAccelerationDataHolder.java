@@ -7,14 +7,14 @@ import cwa115.trongame.Sensor.SensorDataHolder;
 /**
  * Created by Bram on 1-11-2015.
  */
-public class AccelerometerDataHolder extends SensorDataHolder { // HorizontalAccelerationDataHolder
+public class HorizontalAccelerationDataHolder extends SensorDataHolder { // HorizontalAccelerationDataHolder
 
     //TODO: Verify physical constraints & isUsefulNewData logic
     // Physical constraints
     private final static float ACCELEROMETER_X_LIMIT = 1.5f;
     private final static float ACCELEROMETER_Z_LIMIT = 0.5f;
 
-    public AccelerometerDataHolder(){
+    public HorizontalAccelerationDataHolder(){
         //super(1);
     }
 

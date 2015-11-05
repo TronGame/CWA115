@@ -5,14 +5,14 @@ import android.hardware.SensorEvent;
 /**
  * Created by Bram on 5-11-2015.
  */
-public class AccelerometerDataHolder2 extends SensorDataHolder{// VerticalAccelerationDataHolder
+public class VerticalAccelerationDataHolder extends SensorDataHolder{// VerticalAccelerationDataHolder
 
     //TODO: Verify physical constraints & isUsefulNewData logic
     // Physical constraints
     private final static float ACCELEROMETER_X_LIMIT = 0.5f;
     private final static float ACCELEROMETER_Z_LIMIT = 1.5f;
 
-    public AccelerometerDataHolder2(){
+    public VerticalAccelerationDataHolder(){
         //super(1);
     }
 

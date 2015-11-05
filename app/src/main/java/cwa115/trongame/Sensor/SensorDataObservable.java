@@ -52,8 +52,8 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
         sensorData.put(SensorFlag.ACCELEROMETER, new ArrayList<SensorDataHolder>());
         sensorData.get(SensorFlag.PROXIMITY).add(new ProximityDataHolder(sensors.get(SensorFlag.PROXIMITY).getMaximumRange() / 2));
         sensorData.get(SensorFlag.GYROSCOPE).add(new GyroscopeDataHolder());
-        sensorData.get(SensorFlag.ACCELEROMETER).add(new AccelerometerDataHolder());
-        sensorData.get(SensorFlag.ACCELEROMETER).add(new AccelerometerDataHolder2());
+        sensorData.get(SensorFlag.ACCELEROMETER).add(new HorizontalAccelerationDataHolder());
+        sensorData.get(SensorFlag.ACCELEROMETER).add(new VerticalAccelerationDataHolder());
 
         // Initialize observers
         observers = new HashMap<>();
