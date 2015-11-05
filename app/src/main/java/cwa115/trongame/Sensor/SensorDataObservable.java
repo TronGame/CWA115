@@ -23,7 +23,7 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
     private EnumSet<SensorFlag> activeSensors;// All active sensors
 
     // Stored sensorData
-    private HashMap<SensorFlag, SensorDataHolder> sensorData;
+    private HashMap<SensorFlag, List<SensorDataHolder>> sensorData;
 
     // Observers
     private HashMap<SensorFlag, List<SensorDataObserver>> observers;
@@ -39,17 +39,21 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
         sensorManager = (SensorManager)c.getSystemService(Context.SENSOR_SERVICE);// Get SensorManager
         activeSensors = EnumSet.noneOf(SensorFlag.class);// Clear activeSensors (set to NONE)
 
-        // Initialize sensorData and SensorDataHolders
-        sensorData = new HashMap<>();
-        sensorData.put(SensorFlag.PROXIMITY, new ProximityDataHolder());
-        sensorData.put(SensorFlag.GYROSCOPE, new GyroscopeDataHolder());
-        sensorData.put(SensorFlag.ACCELEROMETER, new AccelerometerDataHolder());
-
         // Initialize sensors
         sensors = new HashMap<>();
         sensors.put(SensorFlag.PROXIMITY, sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY));
         sensors.put(SensorFlag.GYROSCOPE, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE));
         sensors.put(SensorFlag.ACCELEROMETER, sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION));
+
+        // Initialize sensorData and SensorDataHolders
+        sensorData = new HashMap<>();
+        sensorData.put(SensorFlag.PROXIMITY, new ArrayList<SensorDataHolder>());
+        sensorData.put(SensorFlag.GYROSCOPE, new ArrayList<SensorDataHolder>());
+        sensorData.put(SensorFlag.ACCELEROMETER, new ArrayList<SensorDataHolder>());
+        sensorData.get(SensorFlag.PROXIMITY).add(new ProximityDataHolder(sensors.get(SensorFlag.PROXIMITY).getMaximumRange() / 2));
+        sensorData.get(SensorFlag.GYROSCOPE).add(new GyroscopeDataHolder());
+        sensorData.get(SensorFlag.ACCELEROMETER).add(new AccelerometerDataHolder());
+        sensorData.get(SensorFlag.ACCELEROMETER).add(new AccelerometerDataHolder2());
 
         // Initialize observers
         observers = new HashMap<>();
@@ -141,7 +145,8 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
      * @param flag The sensor whose data will be reset
      */
     public void resetSensorData(SensorFlag flag){
-        sensorData.get(flag).reset();
+        for(SensorDataHolder holder : sensorData.get(flag))
+            holder.reset();
     }
 
     /**
@@ -152,14 +157,14 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
     @Override
     public void onSensorChanged(SensorEvent event) {
         SensorFlag changedSensor = SensorFlag.fromSensor(event.sensor.getType());// Get changed sensor
-        SensorDataHolder changedSensorData = sensorData.get(changedSensor);// Get its data
+        for(SensorDataHolder holder : sensorData.get(changedSensor)) {// Get its data
+            holder.pushNewData(event);// Push new data
 
-        changedSensorData.pushNewData(event);// Push new data
-
-        for(SensorDataObserver o : observers.get(changedSensor)){
-            if(o.getCountLimit()<=changedSensorData.getCount()) {
-                o.update(this, changedSensorData.getCount());// Update observers if limit is exceeded
-                changedSensorData.reset();
+            for (SensorDataObserver o : observers.get(changedSensor)) {
+                if (o.getCountLimit() <= holder.getCount()) {
+                    o.update(this, holder.getCount());// Update observers if limit is exceeded
+                    //holder.reset(); ??
+                }
             }
         }
     }
