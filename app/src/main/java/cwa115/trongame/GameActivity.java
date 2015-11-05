@@ -344,7 +344,7 @@ public class GameActivity extends AppCompatActivity implements
                 double distanceToWall = testWall.getDistanceTo(snappedGpsLoc);
                 if (distanceToWall < MAX_WALL_DISTANCE) {
                     // TODO: show notification
-                    showNotification("To close to wall (Game Over)", Toast.LENGTH_LONG);
+                    showNotification(getString(R.string.wall_too_close), Toast.LENGTH_LONG);
                 }
             }
 
@@ -359,7 +359,7 @@ public class GameActivity extends AppCompatActivity implements
             map.updateCamera(gpsLoc);
 
             // TODO show notification that the distance to the road is to much
-            showNotification("To far from road (Game Over)", Toast.LENGTH_LONG);
+            showNotification(getString(R.string.road_too_far), Toast.LENGTH_LONG);
         }
 
         return false;

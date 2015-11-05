@@ -4,4 +4,6 @@
     <string name="wall_button_off_text">Stop Creating Wall</string>
     <string name="wall_on_notification">Wall creation enabled.</string>
     <string name="wall_off_notification">Wall creation disabled.</string>
+    <string name="wall_too_close">Too close to wall (Game Over)</string>
+    <string name="road_too_far">Too far from road (Game Over)</string>
 </resources>

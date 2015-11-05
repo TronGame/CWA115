@@ -29,13 +29,13 @@
             android:id="@+id/wallButton"
             android:layout_width="match_parent"
             android:layout_height="20pt"
-            android:text="Create Wall"
+            android:text="@string/wall_button_on_text"
             android:onClick="createWall"/>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="10pt"
-            android:text="Travelled Distance"/>
+            android:text="@string/wall_button_off_text"/>
 
         <TextView
             android:id="@+id/travelledDistance"
