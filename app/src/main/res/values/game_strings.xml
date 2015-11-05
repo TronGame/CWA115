@@ -1,3 +1,7 @@
 <resources>
     <string name="title_activity_game">GameActivity</string>
+    <string name="wall_button_on_text">Start Creating Wall</string>
+    <string name="wall_button_off_text">Stop Creating Wall</string>
+    <string name="wall_on_notification">Wall creation enabled.</string>
+    <string name="wall_off_notification">Wall creation disabled.</string>
 </resources>

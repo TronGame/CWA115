@@ -34,19 +34,4 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="50pt"
-        android:background="@color/notificationRed"
-        android:onClick="hideNotification"
-        android:visibility="gone"
-        android:id="@+id/notificationFrame">
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/notificationText"
-            android:gravity="center_vertical|center_horizontal"
-            android:textSize="20pt"/>
-    </LinearLayout>
-
 </RelativeLayout>

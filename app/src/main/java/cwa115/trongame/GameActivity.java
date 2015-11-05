@@ -3,7 +3,6 @@ package cwa115.trongame;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -11,9 +10,13 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -39,65 +42,6 @@ import cwa115.trongame.Utils.Vector2D;
 public class GameActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         LocationListener, SensorDataObserver, Handler.Callback {
-
-    private class DisplayNotification extends AsyncTask<Void, Float, Void> {
-        private static final long STEP_COUNT = 20;
-        private static final float NO_ALPHA_DECREASE_FRACTION = .25f;
-        private String message;
-        private long msDelay;
-
-        /**
-         * Constructor
-         * @param msg the message (notification) to display
-         * @param delay delay time in milliseconds
-         */
-        public DisplayNotification(String msg, long delay) {
-            msDelay = delay;
-            message = msg;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            long initialWait = Math.round(msDelay * NO_ALPHA_DECREASE_FRACTION);
-            long remainingWait = msDelay - initialWait;
-
-            long step = (remainingWait < STEP_COUNT) ? 1 : (remainingWait / STEP_COUNT);
-            float alpha = 1;
-            float alphaStep = alpha / STEP_COUNT;
-            try {
-                // Wait without decreasing the alpha for a fraction NO_ALPHA_DECREASE_FRACTION
-                Thread.currentThread().sleep(initialWait);
-
-                // Wait while decreasing the alpha
-                for(long time = 0; time < remainingWait; time += step) {
-                    Thread.currentThread().sleep(step);
-                    alpha -= alphaStep;
-                    publishProgress(alpha);
-                }
-            } catch(InterruptedException e) {
-                Thread.interrupted();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            findViewById(R.id.notificationFrame).setVisibility(View.VISIBLE);
-            TextView notificationText = (TextView)findViewById(R.id.notificationText);
-            notificationText.setText(message);
-        }
-
-        @Override
-        protected void onProgressUpdate(Float... alpha) {
-            findViewById(R.id.notificationFrame).setAlpha(alpha[0]);
-        }
-
-        @Override
-        protected void onPostExecute(Void v) {
-            findViewById(R.id.notificationFrame).setVisibility(View.GONE);
-        }
-
-    }
 
     private static final long NOTIFICATION_DISPLAY_TIME = 2500; // In milliseconds
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
@@ -179,14 +123,14 @@ public class GameActivity extends AppCompatActivity implements
                     "test_wall", new LatLng[0], context);
             map.addMapItem(testWall);
             Button button = (Button) view.findViewById(R.id.wallButton);
-            button.setText("Stop Creating Wall");
-            new DisplayNotification("Wall creation enabled.", NOTIFICATION_DISPLAY_TIME).execute();
+            button.setText(getString(R.string.wall_button_off_text));
+            showNotification(getString(R.string.wall_on_notification), Toast.LENGTH_SHORT);
         } else {
             creatingWall = false;
             testWall = null;
             Button button = (Button) view.findViewById(R.id.wallButton);
-            button.setText("Create Wall");
-            new DisplayNotification("Wall creation disabled.", NOTIFICATION_DISPLAY_TIME).execute();
+            button.setText(getString(R.string.wall_button_on_text));
+            showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_SHORT);
         }
     }
 
@@ -380,5 +324,23 @@ public class GameActivity extends AppCompatActivity implements
 
     public void hideNotification(View view) {
         view.setVisibility(View.GONE);
+    }
+
+    private void showNotification(String message, int duration)
+    {
+        LayoutInflater inflater = (LayoutInflater)getSystemService(LAYOUT_INFLATER_SERVICE);
+        View layout = inflater.inflate(
+                R.layout.notification_frame, (ViewGroup)findViewById(R.id.notificationFrame)
+        );
+        TextView text = (TextView)layout.findViewById(R.id.notificationText);
+        text.setText(message);
+
+        Toast toast = new Toast(getApplicationContext());
+        toast.setGravity(Gravity.TOP, 0, 0);
+        toast.setMargin(0, 0);
+        toast.setDuration(duration);
+        toast.setView(layout);
+
+        toast.show();
     }
 }
