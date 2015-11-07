@@ -12,6 +12,8 @@ import java.util.ArrayList;
  */
 public class LatLngConversion {
 
+    final static double METER_TO_LATLNG = 0.863256867e-5;
+
     /**
      * Creates a Bundle from a LatLng object.
      * @param point the point to be converted to a Bundle object
@@ -75,10 +77,10 @@ public class LatLngConversion {
     }
 
     public static double latLngDistanceToMeter(double distance) {
-        return distance/(0.863256867*Math.pow(10, -5));
+        return distance / METER_TO_LATLNG;
     }
 
     public static double meterToLatLngDistance(double distance) {
-        return distance*0.863256867*Math.pow(10, -5);
+        return distance * METER_TO_LATLNG;
     }
 }
