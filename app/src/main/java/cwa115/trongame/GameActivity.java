@@ -25,6 +25,7 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PendingResult;
@@ -50,9 +51,9 @@ public class GameActivity extends AppCompatActivity implements
     private Map map;                                // Controls the map view
     private GoogleApiClient googleApiClient;        // Controls location tracking
 
-    private static final double LOCATION_THRESHOLD = 0.863256867*Math.pow(10, -4)/10;  // About 1m
-    private static final double MAX_ROAD_DISTANCE = 0.863256867*Math.pow(10, -4);   // About 10m
-    private static final double MAX_WALL_DISTANCE = 0.863256867*Math.pow(10, -4)/10;   // About 1m
+    private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(10);   // About 10m
+    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(10);    // About 10m
+    private static final double MAX_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(1);    // About 1m
 
     private LatLng gpsLoc;
     private LatLng snappedGpsLoc;
@@ -82,8 +83,8 @@ public class GameActivity extends AppCompatActivity implements
         setContentView(R.layout.activity_game);
 
         // Initialize sensorDataObservable and proximityObserver
-        sensorDataObservable = new SensorDataObservable(this);
-        sensorDataObservable.startSensorTracking(SensorFlag.PROXIMITY, this);
+        // sensorDataObservable = new SensorDataObservable(this);
+        // sensorDataObservable.startSensorTracking(SensorFlag.PROXIMITY, this);
 
         // Create the googleApiClient
         googleApiClient = new GoogleApiClient.Builder(this)
@@ -103,6 +104,7 @@ public class GameActivity extends AppCompatActivity implements
 
         // Setup the map object
         MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+
         map = new Map(mapFragment);
 
         context = new GeoApiContext().setApiKey(
@@ -147,7 +149,6 @@ public class GameActivity extends AppCompatActivity implements
     public void clearWall(View view) {
         if (testWall != null) {
             map.clear(testWall.getId());
-            testWall = new Wall("test_wall", new LatLng[0], context);
         }
     }
 
@@ -224,7 +225,7 @@ public class GameActivity extends AppCompatActivity implements
      */
     public void onPause() {
         super.onPause();
-        sensorDataObservable.Pause();
+        // sensorDataObservable.Pause();
         stopLocationUpdate();
     }
 
@@ -233,7 +234,7 @@ public class GameActivity extends AppCompatActivity implements
      */
     public void onResume() {
         super.onResume();
-        sensorDataObservable.Resume();
+        // sensorDataObservable.Resume();
         if (googleApiClient.isConnected() && !isLocationTracking)
             startLocationUpdate();
     }
@@ -305,7 +306,7 @@ public class GameActivity extends AppCompatActivity implements
         LatLng newGpsLoc = new LatLng(location.getLatitude(), location.getLongitude());
         double distance = new Vector2D(newGpsLoc).subtract(new Vector2D(gpsLoc)).getLength();
 
-        Log.d("VALUE", "Distance " + String.valueOf(distance));
+        // Log.d("VALUE", "Distance " + String.valueOf(distance));
 
         if (distance >= LOCATION_THRESHOLD) {   // TODO change LOCATION_THRESHOLD to a value different from 0.0
             gpsLoc = newGpsLoc;
@@ -330,9 +331,9 @@ public class GameActivity extends AppCompatActivity implements
     public boolean handleMessage(Message msg) {
         snappedGpsLoc = LatLngConversion.getPointFromBundle(msg.getData());
         double snappedDistance = new Vector2D(gpsLoc).subtract(new Vector2D(snappedGpsLoc)).getLength();
-        Log.d("VALUE", "Snapped Distance "+String.valueOf(snappedDistance));
+        // Log.d("VALUE", "Snapped Distance "+String.valueOf(snappedDistance));
 
-        if (snappedDistance < MAX_ROAD_DISTANCE * 2) {
+        if (snappedDistance < MAX_ROAD_DISTANCE) {
             map.updatePlayer(myId, snappedGpsLoc);
             map.updateCamera(snappedGpsLoc);
 
@@ -343,29 +344,27 @@ public class GameActivity extends AppCompatActivity implements
             travelledDistance += distance;
 
             TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
-            distanceView.setText(String.valueOf(travelledDistance));
+            distanceView.setText(String.valueOf(LatLngConversion.latLngDistanceToMeter(travelledDistance)));
 
             lastSnappedGpsLoc = snappedGpsLoc;
 
             if (testWall != null) {
                 double distanceToWall = testWall.getDistanceTo(snappedGpsLoc);
                 if (distanceToWall < MAX_WALL_DISTANCE) {
-                    // TODO: show notification
                     showNotification(getString(R.string.wall_too_close), Toast.LENGTH_LONG);
                 }
-            }
 
-            // Test wall creation
-            if (creatingWall) {
-                testWall.addPoint(snappedGpsLoc);
-                map.redraw(testWall.getId());
+                // Test wall creation
+                if (creatingWall) {
+                    testWall.addPoint(snappedGpsLoc);
+                    map.redraw(testWall.getId());
+                }
             }
 
         } else {
             map.updatePlayer(myId, gpsLoc);
             map.updateCamera(gpsLoc);
 
-            // TODO show notification that the distance to the road is to much
             showNotification(getString(R.string.road_too_far), Toast.LENGTH_LONG);
         }
 
@@ -386,7 +385,7 @@ public class GameActivity extends AppCompatActivity implements
         text.setText(message);
 
         Toast toast = new Toast(getApplicationContext());
-        toast.setGravity(Gravity.TOP, 0, 0);
+        toast.setGravity(Gravity.BOTTOM, 0, 0);
         toast.setMargin(0, 0);
         toast.setDuration(duration);
         toast.setView(layout);

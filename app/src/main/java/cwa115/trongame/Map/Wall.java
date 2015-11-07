@@ -1,6 +1,7 @@
 package cwa115.trongame.Map;
 
 import android.graphics.Color;
+import android.util.Log;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
@@ -24,8 +25,7 @@ public class Wall implements DrawableMapItem {
 
     private String id;
     private ArrayList<LatLng> points;
-    private ArrayList<LatLng> notSnappedPoints;
-    private int lineWidth = 35;
+    static final private int lineWidth = 15;
     private Polyline line;
     private GeoApiContext context;
     private PendingResult<SnappedPoint[]> req;
@@ -36,8 +36,7 @@ public class Wall implements DrawableMapItem {
      */
     public Wall(String _id, LatLng[] points, GeoApiContext context) {
         id = _id;
-        this.points = new ArrayList<>();
-        this.notSnappedPoints = new ArrayList<>(Arrays.asList(points));
+        this.points = new ArrayList<>(Arrays.asList(points));
         this.context = context;
     }
 
@@ -46,16 +45,18 @@ public class Wall implements DrawableMapItem {
      * @param point the given point
      */
     public void addPoint(LatLng point) {
-        notSnappedPoints.add(point);
+        points.add(point);
+        if (points.size() == 1)
+            points.add(point);
 
         if (req != null) {
             req.cancel();
         }
 
         req = RoadsApi.snapToRoads(
-                    context,
-                    true,
-                    LatLngConversion.getConvertedPoints(this.notSnappedPoints)
+            context,
+            true,
+            LatLngConversion.getConvertedPoints(this.points)
         );
 
         // WARNING: This can cause huuuuge problems for various reasons
@@ -68,7 +69,7 @@ public class Wall implements DrawableMapItem {
 
             @Override
             public void onFailure(Throwable e) {
-
+                Log.d("Error", e.toString());
             }
         });
     }
@@ -83,14 +84,12 @@ public class Wall implements DrawableMapItem {
         if (line != null)
             line.remove();
 
-        for(int i = 0; i < points.size() - 1; ++i) {
-            line = map.addPolyline(
-                    new PolylineOptions()
-                    .add(points.get(i), points.get(i + 1))
-                    .width(lineWidth)
-                    .color(Color.BLUE)
-            );
-        }
+        line = map.addPolyline(
+            new PolylineOptions()
+                .add(points.toArray(new LatLng[points.size()]))
+                .width(lineWidth)
+                .color(Color.BLUE)
+        );
     }
 
     public void clear(GoogleMap map) {
@@ -114,17 +113,19 @@ public class Wall implements DrawableMapItem {
     public double getDistanceTo(LatLng point) {
         Vector2D pt = new Vector2D(point);
 
-        double shortestPerpendDist = -1;
-        double shortestPointDist = 0;
+        double shortestPerpendDist = Double.POSITIVE_INFINITY;
+        double shortestPointDist = Double.POSITIVE_INFINITY;
 
-        for (int i = 0; i < points.size(); i++) {
+        int end = points.size();
+
+        for (int i = 0; i < end; i++) {
             Vector2D ptA = new Vector2D(points.get(i));
             double currentDistance = ptA.subtract(pt).getLength();
 
             if (currentDistance <= shortestPointDist)
                 shortestPointDist = currentDistance;
 
-            if (i + 1 < points.size()) {
+            if (i + 1 < end) {
                 Vector2D ptB = new Vector2D(points.get(i+1));
 
                 // Direction vector of the line AB
@@ -150,7 +151,7 @@ public class Wall implements DrawableMapItem {
             }
         }
 
-        if (shortestPerpendDist < 0)
+        if (shortestPerpendDist == Double.POSITIVE_INFINITY)
             return shortestPointDist;
         else
             return Math.min(shortestPointDist, shortestPointDist);

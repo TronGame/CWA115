@@ -73,4 +73,12 @@ public class LatLngConversion {
 
         return result;
     }
+
+    public static double latLngDistanceToMeter(double distance) {
+        return distance/(0.863256867*Math.pow(10, -5));
+    }
+
+    public static double meterToLatLngDistance(double distance) {
+        return distance*0.863256867*Math.pow(10, -5);
+    }
 }

@@ -17,7 +17,7 @@
         android:layout_height="match_parent"/>
 
     <LinearLayout
-        android:layout_width="70pt"
+        android:layout_width="100pt"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:paddingTop="@dimen/map_vertical_margin"
@@ -28,25 +28,25 @@
         <Button xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/wallButton"
             android:layout_width="match_parent"
-            android:layout_height="20pt"
+            android:layout_height="30pt"
             android:text="@string/wall_button_on_text"
             android:onClick="createWall"/>
 
         <Button xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent"
-            android:layout_height="20pt"
+            android:layout_height="30pt"
             android:text="@string/wall_button_clear_text"
             android:onClick="clearWall"/>
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="10pt"
-            android:text="@string/wall_button_off_text"/>
+            android:layout_height="15pt"
+            android:text="@string/distance_count_text"/>
 
         <TextView
             android:id="@+id/travelledDistance"
             android:layout_width="match_parent"
-            android:layout_height="10pt"
+            android:layout_height="15pt"
             android:text="0.0"/>
 
     </LinearLayout>
