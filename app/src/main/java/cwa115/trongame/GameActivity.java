@@ -41,6 +41,7 @@ import cwa115.trongame.Network.SocketIoConnection;
 import cwa115.trongame.Network.SocketIoHandler;
 import cwa115.trongame.Sensor.SensorDataObservable;
 import cwa115.trongame.Sensor.SensorDataObserver;
+import cwa115.trongame.Sensor.SensorFlag;
 import cwa115.trongame.Utils.LatLngConversion;
 import cwa115.trongame.Utils.Vector2D;
 
@@ -106,6 +107,7 @@ public class GameActivity extends AppCompatActivity implements
         // -----------------------------------------------------------------------------------------
         // Initialize sensorDataObservable and proximityObserver
         sensorDataObservable = new SensorDataObservable(this);
+        sensorDataObservable.startSensorTracking(SensorFlag.PROXIMITY, this);
 
         // Location tracking
         // -----------------------------------------------------------------------------------------
@@ -182,9 +184,6 @@ public class GameActivity extends AppCompatActivity implements
 
         // Log.d("VALUE", "Snapped Distance "+String.valueOf(snappedDistance));
 
-        // Send the player location
-        sendMyLocation(snappedGpsLoc);
-
         // Check is the player is (almost) on the road
         if (snappedDistance < MAX_ROAD_DISTANCE) {
             // Update the player marker and the camera
@@ -203,6 +202,9 @@ public class GameActivity extends AppCompatActivity implements
             distanceView.setText(String.valueOf(LatLngConversion.latLngDistanceToMeter(travelledDistance)));
 
             snappedGpsLoc = newSnappedGpsLoc;   // update the snapped location
+
+            // Send the player location
+            sendMyLocation(snappedGpsLoc);
 
             // Wall functionality
             if (wall != null) {
@@ -225,6 +227,9 @@ public class GameActivity extends AppCompatActivity implements
             // Player is to far from the road
             map.updatePlayer(myId, gpsLoc);     // Draw the player on the actual location instead
             map.updateCamera(gpsLoc);           // Zoom to there as well
+
+            // Send the player location
+            sendMyLocation(gpsLoc);
 
             // Show the "player to far from road" notification
             showNotification(getString(R.string.road_too_far), Toast.LENGTH_LONG);
@@ -341,7 +346,6 @@ public class GameActivity extends AppCompatActivity implements
      */
     public void onResume() {
         super.onResume();
-        sendJoinMessage();                      // TODO check if this is the correct spot for this
         sensorDataObservable.Resume();          // Resume the sensor observer
         locationListener.startLocationUpdate(); // Start the location listener again
     }
@@ -426,6 +430,7 @@ public class GameActivity extends AppCompatActivity implements
         JSONObject locationMessage = new JSONObject();
         try {
             locationMessage.put("playerId", myId);
+            locationMessage.put("playerName", GameSettings.getPlayerName());
             locationMessage.put("location", LatLngConversion.getJSONFromPoint(location));
         } catch (JSONException e) {
             // end of the world
@@ -433,23 +438,6 @@ public class GameActivity extends AppCompatActivity implements
 
         // Send the message over the socket
         socket.sendMessage(locationMessage, "updatePosition");
-    }
-
-    /**
-     * Tell the other players that you joined
-     */
-    private void sendJoinMessage() {
-        // Create the message that will be send over the socket connection
-        JSONObject joinMessage = new JSONObject();
-        try {
-            joinMessage.put("playerId", myId);
-            joinMessage.put("playerName", GameSettings.getPlayerName());
-        } catch (JSONException e) {
-            // end of the world
-        }
-
-        // Send the message over the socket
-        socket.sendMessage(joinMessage, "join");
     }
 
     /**
@@ -469,41 +457,25 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     /**
-     * Add a player that joined to the map
-     *
-     * @param playerId   The id of the joined player
-     * @param playerName The name of the joined player
-     */
-    @Override
-    public void onPlayerJoined(String playerId, String playerName) {
-        // Check if the message we received originates from ourselves
-        if (myId.equals(playerId))
-            return;
-
-        // Check if the player hasn't been added
-        if (!map.hasObject(playerId))
-            // Add the player
-            map.addMapItem(new Player(playerId, GameSettings.getPlayerName(), new LatLng(0, 0)));
-
-        Log.d("SERVER", "Player joined: " + playerId);
-    }
-
-    /**
      * Change the location of another player
      *
      * @param playerId The id of the updated player
      * @param location The location of the updated player
      */
     @Override
-    public void onRemoteLocationChange(String playerId, LatLng location) {
+    public void onRemoteLocationChange(String playerId, String playerName, LatLng location) {
         // Check if the message we received originates from ourselves
         if (myId.equals(playerId))
             return;
 
-        // Check if the player has joined
-        if (map.hasObject(playerId))
+        // Check if we alread know about the player
+        if (map.hasObject(playerId)) {
             // Update the location of the player
             map.updatePlayer(playerId, location);
+        } else {
+            // Add player to map
+            map.addMapItem(new Player(playerId, playerName, location));
+        }
 
         Log.d("SERVER", "Location of " + playerId + " updated to " + location.toString());
     }

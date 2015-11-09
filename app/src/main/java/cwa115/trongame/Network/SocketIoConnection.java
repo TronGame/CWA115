@@ -99,14 +99,10 @@ public class SocketIoConnection implements Handler.Callback {
         try {
             JSONObject message = new JSONObject(msg.getData().getString(BUNDLE_MESSAGE_KEY));
             switch(message.getString("type")) {
-                case "join":
-                    onReceiveHandler.onPlayerJoined(
-                            message.getString("playerId"), message.getString("playerName")
-                    );
-                    break;
                 case "updatePosition":
                     onReceiveHandler.onRemoteLocationChange(
                             message.getString("playerId"),
+                            message.getString("playerName"),
                             LatLngConversion.getPointFromJSON(message.getJSONObject("location"))
                     );
                     break;
