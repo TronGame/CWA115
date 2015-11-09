@@ -28,19 +28,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        // Initialize the SDK before executing any other operations,
+        // especially, if you're using Facebook UI elements.
+
+        setContentView(R.layout.activity_main);// activity_main contains facebook login button
 
         GameSettings.setPlayerMarkerImage(R.mipmap.markerk);
         // Initialize SensorData
         //SensorData.Initialize(this);
         //SensorData.Test(this); // Only for testing purposes
 
-        FacebookSdk.sdkInitialize(getApplicationContext());
-        // Initialize the SDK before executing any other operations,
-        // especially, if you're using Facebook UI elements.
         callbackManager = CallbackManager.Factory.create();
         LoginButton loginButton = (LoginButton) findViewById(R.id.facebook_login_button);
-        ((TextView) findViewById(R.id.facebook_token)).setText(AccessToken.getCurrentAccessToken().getUserId());
+
+        AccessToken token = AccessToken.getCurrentAccessToken();
+        if(token!=null)
+            ((TextView) findViewById(R.id.facebook_token)).setText(token.getUserId());
+
         loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
