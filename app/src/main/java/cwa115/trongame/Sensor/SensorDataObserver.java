@@ -12,7 +12,7 @@ public interface SensorDataObserver {// Not extending, but imitating Observer cl
      * @param observable The observable that has changed
      * @param data Extra data attached by observable
      */
-    public void update(SensorDataObservable observable, Object data);
+    public void updateSensor(SensorDataObservable observable, Object data);
 
     /**
      *
