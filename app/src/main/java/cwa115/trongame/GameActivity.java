@@ -252,6 +252,7 @@ public class GameActivity extends AppCompatActivity implements
     @Override
     public void onConnected(Bundle hint) {
         startLocationUpdate();
+        sendJoinMessage();
     }
 
     /**
@@ -313,13 +314,6 @@ public class GameActivity extends AppCompatActivity implements
         LatLng newGpsLoc = new LatLng(location.getLatitude(), location.getLongitude());
         double distance = new Vector2D(newGpsLoc).subtract(new Vector2D(gpsLoc)).getLength();
 
-        JSONObject locationMessage = new JSONObject();
-        try {
-            locationMessage.put("location", LatLngConversion.getJSONFromPoint(newGpsLoc));
-        } catch(JSONException e) {
-            // end of the world
-        }
-        socket.sendMessage(locationMessage);
         // Log.d("VALUE", "Distance " + String.valueOf(distance));
 
         if (distance >= LOCATION_THRESHOLD) {   // TODO change LOCATION_THRESHOLD to a value different from 0.0
@@ -327,6 +321,29 @@ public class GameActivity extends AppCompatActivity implements
             snapLocationToRoad();
         }
     }
+
+    private void sendMyLocation(LatLng position) {
+        JSONObject locationMessage = new JSONObject();
+        try {
+            locationMessage.put("playerId", myId);
+            locationMessage.put("location", LatLngConversion.getJSONFromPoint(position));
+        } catch(JSONException e) {
+            // end of the world
+        }
+        socket.sendMessage(locationMessage, "updatePosition");
+    }
+
+    private void sendJoinMessage() {
+        JSONObject joinMessage = new JSONObject();
+        try {
+            joinMessage.put("playerId", myId);
+            joinMessage.put("playerName", GameSettings.getPlayerName());
+        } catch(JSONException e) {
+            // end of the world
+        }
+        socket.sendMessage(joinMessage, "join");
+    }
+
 
     @Override
     public void update(SensorDataObservable observable, Object data) {
@@ -347,6 +364,7 @@ public class GameActivity extends AppCompatActivity implements
         double snappedDistance = new Vector2D(gpsLoc).subtract(new Vector2D(snappedGpsLoc)).getLength();
         // Log.d("VALUE", "Snapped Distance "+String.valueOf(snappedDistance));
 
+        sendMyLocation(snappedGpsLoc);
         if (snappedDistance < MAX_ROAD_DISTANCE) {
             map.updatePlayer(myId, snappedGpsLoc);
             map.updateCamera(snappedGpsLoc);
@@ -407,8 +425,23 @@ public class GameActivity extends AppCompatActivity implements
         toast.show();
     }
 
+
     @Override
-    public void onRemoteLocationChange(LatLng point) {
-        Log.d("LocationUpdate", point.toString());
+    public void onPlayerJoined(String playerId, String playerName)
+    {
+        if(myId.equals(playerId))
+            return; // We sent this ourselves
+        if(!map.isPlayer(playerId))
+            map.addMapItem(new Player(playerId, GameSettings.getPlayerName(), new LatLng(0, 0)));
+        Log.d("SERVER", "Player joined: " + playerId);
+    }
+
+    @Override
+    public void onRemoteLocationChange(String playerId, LatLng point) {
+        if(myId.equals(playerId))
+            return; // We sent this ourselves
+        if(map.isPlayer(playerId))
+            map.updatePlayer(playerId, point);
+        Log.d("SERVER", "Location of " + playerId + " updated to " + point.toString());
     }
 }

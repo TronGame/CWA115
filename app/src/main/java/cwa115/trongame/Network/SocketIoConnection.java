@@ -77,9 +77,10 @@ public class SocketIoConnection implements Handler.Callback {
      * Broadcasts a JSON message.
      * @param message the JSON message to be sent
      */
-    public void sendMessage(JSONObject message) {
+    public void sendMessage(JSONObject message, String type) {
         JSONObject req = new JSONObject();
         try {
+            message.put("type", type);
             req.put("data", message);
             req.put("groupid", groupId);
             req.put("sessionid", sessionId);
@@ -97,9 +98,20 @@ public class SocketIoConnection implements Handler.Callback {
     public boolean handleMessage(Message msg) {
         try {
             JSONObject message = new JSONObject(msg.getData().getString(BUNDLE_MESSAGE_KEY));
-            onReceiveHandler.onRemoteLocationChange(
-                    LatLngConversion.getPointFromJSON(message.getJSONObject("location"))
-            );
+            switch(message.getString("type")) {
+                case "join":
+                    onReceiveHandler.onPlayerJoined(
+                            message.getString("playerId"), message.getString("playerName")
+                    );
+                    break;
+                case "updatePosition":
+                    onReceiveHandler.onRemoteLocationChange(
+                            message.getString("playerId"),
+                            LatLngConversion.getPointFromJSON(message.getJSONObject("location"))
+                    );
+                    break;
+            }
+
             return true;
         } catch(JSONException e) {
             e.printStackTrace();

@@ -5,7 +5,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
@@ -156,5 +155,13 @@ public class Map implements OnMapReadyCallback {
 
         pendingItemsClear.clear();
         pendingItemsDraw.clear();
+    }
+
+    /**
+     * @return true if the given id corresponds to an existing player
+     */
+    public boolean isPlayer(String id)
+    {
+        return mapItems.containsKey(id);
     }
 }
