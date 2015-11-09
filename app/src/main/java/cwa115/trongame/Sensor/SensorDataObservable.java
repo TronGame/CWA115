@@ -50,9 +50,10 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
         sensorData.put(SensorFlag.PROXIMITY, new ArrayList<SensorDataHolder>());
         sensorData.put(SensorFlag.GYROSCOPE, new ArrayList<SensorDataHolder>());
         sensorData.put(SensorFlag.ACCELEROMETER, new ArrayList<SensorDataHolder>());
-        if(sensors.containsKey(SensorFlag.PROXIMITY) && sensors.get(SensorFlag.PROXIMITY) != null) // TODO: fix this for real
+        Sensor proximitySensor = sensors.get(SensorFlag.PROXIMITY);
+        if(proximitySensor != null) // Could be null if the sensor isn't present
             sensorData.get(SensorFlag.PROXIMITY).add(
-                    new ProximityDataHolder(sensors.get(SensorFlag.PROXIMITY).getMaximumRange() / 2)
+                    new ProximityDataHolder(proximitySensor.getMaximumRange() / 2)
             );
         sensorData.get(SensorFlag.GYROSCOPE).add(new GyroscopeDataHolder());
         sensorData.get(SensorFlag.ACCELEROMETER).add(new HorizontalAccelerationDataHolder());
