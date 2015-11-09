@@ -1,5 +1,7 @@
 package cwa115.trongame;
 
+import java.util.UUID;
+
 /**
  * Singleton to manage the settings of the current game.
  * These settings are not persistent.
@@ -23,5 +25,13 @@ public final class GameSettings {
 
     public static int getPlayerMarkerImage() {
         return playerMarkerImage;
+    }
+
+    /**
+     * (Randomly) generates a unique ID.
+     * @return the generated ID
+     */
+    public static String generateUniqueId() {
+        return UUID.randomUUID().toString();
     }
 }

@@ -158,10 +158,15 @@ public class Map implements OnMapReadyCallback {
     }
 
     /**
-     * @return true if the given id corresponds to an existing player
+     * @return true if the given id corresponds to an existing DrawableMapItem
      */
-    public boolean isPlayer(String id)
+    public boolean hasObject(String id)
     {
         return mapItems.containsKey(id);
+    }
+
+    public DrawableMapItem getItemById(String id)
+    {
+        return mapItems.get(id);
     }
 }

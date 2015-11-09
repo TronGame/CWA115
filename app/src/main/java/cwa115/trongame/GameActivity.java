@@ -119,7 +119,7 @@ public class GameActivity extends AppCompatActivity implements
 
         // Add players
         // (this data is normally received from main activity)
-        myId = "player_1";
+        myId = "P:" + GameSettings.generateUniqueId();
         Player[] players = {
                 new Player(myId, GameSettings.getPlayerName(), new LatLng(0.0, 0.0))
         };
@@ -138,8 +138,7 @@ public class GameActivity extends AppCompatActivity implements
     public void createWall(View view) {
         if (!creatingWall) {
             creatingWall = true;
-            testWall = new Wall(
-                    "test_wall", new LatLng[0], context);
+            testWall = new Wall("W" + GameSettings.generateUniqueId(), myId, new LatLng[0], context);
             map.addMapItem(testWall);
             Button button = (Button) view.findViewById(R.id.wallButton);
             button.setText(getString(R.string.wall_button_off_text));
@@ -344,6 +343,17 @@ public class GameActivity extends AppCompatActivity implements
         socket.sendMessage(joinMessage, "join");
     }
 
+    private void sendUpdateWall(LatLng point) {
+        JSONObject updateWallMessage = new JSONObject();
+        try {
+            updateWallMessage.put("playerId", myId);
+            updateWallMessage.put("wallId", testWall.getId());
+            updateWallMessage.put("point", LatLngConversion.getJSONFromPoint(point));
+        } catch(JSONException e) {
+            // end of the world
+        }
+        socket.sendMessage(updateWallMessage, "updateWall");
+    }
 
     @Override
     public void update(SensorDataObservable observable, Object data) {
@@ -389,6 +399,7 @@ public class GameActivity extends AppCompatActivity implements
                 // Test wall creation
                 if (creatingWall) {
                     testWall.addPoint(snappedGpsLoc);
+                    sendUpdateWall(snappedGpsLoc);
                     map.redraw(testWall.getId());
                 }
             }
@@ -431,7 +442,8 @@ public class GameActivity extends AppCompatActivity implements
     {
         if(myId.equals(playerId))
             return; // We sent this ourselves
-        if(!map.isPlayer(playerId))
+
+        if(!map.hasObject(playerId))
             map.addMapItem(new Player(playerId, GameSettings.getPlayerName(), new LatLng(0, 0)));
         Log.d("SERVER", "Player joined: " + playerId);
     }
@@ -440,8 +452,27 @@ public class GameActivity extends AppCompatActivity implements
     public void onRemoteLocationChange(String playerId, LatLng point) {
         if(myId.equals(playerId))
             return; // We sent this ourselves
-        if(map.isPlayer(playerId))
+
+        if(map.hasObject(playerId))
             map.updatePlayer(playerId, point);
         Log.d("SERVER", "Location of " + playerId + " updated to " + point.toString());
+    }
+
+    @Override
+    public void onRemoteWallUpdate(String playerId, String wallId, LatLng point) {
+        //if(myId.equals(playerId))
+        //    return; // We sent this ourselves
+
+        if(!map.hasObject(wallId)) {
+            map.addMapItem(new Wall(wallId, playerId, new LatLng[]{point}, context));
+            Log.d("SERVER", "New wall created by " + playerId + " at " + point.toString());
+        } else {
+            Wall wall = (Wall)map.getItemById(wallId);
+            if(!wall.getOwnerId().equals(playerId))
+                return;
+            wall.addPoint(point);
+            Log.d("SERVER", "Update wall " + wallId + " of " + playerId + " by " + point.toString());
+            map.redraw(testWall.getId());
+        }
     }
 }

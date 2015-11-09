@@ -110,6 +110,13 @@ public class SocketIoConnection implements Handler.Callback {
                             LatLngConversion.getPointFromJSON(message.getJSONObject("location"))
                     );
                     break;
+                case "updateWall":
+                    onReceiveHandler.onRemoteWallUpdate(
+                            message.getString("playerId"),
+                            message.getString("wallId"),
+                            LatLngConversion.getPointFromJSON(message.getJSONObject("point"))
+                    );
+                    break;
             }
 
             return true;

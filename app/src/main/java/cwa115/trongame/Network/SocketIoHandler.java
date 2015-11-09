@@ -6,6 +6,7 @@ import com.google.android.gms.maps.model.LatLng;
  *
  */
 public interface SocketIoHandler {
-    public void onPlayerJoined(String playerId, String playerName);
-    public void onRemoteLocationChange(String playerId, LatLng location);
+    void onPlayerJoined(String playerId, String playerName);
+    void onRemoteLocationChange(String playerId, LatLng location);
+    void onRemoteWallUpdate(String playerId, String wallId, LatLng points);
 }

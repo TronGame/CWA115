@@ -24,6 +24,7 @@ import cwa115.trongame.Utils.Vector2D;
 public class Wall implements DrawableMapItem {
 
     private String id;
+    private String ownerId;
     private ArrayList<LatLng> points;
     static final private int lineWidth = 15;
     private Polyline line;
@@ -34,8 +35,9 @@ public class Wall implements DrawableMapItem {
      * Construct from an array of points.
      * @param points points of the wall
      */
-    public Wall(String _id, LatLng[] points, GeoApiContext context) {
-        id = _id;
+    public Wall(String id, String ownerId, LatLng[] points, GeoApiContext context) {
+        this.id = id;
+        this.ownerId = ownerId;
         this.points = new ArrayList<>(Arrays.asList(points));
         this.context = context;
     }
@@ -155,5 +157,9 @@ public class Wall implements DrawableMapItem {
             return shortestPointDist;
         else
             return Math.min(shortestPointDist, shortestPointDist);
+    }
+
+    public String getOwnerId() {
+        return ownerId;
     }
 }
