@@ -18,7 +18,7 @@ public class ProximityObserver implements SensorDataObserver {
     }
 
     @Override
-    public void update(SensorDataObservable observable, Object data) {
+    public void updateSensor(SensorDataObservable observable, Object data) {
         if(observable == this.observable){
             int proximityCount = (int)data;// Do something with proximityCount
         }

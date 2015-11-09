@@ -1,7 +1,6 @@
 package cwa115.trongame.Map;
 
 import android.graphics.Color;
-import android.util.Log;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
@@ -15,21 +14,25 @@ import com.google.maps.model.SnappedPoint;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import cwa115.trongame.GoogleMapsApi.ApiListener;
+import cwa115.trongame.GoogleMapsApi.SnappedPointHandler;
 import cwa115.trongame.Utils.LatLngConversion;
 import cwa115.trongame.Utils.Vector2D;
 
 /**
  * A set of connected points representing a wall.
  */
-public class Wall implements DrawableMapItem {
+public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
+
+    static final private int LINE_WIDTH = 15;
 
     private String id;
     private String ownerId;
     private ArrayList<LatLng> points;
-    static final private int lineWidth = 15;
     private Polyline line;
+
     private GeoApiContext context;
-    private PendingResult<SnappedPoint[]> req;
+    private SnappedPointHandler snappedPointHandler;
 
     /**
      * Construct from an array of points.
@@ -51,29 +54,25 @@ public class Wall implements DrawableMapItem {
         if (points.size() == 1)
             points.add(point);
 
-        if (req != null) {
-            req.cancel();
-        }
-
-        req = RoadsApi.snapToRoads(
-            context,
-            true,
-            LatLngConversion.getConvertedPoints(this.points)
+        // Create a PendingResult object
+        // This is used by the snappedPointHandler to snap the provided points to the road
+        PendingResult<SnappedPoint[]> req = RoadsApi.snapToRoads(
+                context,                                    // The context (basically the api key used by google
+                true,                                       // Interpolate the points (add new points to smooth the line
+                LatLngConversion.getConvertedPoints(points) // The points that need to be snapped (these need to be converted to a different type of LatLng
         );
+        // Check if the snappedPointHandler is still busy with a previous request
+        if (snappedPointHandler != null && !snappedPointHandler.isFinished())
+            snappedPointHandler.stop(); // Cancel the previous request
 
-        // WARNING: This can cause huuuuge problems for various reasons
-        req.setCallback(new PendingResult.Callback<SnappedPoint[]>() {
-            @Override
-            public void onResult(SnappedPoint[] result) {
-                points = LatLngConversion.snappedPointsToPoints(result);
-                req = null;
-            }
+        // Create a new snappedPointHandler to take care of the request
+        snappedPointHandler = new SnappedPointHandler(req, this);
+    }
 
-            @Override
-            public void onFailure(Throwable e) {
-                Log.d("Error", e.toString());
-            }
-        });
+    @Override
+    public boolean handleApiResult(ArrayList<LatLng> result) {
+        points = result;
+        return false;
     }
 
 
@@ -89,7 +88,7 @@ public class Wall implements DrawableMapItem {
         line = map.addPolyline(
             new PolylineOptions()
                 .add(points.toArray(new LatLng[points.size()]))
-                .width(lineWidth)
+                .width(LINE_WIDTH)
                 .color(Color.BLUE)
         );
     }
