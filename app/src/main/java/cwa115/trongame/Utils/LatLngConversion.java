@@ -5,6 +5,9 @@ import android.os.Bundle;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.model.SnappedPoint;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 /**
@@ -82,5 +85,24 @@ public class LatLngConversion {
 
     public static double meterToLatLngDistance(double distance) {
         return distance * METER_TO_LATLNG;
+    }
+
+    public static LatLng getPointFromJSON(JSONObject object) {
+        try {
+            return new LatLng(object.getDouble("latitude"), object.getDouble("longitude"));
+        } catch(JSONException e) {
+            return new LatLng(0, 0);
+        }
+    }
+
+    public static JSONObject getJSONFromPoint(LatLng point) {
+        JSONObject result = new JSONObject();
+        try {
+            result.put("latitude", point.latitude);
+            result.put("longitude", point.longitude);
+        } catch(JSONException e) {
+            // TODO: do something useful
+        }
+        return result;
     }
 }

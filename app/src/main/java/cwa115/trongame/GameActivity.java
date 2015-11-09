@@ -25,25 +25,30 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PendingResult;
 import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
+import cwa115.trongame.Network.SocketIoConnection;
+import cwa115.trongame.Network.SocketIoHandler;
 import cwa115.trongame.Sensor.SensorDataObservable;
 import cwa115.trongame.Sensor.SensorDataObserver;
-import cwa115.trongame.Sensor.SensorFlag;
 import cwa115.trongame.Utils.LatLngConversion;
 import cwa115.trongame.Utils.Vector2D;
 
 public class GameActivity extends AppCompatActivity implements
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        LocationListener, SensorDataObserver, Handler.Callback {
+        LocationListener, SensorDataObserver, Handler.Callback, SocketIoHandler {
+
+    private SocketIoConnection socket;
 
     private static final long NOTIFICATION_DISPLAY_TIME = 2500; // In milliseconds
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
@@ -85,6 +90,8 @@ public class GameActivity extends AppCompatActivity implements
         // Initialize sensorDataObservable and proximityObserver
         // sensorDataObservable = new SensorDataObservable(this);
         // sensorDataObservable.startSensorTracking(SensorFlag.PROXIMITY, this);
+
+        socket = new SocketIoConnection("testA1", "1", this);
 
         // Create the googleApiClient
         googleApiClient = new GoogleApiClient.Builder(this)
@@ -306,6 +313,13 @@ public class GameActivity extends AppCompatActivity implements
         LatLng newGpsLoc = new LatLng(location.getLatitude(), location.getLongitude());
         double distance = new Vector2D(newGpsLoc).subtract(new Vector2D(gpsLoc)).getLength();
 
+        JSONObject locationMessage = new JSONObject();
+        try {
+            locationMessage.put("location", LatLngConversion.getJSONFromPoint(newGpsLoc));
+        } catch(JSONException e) {
+            // end of the world
+        }
+        socket.sendMessage(locationMessage);
         // Log.d("VALUE", "Distance " + String.valueOf(distance));
 
         if (distance >= LOCATION_THRESHOLD) {   // TODO change LOCATION_THRESHOLD to a value different from 0.0
@@ -391,5 +405,10 @@ public class GameActivity extends AppCompatActivity implements
         toast.setView(layout);
 
         toast.show();
+    }
+
+    @Override
+    public void onRemoteLocationChange(LatLng point) {
+        Log.d("LocationUpdate", point.toString());
     }
 }
