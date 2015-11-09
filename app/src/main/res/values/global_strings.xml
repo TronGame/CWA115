@@ -1,4 +1,5 @@
 <resources>
     <string name="game_name">Trongame</string>
     <string name="user_agent">"Mozilla/4.0 (compatible; MSIE 5.0;Windows98;DigExt)"</string>
+    <string name="facebook_app_id">104025106629977</string>
 </resources>
