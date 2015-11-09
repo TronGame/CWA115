@@ -50,7 +50,10 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
         sensorData.put(SensorFlag.PROXIMITY, new ArrayList<SensorDataHolder>());
         sensorData.put(SensorFlag.GYROSCOPE, new ArrayList<SensorDataHolder>());
         sensorData.put(SensorFlag.ACCELEROMETER, new ArrayList<SensorDataHolder>());
-        sensorData.get(SensorFlag.PROXIMITY).add(new ProximityDataHolder(sensors.get(SensorFlag.PROXIMITY).getMaximumRange() / 2));
+        if(sensors.containsKey(SensorFlag.PROXIMITY) && sensors.get(SensorFlag.PROXIMITY) != null) // TODO: fix this for real
+            sensorData.get(SensorFlag.PROXIMITY).add(
+                    new ProximityDataHolder(sensors.get(SensorFlag.PROXIMITY).getMaximumRange() / 2)
+            );
         sensorData.get(SensorFlag.GYROSCOPE).add(new GyroscopeDataHolder());
         sensorData.get(SensorFlag.ACCELEROMETER).add(new HorizontalAccelerationDataHolder());
         sensorData.get(SensorFlag.ACCELEROMETER).add(new VerticalAccelerationDataHolder());
@@ -90,9 +93,8 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
         observers.get(flag).addAll(Arrays.asList(o));// Add observers
 
         // Update activeSensors and registerListener
-        if(!activeSensors.contains(flag)) {
+        if(!activeSensors.contains(flag) && registerListener(flag)) {
             activeSensors.add(flag);
-            registerListener(flag);
         }
     }
 
@@ -193,7 +195,7 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
      * Register listener for specified sensor.
      * @param flag The specified sensor
      */
-    private void registerListener(SensorFlag flag){
-        sensorManager.registerListener(this, sensors.get(flag), SensorManager.SENSOR_DELAY_NORMAL);
+    private boolean registerListener(SensorFlag flag){
+        return sensorManager.registerListener(this, sensors.get(flag), SensorManager.SENSOR_DELAY_NORMAL);
     }
 }

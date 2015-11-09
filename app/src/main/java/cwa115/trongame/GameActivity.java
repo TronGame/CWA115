@@ -25,15 +25,15 @@ import com.google.maps.PendingResult;
 import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 import cwa115.trongame.GoogleMapsApi.ApiListener;
 import cwa115.trongame.GoogleMapsApi.SnappedPointHandler;
 import cwa115.trongame.Location.CustomLocationListener;
 import cwa115.trongame.Location.LocationObserver;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
@@ -146,7 +146,7 @@ public class GameActivity extends AppCompatActivity implements
         // Player objects
         // -----------------------------------------------------------------------------------------
         // Store the player id
-        myId = "player_1";
+        myId = "P" + GameSettings.generateUniqueId();
 
         // Create the player objects
         Player[] players = {
@@ -216,6 +216,7 @@ public class GameActivity extends AppCompatActivity implements
                 // Update the wall (this must happen after the "player to close to wall" check
                 if (creatingWall) {
                     wall.addPoint(snappedGpsLoc);   // Add the new point to the wall
+                    sendUpdateWall(snappedGpsLoc);
                     map.redraw(wall.getId());       // Redraw the wall on the map
                 }
             }
@@ -243,8 +244,8 @@ public class GameActivity extends AppCompatActivity implements
         if (!creatingWall) {
             // Start creating a wall
             creatingWall = true;                        // The player is now creating a wall
-            wall = new Wall(                            // Create the wall object
-                    "wall", new LatLng[0], context);
+            // Create the wall object
+            wall = new Wall("W" + GameSettings.generateUniqueId(), myId, new LatLng[0], context);
             map.addMapItem(wall);                       // Add the wall to the map
 
             // Update the button
@@ -451,6 +452,18 @@ public class GameActivity extends AppCompatActivity implements
         socket.sendMessage(joinMessage, "join");
     }
 
+    private void sendUpdateWall(LatLng point) {
+        JSONObject updateWallMessage = new JSONObject();
+        try {
+            updateWallMessage.put("playerId", myId);
+            updateWallMessage.put("wallId", wall.getId());
+            updateWallMessage.put("point", LatLngConversion.getJSONFromPoint(point));
+        } catch(JSONException e) {
+            // end of the world
+        }
+        socket.sendMessage(updateWallMessage, "updateWall");
+    }
+
     /**
      * Add a player that joined to the map
      *
@@ -464,7 +477,7 @@ public class GameActivity extends AppCompatActivity implements
             return;
 
         // Check if the player hasn't been added
-        if (!map.isPlayer(playerId))
+        if (!map.hasObject(playerId))
             // Add the player
             map.addMapItem(new Player(playerId, GameSettings.getPlayerName(), new LatLng(0, 0)));
 
@@ -484,11 +497,28 @@ public class GameActivity extends AppCompatActivity implements
             return;
 
         // Check if the player has joined
-        if (map.isPlayer(playerId))
+        if (map.hasObject(playerId))
             // Update the location of the player
             map.updatePlayer(playerId, location);
 
         Log.d("SERVER", "Location of " + playerId + " updated to " + location.toString());
+    }
+
+    @Override
+    public void onRemoteWallUpdate(String playerId, String wallId, LatLng point) {
+        if(myId.equals(playerId))
+            return; // We sent this ourselves
+        if(!map.hasObject(wallId)) {
+            map.addMapItem(new Wall(wallId, playerId, new LatLng[]{point}, context));
+            Log.d("SERVER", "New wall created by " + playerId + " at " + point.toString());
+        } else {
+            Wall remoteWall = (Wall)map.getItemById(wallId);
+            if(!remoteWall.getOwnerId().equals(playerId))
+                return;
+            remoteWall.addPoint(point);
+            Log.d("SERVER", "Update wall " + wallId + " of " + playerId + " by " + point.toString());
+            map.redraw(remoteWall.getId());
+        }
     }
 
     // endregion
