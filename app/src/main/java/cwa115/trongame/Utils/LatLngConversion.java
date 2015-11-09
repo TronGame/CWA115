@@ -79,14 +79,29 @@ public class LatLngConversion {
         return result;
     }
 
+    /**
+     * Convert a distance in meter to a distance between LatLngs.
+     * @param distance the distance to be converted
+     * @return the converted distance
+     */
     public static double latLngDistanceToMeter(double distance) {
         return distance / METER_TO_LATLNG;
     }
 
+    /**
+     * Convert a distance between LatLngs to a distance in meter.
+     * @param distance the distance to be converted
+     * @return the converted distance
+     */
     public static double meterToLatLngDistance(double distance) {
         return distance * METER_TO_LATLNG;
     }
 
+    /**
+     * Extracts a point from a given JSON object.
+     * @param object the given JSON object
+     * @return the extracted point
+     */
     public static LatLng getPointFromJSON(JSONObject object) {
         try {
             return new LatLng(object.getDouble("latitude"), object.getDouble("longitude"));
@@ -95,6 +110,11 @@ public class LatLngConversion {
         }
     }
 
+    /**
+     * Creates a JSON object from a point.
+     * @param point the given LatLng
+     * @return a JSON object representing the given point
+     */
     public static JSONObject getJSONFromPoint(LatLng point) {
         JSONObject result = new JSONObject();
         try {

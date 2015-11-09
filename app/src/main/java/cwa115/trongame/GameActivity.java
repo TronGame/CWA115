@@ -452,6 +452,10 @@ public class GameActivity extends AppCompatActivity implements
         socket.sendMessage(joinMessage, "join");
     }
 
+    /**
+     * Send an extra wall point to the other players.
+     * @param point the point to be remotely added to the wall
+     */
     private void sendUpdateWall(LatLng point) {
         JSONObject updateWallMessage = new JSONObject();
         try {
@@ -504,6 +508,12 @@ public class GameActivity extends AppCompatActivity implements
         Log.d("SERVER", "Location of " + playerId + " updated to " + location.toString());
     }
 
+    /**
+     * Called when a remote wall is extended by one point, or created
+     * @param playerId the player identifier of the wall owner
+     * @param wallId the identifier of the wall
+     * @param point the newly added point
+     */
     @Override
     public void onRemoteWallUpdate(String playerId, String wallId, LatLng point) {
         if(myId.equals(playerId))
