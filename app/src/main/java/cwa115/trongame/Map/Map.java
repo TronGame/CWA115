@@ -41,6 +41,10 @@ public class Map implements OnMapReadyCallback {
         mapFragment.getMapAsync(this);
     }
 
+    public Wall[] getWalls() {
+        return (Wall[])walls.toArray();
+    }
+
     /**
      * Add a map item to draw on the map
      * @param item the item that needs to be added

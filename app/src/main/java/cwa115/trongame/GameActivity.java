@@ -37,6 +37,7 @@ import cwa115.trongame.Location.LocationObserver;
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
+import cwa115.trongame.Network.GameUpdateHandler;
 import cwa115.trongame.Network.SocketIoConnection;
 import cwa115.trongame.Network.SocketIoHandler;
 import cwa115.trongame.Sensor.SensorDataObservable;
@@ -49,19 +50,21 @@ import cwa115.trongame.Utils.Vector2D;
  * The Game activity
  * Controls all of the game functionality
  * implements:
+ *      TODO: update this
  *      LocationObserver: ability receive location updates with updateLocation function
  *      SensorDataObserver: ability to receive sensor updates with updateSensor function
  *      ApiListener: ability to receive snapped location results with handleApiResult function
- *      SocketIoHandler: TODO add this
+ *      SocketIoHandler: ability to receive information from other players over the socket
+ *                          using the onPlayerJoined and onRemoteLocationChange functions
  */
 public class GameActivity extends AppCompatActivity implements
-        LocationObserver, SensorDataObserver, ApiListener<ArrayList<LatLng>>, SocketIoHandler {
+        LocationObserver, SensorDataObserver, ApiListener<ArrayList<LatLng>> {
 
     // region Variables
     // -----------------------------------------------------------------------------------------------------------------
     // Location thresholds
     private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(10);   // About 10m
-    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(30);    // About 10m
+    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(10);    // About 10m
     private static final double MAX_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(1);    // About 1m
 
     // Permission request ids
@@ -83,13 +86,13 @@ public class GameActivity extends AppCompatActivity implements
 
     // Wall data
     private boolean creatingWall = false;               // Is the player creating a wall
-    private Wall wall;                              // The Wall object
+    private String wallId;                                // The Wall id
 
     // Player id
     private String myId;
 
-    // Socket IO connection
-    private SocketIoConnection socket;
+    // Game update handler
+    private GameUpdateHandler gameUpdateHandler;
 
     // endregion
 
@@ -134,11 +137,6 @@ public class GameActivity extends AppCompatActivity implements
         // Request permissions before doing anything else (after initializing the location listener!)
         requestPermissions();
 
-        // Networking
-        // -----------------------------------------------------------------------------------------
-        // Create the socket connection object
-        socket = new SocketIoConnection("testA1", "1", this);
-
         // Map Object
         // -----------------------------------------------------------------------------------------
         // Create the map object
@@ -159,6 +157,11 @@ public class GameActivity extends AppCompatActivity implements
         for (Player player : players) {
             map.addMapItem(player);         // Add the players to the map object
         }
+
+        // Networking
+        // -----------------------------------------------------------------------------------------
+        // Create the gameUpdateHandler object
+        gameUpdateHandler = new GameUpdateHandler(myId, "testA1", "1", map, context);
     }
 
     // endregion
@@ -204,23 +207,25 @@ public class GameActivity extends AppCompatActivity implements
             snappedGpsLoc = newSnappedGpsLoc;   // update the snapped location
 
             // Send the player location
-            sendMyLocation(snappedGpsLoc);
+            gameUpdateHandler.sendMyLocation(snappedGpsLoc);
 
             // Wall functionality
-            if (wall != null) {
+            Wall[] walls = map.getWalls();
+            for (int i = 0; i<walls.length; i++) {
                 // Check if the player isn't to close to a wall
-                double distanceToWall = wall.getDistanceTo(snappedGpsLoc);
+                double distanceToWall = walls[i].getDistanceTo(snappedGpsLoc);
                 if (distanceToWall < MAX_WALL_DISTANCE) {
                     // Show the "player to close to wall" notification
                     showNotification(getString(R.string.wall_too_close), Toast.LENGTH_LONG);
                 }
+            }
 
-                // Update the wall (this must happen after the "player to close to wall" check
-                if (creatingWall) {
-                    wall.addPoint(snappedGpsLoc);   // Add the new point to the wall
-                    sendUpdateWall(snappedGpsLoc);
-                    map.redraw(wall.getId());       // Redraw the wall on the map
-                }
+            Wall wall = (Wall)map.getItemById(wallId);
+            // Update the wall (this must happen after the "player to close to wall" check
+            if (creatingWall) {
+                wall.addPoint(snappedGpsLoc);   // Add the new point to the wall
+                gameUpdateHandler.sendUpdateWall(snappedGpsLoc, wallId);
+                map.redraw(wall.getId());       // Redraw the wall on the map
             }
 
         } else {
@@ -229,7 +234,7 @@ public class GameActivity extends AppCompatActivity implements
             map.updateCamera(gpsLoc);           // Zoom to there as well
 
             // Send the player location
-            sendMyLocation(gpsLoc);
+            gameUpdateHandler.sendMyLocation(gpsLoc);
 
             // Show the "player to far from road" notification
             showNotification(getString(R.string.road_too_far), Toast.LENGTH_LONG);
@@ -250,7 +255,8 @@ public class GameActivity extends AppCompatActivity implements
             // Start creating a wall
             creatingWall = true;                        // The player is now creating a wall
             // Create the wall object
-            wall = new Wall("W" + GameSettings.generateUniqueId(), myId, new LatLng[0], context);
+            Wall wall = new Wall("W" + GameSettings.generateUniqueId(), myId, new LatLng[0], context);
+            wallId = wall.getId();                      // Store the wall id
             map.addMapItem(wall);                       // Add the wall to the map
 
             // Update the button
@@ -262,7 +268,9 @@ public class GameActivity extends AppCompatActivity implements
         } else {
             // Stop creating the wall
             creatingWall = false;                       // The player is no longer creating a wall
-            wall = null;                                // Destroy the wall object
+
+            // map.removeMapItem(wallId);                  // Remove the wall from the map TODO: should this happen?
+            wallId = null;                              // Destroy the wall object
 
             // Update the button
             Button button = (Button) view.findViewById(R.id.wallButton);
@@ -275,13 +283,12 @@ public class GameActivity extends AppCompatActivity implements
 
     /**
      * Called when the clear wall button is pressed
-     *
      * @param view
      */
     public void clearWall(View view) {
         // Is there a wall right now?
-        if (wall != null) {
-            map.clear(wall.getId());    // Clear the wall from the map
+        if (wallId != null) {
+            map.clear(wallId);    // Clear the wall from the map
         }
     }
 
@@ -413,94 +420,6 @@ public class GameActivity extends AppCompatActivity implements
     @Override
     public int getCountLimit() {
         return 1;
-    }
-
-    // endregion
-
-    // region Networking
-    // ---------------------------------------------------------------------------------------------
-
-    /**
-     * Send the current player location
-     *
-     * @param location the location of the player
-     */
-    private void sendMyLocation(LatLng location) {
-        // Create the message that will be send over the socket connection
-        JSONObject locationMessage = new JSONObject();
-        try {
-            locationMessage.put("playerId", myId);
-            locationMessage.put("playerName", GameSettings.getPlayerName());
-            locationMessage.put("location", LatLngConversion.getJSONFromPoint(location));
-        } catch (JSONException e) {
-            // end of the world
-        }
-
-        // Send the message over the socket
-        socket.sendMessage(locationMessage, "updatePosition");
-    }
-
-    /**
-     * Send an extra wall point to the other players.
-     * @param point the point to be remotely added to the wall
-     */
-    private void sendUpdateWall(LatLng point) {
-        JSONObject updateWallMessage = new JSONObject();
-        try {
-            updateWallMessage.put("playerId", myId);
-            updateWallMessage.put("wallId", wall.getId());
-            updateWallMessage.put("point", LatLngConversion.getJSONFromPoint(point));
-        } catch(JSONException e) {
-            // end of the world
-        }
-        socket.sendMessage(updateWallMessage, "updateWall");
-    }
-
-    /**
-     * Change the location of another player
-     *
-     * @param playerId The id of the updated player
-     * @param location The location of the updated player
-     */
-    @Override
-    public void onRemoteLocationChange(String playerId, String playerName, LatLng location) {
-        // Check if the message we received originates from ourselves
-        if (myId.equals(playerId))
-            return;
-
-        // Check if we alread know about the player
-        if (map.hasObject(playerId)) {
-            // Update the location of the player
-            map.updatePlayer(playerId, location);
-        } else {
-            // Add player to map
-            map.addMapItem(new Player(playerId, playerName, location));
-        }
-
-        Log.d("SERVER", "Location of " + playerId + " updated to " + location.toString());
-    }
-
-    /**
-     * Called when a remote wall is extended by one point, or created
-     * @param playerId the player identifier of the wall owner
-     * @param wallId the identifier of the wall
-     * @param point the newly added point
-     */
-    @Override
-    public void onRemoteWallUpdate(String playerId, String wallId, LatLng point) {
-        if(myId.equals(playerId))
-            return; // We sent this ourselves
-        if(!map.hasObject(wallId)) {
-            map.addMapItem(new Wall(wallId, playerId, new LatLng[]{point}, context));
-            Log.d("SERVER", "New wall created by " + playerId + " at " + point.toString());
-        } else {
-            Wall remoteWall = (Wall)map.getItemById(wallId);
-            if(!remoteWall.getOwnerId().equals(playerId))
-                return;
-            remoteWall.addPoint(point);
-            Log.d("SERVER", "Update wall " + wallId + " of " + playerId + " by " + point.toString());
-            map.redraw(remoteWall.getId());
-        }
     }
 
     // endregion

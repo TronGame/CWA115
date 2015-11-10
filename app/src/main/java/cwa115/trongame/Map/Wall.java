@@ -26,13 +26,13 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
 
     static final private int LINE_WIDTH = 15;
 
-    private String id;
-    private String ownerId;
-    private ArrayList<LatLng> points;
-    private Polyline line;
+    private String id;                      // The wall id
+    private String ownerId;                 // The id of the owner
+    private ArrayList<LatLng> points;       // The list of points that the wall is made out of
+    private Polyline line;                  // The line object that is drawn on the map
 
-    private GeoApiContext context;
-    private SnappedPointHandler snappedPointHandler;
+    private SnappedPointHandler snappedPointHandler;    // Controls location snapping
+    private GeoApiContext context;                      // The context that takes care of the location snapping
 
     /**
      * Construct from an array of points.
@@ -158,6 +158,9 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
             return Math.min(shortestPointDist, shortestPointDist);
     }
 
+    /**
+     * Get the id of the owner of the wall
+     */
     public String getOwnerId() {
         return ownerId;
     }

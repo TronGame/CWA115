@@ -98,27 +98,11 @@ public class SocketIoConnection implements Handler.Callback {
     public boolean handleMessage(Message msg) {
         try {
             JSONObject message = new JSONObject(msg.getData().getString(BUNDLE_MESSAGE_KEY));
-            switch(message.getString("type")) {
-                case "updatePosition":
-                    onReceiveHandler.onRemoteLocationChange(
-                            message.getString("playerId"),
-                            message.getString("playerName"),
-                            LatLngConversion.getPointFromJSON(message.getJSONObject("location"))
-                    );
-                    break;
-                case "updateWall":
-                    onReceiveHandler.onRemoteWallUpdate(
-                            message.getString("playerId"),
-                            message.getString("wallId"),
-                            LatLngConversion.getPointFromJSON(message.getJSONObject("point"))
-                    );
-                    break;
-            }
-
-            return true;
-        } catch(JSONException e) {
+            return onReceiveHandler.onMessage(message);
+        } catch (JSONException e) {
             e.printStackTrace();
             return false;
         }
+
     }
 }

@@ -2,10 +2,11 @@ package cwa115.trongame.Network;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONObject;
+
 /**
  *
  */
 public interface SocketIoHandler {
-    void onRemoteLocationChange(String playerId, String playerName, LatLng location);
-    void onRemoteWallUpdate(String playerId, String wallId, LatLng points);
+    public boolean onMessage(JSONObject message);
 }
