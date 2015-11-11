@@ -1,6 +1,5 @@
-package cwa115.trongame.Network;
+package cwa115.trongame.Game;
 
-import android.graphics.Color;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -9,10 +8,11 @@ import com.google.maps.GeoApiContext;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import cwa115.trongame.GameSettings;
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
+import cwa115.trongame.Network.SocketIoConnection;
+import cwa115.trongame.Network.SocketIoHandler;
 import cwa115.trongame.Utils.LatLngConversion;
 
 /**

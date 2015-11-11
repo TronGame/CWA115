@@ -11,6 +11,8 @@ import com.google.maps.model.SnappedPoint;
 
 import java.util.ArrayList;
 
+import cwa115.trongame.Utils.LatLngConversion;
+
 /**
  * Created by Peter on 09/11/2015.
  *
@@ -47,23 +49,10 @@ public class SnappedPointHandler implements Handler.Callback {
                 // The result needs to be stored in a bundle so that it can be send to the main thread
                 // This bundle can only store certain objects, which is whe the result
                 // needs to be converted to two lists of doubles
-                double[] latitudes = new double[result.length];
-                double[] longitudes = new double[result.length];
-
-                for (int i=0; i<result.length; i++) {
-                    latitudes[i] = result[i].location.lat;
-                    longitudes[i] = result[i].location.lng;
-                }
-
-                // Create the bundle from the latitudes and the longitudes
-                Bundle bundle = new Bundle();
-                bundle.putDoubleArray("lat", latitudes);
-                bundle.putDoubleArray("lng", longitudes);
-
+                Bundle bundle = LatLngConversion.toBundle(result);
                 // Create the message for the main thread
                 Message msg = new Message();
                 msg.setData(bundle);
-
                 // Send the message to the main thread (this calls handleMessage further in the code)
                 mainHandler.sendMessage(msg);
             }
@@ -103,23 +92,9 @@ public class SnappedPointHandler implements Handler.Callback {
     @Override
     public boolean handleMessage(Message msg) {
         // Transform the information stored in the message to a list of LatLngs that can be send to the listener
-        double[] latitudes = msg.getData().getDoubleArray("lat");
-        double[] longitudes = msg.getData().getDoubleArray("lng");
-
-        if (longitudes == null || latitudes == null) {
-            Log.d("ERROR", "this shouldn't have happened?");
-            return false;
-        }
-
-        ArrayList<LatLng> result =  new ArrayList<>();
-
-        for (int i=0; i<latitudes.length; i++) {
-            result.add(new LatLng(latitudes[i], longitudes[i]));
-        }
-
+        ArrayList<LatLng> result =  LatLngConversion.bundleToLatLng(msg.getData());
         // The handler is now finished
         this.finished = true;
-
         // Send the result to the listener
         return listener.handleApiResult(result);
     }

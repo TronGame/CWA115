@@ -9,7 +9,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,8 +26,8 @@ import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
 
 import java.util.ArrayList;
-import java.util.Random;
 
+import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.GoogleMapsApi.ApiListener;
 import cwa115.trongame.GoogleMapsApi.SnappedPointHandler;
 import cwa115.trongame.Location.CustomLocationListener;
@@ -36,7 +35,7 @@ import cwa115.trongame.Location.LocationObserver;
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
-import cwa115.trongame.Network.GameUpdateHandler;
+import cwa115.trongame.Game.GameUpdateHandler;
 import cwa115.trongame.Sensor.SensorDataObservable;
 import cwa115.trongame.Sensor.SensorDataObserver;
 import cwa115.trongame.Sensor.SensorFlag;

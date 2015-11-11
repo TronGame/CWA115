@@ -1,7 +1,5 @@
 package cwa115.trongame.Map;
 
-import android.graphics.Color;
-
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Polyline;
@@ -12,7 +10,6 @@ import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import cwa115.trongame.GoogleMapsApi.ApiListener;
 import cwa115.trongame.GoogleMapsApi.SnappedPointHandler;
@@ -106,29 +103,38 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
 
     /**
      * Returns the distance between a point and the wall.
-     * This distance is defined as the closest distance to either one of the segments of the wall
-     * or one of the points of the wall. The distance to a wall segment is however only defined
-     * when perpendicular from the point to the wall segment intersects the segment.
      * @param point The point that the distance is measured to
      * @return the distance between the point and the wall.
      */
     public double getDistanceTo(LatLng point) {
-        Vector2D pt = new Vector2D(point);
+        return LatLngConversion.getDistanceToLine(point, points);
+    }
 
-        double shortestPerpendDist = Double.POSITIVE_INFINITY;
-        double shortestPointDist = Double.POSITIVE_INFINITY;
+    public boolean hasCrossed(LatLng last, LatLng current, double minDistance, boolean removeLastAdded) {
+        boolean awayFromPlayer = !removeLastAdded;
+        ArrayList<LatLng> points = new ArrayList<>(this.points);
+        int n = points.size()-1;
+        while (n>=0 && !awayFromPlayer) {
+            if (LatLngConversion.getDistancePoints(current, points.get(n)) < minDistance)
+                points.remove(n);
+            else
+                awayFromPlayer = true;
+            n+=1;
+        }
+        double distance = LatLngConversion.getDistanceToLine(current, points);
+        if (distance < minDistance) {return true; }
 
+        // Has the player crossed the wall ?
+        // TODO: this may cause a problem if the player cycles around the end of a wall !
+        boolean hasCrossed = false;
+        Vector2D pt1 = new Vector2D(current);
+        Vector2D pt2 = new Vector2D(last);
         int end = points.size();
 
         for (int i = 0; i < end; i++) {
             Vector2D ptA = new Vector2D(points.get(i));
-            double currentDistance = ptA.subtract(pt).getLength();
-
-            if (currentDistance <= shortestPointDist)
-                shortestPointDist = currentDistance;
-
             if (i + 1 < end) {
-                Vector2D ptB = new Vector2D(points.get(i+1));
+                Vector2D ptB = new Vector2D(points.get(i + 1));
 
                 // Direction vector of the line AB
                 Vector2D ab = ptB.subtract(ptA);
@@ -137,26 +143,33 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
                 // Direction vector perpendicular to the line AB
                 Vector2D v = new Vector2D(ab.y, -ab.x);
 
-                Vector2D r = ptA.subtract(pt);  // Vector from pt to ptA
-                Vector2D f = ptB.subtract(pt);  // Vector from pt to ptB
+                Vector2D r1 = ptA.subtract(pt1);  // Vector from pt1 to ptA
+                Vector2D f1 = ptB.subtract(pt1);  // Vector from pt1 to ptB
+                
+                double a1 = ab.product(r1);       // Length of the projection of r1 on the line AB
+                double b1 = ab.product(f1);       // Length of the projection of f1 on the line AB
+                double v1 = v.product(r1);        // Length of the projection of r1 on v
+                
+                Vector2D r2 = ptA.subtract(pt2);  // Vector from pt2 to ptA
+                Vector2D f2 = ptB.subtract(pt2);  // Vector from pt2 to ptB
 
-                double a = ab.product(r);       // Length of the projection of r on the line AB
-                double b = ab.product(f);       // Length of the projection of r on the line AB
+                double a2 = ab.product(r2);       // Length of the projection of r2 on the line AB
+                double b2 = ab.product(f2);       // Length of the projection of f2 on the line AB
+                double v2 = v.product(r1);        // Length of the projection of r2 on v
 
                 // if a and b have the same sign the projections of r and f on AB
                 // are facing the same direction. This means that the perpendicular projection
-                // of pt on AB isn't in between ptA and ptB. If this was the case the distance
-                // to the line AB can't be taken into account.
-                if (Math.signum(a*b)!=-1 && shortestPerpendDist > v.product(r)) {
-                    shortestPerpendDist = Math.abs(v.product(r));
+                // of pt on AB isn't in between ptA and ptB. We check this for both current and last
+                // current and last also need to be on opposite sides of the line segment
+                // this is what the last check verifies
+                if (Math.signum(a1 * b1) != -1 && Math.signum(a2 * b2) != -1 && Math.signum(v1 * v2) != -1) {
+                    hasCrossed = true;
+                    break;
                 }
             }
         }
-
-        if (shortestPerpendDist == Double.POSITIVE_INFINITY)
-            return shortestPointDist;
-        else
-            return Math.min(shortestPointDist, shortestPointDist);
+            
+        return hasCrossed;
     }
 
     /**

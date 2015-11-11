@@ -10,7 +10,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import cwa115.trongame.Test.SensorData;
+import cwa115.trongame.Game.GameSettings;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;

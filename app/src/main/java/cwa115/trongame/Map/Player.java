@@ -6,7 +6,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import cwa115.trongame.GameSettings;
+import cwa115.trongame.Game.GameSettings;
 
 /**
  * Created by Peter on 15/10/2015.
