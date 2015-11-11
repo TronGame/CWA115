@@ -21,8 +21,21 @@ public class GameUpdateHandler implements SocketIoHandler {
     private SocketIoConnection socket;
     private Map map;
     private String myId;
-    private GeoApiContext context;                      // The context that takes care of the location snapping
+    private GeoApiContext context;          // The context that takes care of the location snapping
 
+    /**
+     * Contains protocol constants (i.e. JSON field names).
+     */
+    private class Protocol {
+        private static final String MESSAGE_TYPE = "type";
+        private static final String UPDATE_POSITION_MESSAGE = "updatePosition";
+        private static final String UPDATE_WALL_MESSAGE = "updateWall";
+        private static final String PLAYER_ID = "playerId";
+        private static final String PLAYER_NAME = "playerName";
+        private static final String PLAYER_LOCATION = "location";
+        private static final String WALL_ID = "wallId";
+        private static final String WALL_POINT = "point";
+    }
 
     public GameUpdateHandler(String playerId, String groupId, String sessionId, Map map, GeoApiContext context) {
         this.map = map;
@@ -33,19 +46,23 @@ public class GameUpdateHandler implements SocketIoHandler {
 
     public boolean onMessage(JSONObject message) {
         try {
-            switch(message.getString("type")) {
-                case "updatePosition":
+            switch(message.getString(Protocol.MESSAGE_TYPE)) {
+                case Protocol.UPDATE_POSITION_MESSAGE:
                     onRemoteLocationChange(
-                            message.getString("playerId"),
-                            message.getString("playerName"),
-                            LatLngConversion.getPointFromJSON(message.getJSONObject("location"))
+                            message.getString(Protocol.PLAYER_ID),
+                            message.getString(Protocol.PLAYER_NAME),
+                            LatLngConversion.getPointFromJSON(
+                                    message.getJSONObject(Protocol.PLAYER_LOCATION)
+                            )
                     );
                     break;
-                case "updateWall":
+                case Protocol.UPDATE_WALL_MESSAGE:
                     onRemoteWallUpdate(
-                            message.getString("playerId"),
-                            message.getString("wallId"),
-                            LatLngConversion.getPointFromJSON(message.getJSONObject("point"))
+                            message.getString(Protocol.PLAYER_ID),
+                            message.getString(Protocol.WALL_ID),
+                            LatLngConversion.getPointFromJSON(
+                                    message.getJSONObject(Protocol.WALL_POINT)
+                            )
                     );
                     break;
             }
@@ -68,7 +85,7 @@ public class GameUpdateHandler implements SocketIoHandler {
         if (myId.equals(playerId))
             return;
 
-        // Check if we alread know about the player
+        // Check if we already know about the player
         if (map.hasObject(playerId)) {
             // Update the location of the player
             map.updatePlayer(playerId, location);
@@ -111,15 +128,15 @@ public class GameUpdateHandler implements SocketIoHandler {
         // Create the message that will be send over the socket connection
         JSONObject locationMessage = new JSONObject();
         try {
-            locationMessage.put("playerId", myId);
-            locationMessage.put("playerName", GameSettings.getPlayerName());
-            locationMessage.put("location", LatLngConversion.getJSONFromPoint(location));
+            locationMessage.put(Protocol.PLAYER_ID, myId);
+            locationMessage.put(Protocol.PLAYER_NAME, GameSettings.getPlayerName());
+            locationMessage.put(Protocol.PLAYER_LOCATION, LatLngConversion.getJSONFromPoint(location));
         } catch (JSONException e) {
             // end of the world
         }
 
         // Send the message over the socket
-        socket.sendMessage(locationMessage, "updatePosition");
+        socket.sendMessage(locationMessage, Protocol.UPDATE_POSITION_MESSAGE);
     }
 
     /**
@@ -129,12 +146,12 @@ public class GameUpdateHandler implements SocketIoHandler {
     public void sendUpdateWall(LatLng point, String wallId) {
         JSONObject updateWallMessage = new JSONObject();
         try {
-            updateWallMessage.put("playerId", myId);
-            updateWallMessage.put("wallId", wallId);
-            updateWallMessage.put("point", LatLngConversion.getJSONFromPoint(point));
+            updateWallMessage.put(Protocol.PLAYER_ID, myId);
+            updateWallMessage.put(Protocol.WALL_ID, wallId);
+            updateWallMessage.put(Protocol.WALL_POINT, LatLngConversion.getJSONFromPoint(point));
         } catch(JSONException e) {
             // end of the world
         }
-        socket.sendMessage(updateWallMessage, "updateWall");
+        socket.sendMessage(updateWallMessage, Protocol.UPDATE_WALL_MESSAGE);
     }
 }
