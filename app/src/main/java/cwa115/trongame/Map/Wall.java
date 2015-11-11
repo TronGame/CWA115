@@ -30,18 +30,19 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
     private String ownerId;                 // The id of the owner
     private ArrayList<LatLng> points;       // The list of points that the wall is made out of
     private Polyline line;                  // The line object that is drawn on the map
+    private int color;                      // The color of the wall
 
     private SnappedPointHandler snappedPointHandler;    // Controls location snapping
     private GeoApiContext context;                      // The context that takes care of the location snapping
 
     /**
      * Construct from an array of points.
-     * @param points points of the wall
      */
-    public Wall(String id, String ownerId, LatLng[] points, GeoApiContext context) {
+    public Wall(String id, String ownerId, int color, GeoApiContext context) {
         this.id = id;
         this.ownerId = ownerId;
-        this.points = new ArrayList<>(Arrays.asList(points));
+        this.color = color;
+        this.points = new ArrayList<>();
         this.context = context;
     }
 
@@ -89,7 +90,7 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
             new PolylineOptions()
                 .add(points.toArray(new LatLng[points.size()]))
                 .width(LINE_WIDTH)
-                .color(Color.BLUE)
+                .color(color)
         );
     }
 

@@ -15,7 +15,7 @@ import java.util.HashMap;
  * and controls the map view that shows the items
  */
 public class Map implements OnMapReadyCallback {
-    private int MapZoom = 15;
+    private int MapZoom = 15;                               // The default zoom on the map
 
     private MapFragment mapFragment;                        // MapFragment used to draw on
 
@@ -31,16 +31,19 @@ public class Map implements OnMapReadyCallback {
      * @param _mapFragment the map fragment object used to draw on
      */
     public Map(MapFragment _mapFragment) {
-        mapFragment = _mapFragment;
-        mapItems = new HashMap<>();
-        walls = new ArrayList<>();
-        pendingItemsDraw = new ArrayList<>();
-        pendingItemsClear = new ArrayList<>();
+        mapFragment = _mapFragment;                 // The map fragment, used to draw on
+        mapItems = new HashMap<>();                 // The list of items that are drawn on the map (contains walls as well)
+        walls = new ArrayList<>();                  // The list of walls that are drawn on the map
+        pendingItemsDraw = new ArrayList<>();       // The list of items that still have to be updated
+        pendingItemsClear = new ArrayList<>();      // The list of items that need to be cleared
 
-        cameraUpdate = CameraUpdateFactory.zoomTo(MapZoom);
-        mapFragment.getMapAsync(this);
+        cameraUpdate = CameraUpdateFactory.zoomTo(MapZoom); // The next update for the camera
+        mapFragment.getMapAsync(this);                      // Update the map (on a different thread)
     }
 
+    /**
+     * Get all of the wall objects on the map
+     */
     public Wall[] getWalls() {
         return (Wall[])walls.toArray();
     }
@@ -50,9 +53,11 @@ public class Map implements OnMapReadyCallback {
      * @param item the item that needs to be added
      */
     public void addMapItem(DrawableMapItem item) {
+        // Is the item a wall?
         if (item instanceof Wall)
             walls.add((Wall)item);
 
+        // Draw the item on the wall
         mapItems.put(item.getId(), item);
         redraw(item.getId());
     }

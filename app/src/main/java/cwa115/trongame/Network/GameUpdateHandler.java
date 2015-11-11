@@ -1,5 +1,6 @@
 package cwa115.trongame.Network;
 
+import android.graphics.Color;
 import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -16,12 +17,13 @@ import cwa115.trongame.Utils.LatLngConversion;
 
 /**
  * Created by Peter on 10/11/2015.
+ * Deals with updates from the other players
  */
 public class GameUpdateHandler implements SocketIoHandler {
-    private SocketIoConnection socket;
-    private Map map;
-    private String myId;
-    private GeoApiContext context;          // The context that takes care of the location snapping
+    private SocketIoConnection socket;                  // The socket connection
+    private Map map;                                    // The map object to draw the objects on
+    private String myId;                                // The id of the player
+    private GeoApiContext context;                      // The context that takes care of the location snapping
 
     /**
      * Contains protocol constants (i.e. JSON field names).
@@ -44,10 +46,16 @@ public class GameUpdateHandler implements SocketIoHandler {
         this.socket = new SocketIoConnection(groupId, sessionId, this);
     }
 
+    /**
+     * Deal with messages from the socket
+     * @param message The message
+     * @return did the message get handled successfully?
+     */
     public boolean onMessage(JSONObject message) {
         try {
             switch(message.getString(Protocol.MESSAGE_TYPE)) {
                 case Protocol.UPDATE_POSITION_MESSAGE:
+                    // Update the position of the player
                     onRemoteLocationChange(
                             message.getString(Protocol.PLAYER_ID),
                             message.getString(Protocol.PLAYER_NAME),
@@ -56,6 +64,7 @@ public class GameUpdateHandler implements SocketIoHandler {
                             )
                     );
                     break;
+                // Add a point to a wall
                 case Protocol.UPDATE_WALL_MESSAGE:
                     onRemoteWallUpdate(
                             message.getString(Protocol.PLAYER_ID),
@@ -107,7 +116,11 @@ public class GameUpdateHandler implements SocketIoHandler {
         if(myId.equals(playerId))
             return; // We sent this ourselves
         if(!map.hasObject(wallId)) {
-            map.addMapItem(new Wall(wallId, playerId, new LatLng[]{point}, context));
+            // Get the color of the wall from the wallid
+            String[] split = wallId.split("_");
+            int color = Integer.parseInt(split[split.length - 1]);
+
+            map.addMapItem(new Wall(wallId, playerId, color, context));
             Log.d("SERVER", "New wall created by " + playerId + " at " + point.toString());
         } else {
             Wall remoteWall = (Wall)map.getItemById(wallId);

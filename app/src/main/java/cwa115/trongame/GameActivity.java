@@ -2,6 +2,7 @@ package cwa115.trongame;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -25,10 +26,8 @@ import com.google.maps.PendingResult;
 import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
+import java.util.Random;
 
 import cwa115.trongame.GoogleMapsApi.ApiListener;
 import cwa115.trongame.GoogleMapsApi.SnappedPointHandler;
@@ -38,8 +37,6 @@ import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
 import cwa115.trongame.Network.GameUpdateHandler;
-import cwa115.trongame.Network.SocketIoConnection;
-import cwa115.trongame.Network.SocketIoHandler;
 import cwa115.trongame.Sensor.SensorDataObservable;
 import cwa115.trongame.Sensor.SensorDataObserver;
 import cwa115.trongame.Sensor.SensorFlag;
@@ -64,7 +61,7 @@ public class GameActivity extends AppCompatActivity implements
     // -----------------------------------------------------------------------------------------------------------------
     // Location thresholds
     private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(10);   // About 10m
-    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(10);    // About 10m
+    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(30);    // About 10m
     private static final double MAX_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(1);    // About 1m
 
     // Permission request ids
@@ -86,7 +83,7 @@ public class GameActivity extends AppCompatActivity implements
 
     // Wall data
     private boolean creatingWall = false;               // Is the player creating a wall
-    private String wallId;                                // The Wall id
+    private String wallId;                              // The Wall id
 
     // Player id
     private String myId;
@@ -147,6 +144,9 @@ public class GameActivity extends AppCompatActivity implements
         // -----------------------------------------------------------------------------------------
         // Store the player id
         myId = "P" + GameSettings.generateUniqueId();
+        GameSettings.setWallColor(
+                Color.rgb((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256))
+        );
 
         // Create the player objects
         Player[] players = {
@@ -211,9 +211,9 @@ public class GameActivity extends AppCompatActivity implements
 
             // Wall functionality
             Wall[] walls = map.getWalls();
-            for (int i = 0; i<walls.length; i++) {
+            for (Wall wall : walls) {
                 // Check if the player isn't to close to a wall
-                double distanceToWall = walls[i].getDistanceTo(snappedGpsLoc);
+                double distanceToWall = wall.getDistanceTo(snappedGpsLoc);
                 if (distanceToWall < MAX_WALL_DISTANCE) {
                     // Show the "player to close to wall" notification
                     showNotification(getString(R.string.wall_too_close), Toast.LENGTH_LONG);
@@ -255,7 +255,11 @@ public class GameActivity extends AppCompatActivity implements
             // Start creating a wall
             creatingWall = true;                        // The player is now creating a wall
             // Create the wall object
-            Wall wall = new Wall("W" + GameSettings.generateUniqueId(), myId, new LatLng[0], context);
+            Wall wall = new Wall(
+                    "W" + GameSettings.generateUniqueId() + "_" + GameSettings.getWallColor(),
+                    myId,
+                    GameSettings.getWallColor(),
+                    context);
             wallId = wall.getId();                      // Store the wall id
             map.addMapItem(wall);                       // Add the wall to the map
 
@@ -269,7 +273,7 @@ public class GameActivity extends AppCompatActivity implements
             // Stop creating the wall
             creatingWall = false;                       // The player is no longer creating a wall
 
-            // map.removeMapItem(wallId);                  // Remove the wall from the map TODO: should this happen?
+            // map.removeMapItem(wallId);               // Remove the wall from the map TODO: should this happen?
             wallId = null;                              // Destroy the wall object
 
             // Update the button

@@ -10,6 +10,7 @@ public final class GameSettings {
 
     private static String playerName;
     private static int playerMarkerImage;
+    private static int wallColor;
 
     /**
      * Sets the name of the local player.
@@ -40,6 +41,17 @@ public final class GameSettings {
     public static int getPlayerMarkerImage() {
         return playerMarkerImage;
     }
+
+    /**
+     * @return the color of the wall
+     */
+    public static int getWallColor() {return wallColor; }
+
+    /**
+     * Set the wall color
+     * @param color the given color
+     */
+    public static void setWallColor(int color) {wallColor = color; }
 
     /**
      * (Randomly) generates a unique ID.
