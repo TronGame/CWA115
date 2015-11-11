@@ -11,28 +11,67 @@
     android:background="@drawable/basic_background"
     >
 
-    <EditText
-        android:textColor="@color/basicBlack"
-        android:id="@+id/name_entry"
-        android:textSize="30sp"
-        android:gravity="center"
-        android:hint="@string/enter_name"
-        android:layout_width="400dp"
-        android:layout_height="35dp"
-        android:paddingLeft="10dp"
-        android:paddingRight="10dp"
-        android:background="@drawable/rounded_textview"
-        android:layout_above="@+id/start_button"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="36dp" />
-
-    <com.facebook.login.widget.LoginButton
-        android:id="@+id/facebook_login_button"
-        android:layout_width="wrap_content"
+    <ViewFlipper
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="100dp"
-        android:layout_marginBottom="30dp" />
+        android:layout_above="@+id/start_button"
+        android:layout_marginBottom="30dp"
+        android:id="@+id/login_view_flipper">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <com.facebook.login.widget.LoginButton
+                android:id="@+id/facebook_login_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="OR"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="15dp"
+                android:layout_marginTop="15dp"/>
+
+            <EditText
+                android:textColor="@color/basicBlack"
+                android:id="@+id/name_entry"
+                android:textSize="30sp"
+                android:gravity="center"
+                android:hint="@string/enter_name"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:background="@drawable/rounded_textview" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Welcome back!"
+                android:id="@+id/login_welcome_textview"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+
+        </LinearLayout>
+
+    </ViewFlipper>
+
 
     <TextView
         android:id="@+id/facebook_token"
