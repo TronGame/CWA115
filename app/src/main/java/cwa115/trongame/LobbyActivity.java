@@ -3,11 +3,8 @@ package cwa115.trongame;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -103,10 +100,13 @@ public class LobbyActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
+        try {
+            createLobby(new JSONArray(
+                    getDataFromServer("http://trongame.ddns.net:8880/listGames"))
+            );
+        } catch (Exception e) {
 
-
-
-        /*createLobby(getDataFromServer(BLABLABLA));*/
+        }
     }
     public void showHostingActivity(View view) {
         startActivity(new Intent(this, HostingActivity.class));
