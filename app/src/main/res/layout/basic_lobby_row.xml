@@ -9,7 +9,6 @@
         android:id="@+id/gameName"
         android:textSize="20sp"
         android:textColor="@color/basicBlack"
-        android:text="gameName"
         android:layout_marginLeft="37dp"
         android:layout_marginStart="37dp"
         android:layout_alignParentTop="true"
@@ -22,7 +21,6 @@
         android:id="@+id/hostName"
         android:textSize="12sp"
         android:textColor="@color/basicBlack"
-        android:text="hostName"
         android:layout_below="@+id/gameName"
         android:layout_alignRight="@+id/gameName"
         android:layout_alignEnd="@+id/gameName" />
@@ -33,7 +31,6 @@
         android:id="@+id/nb_players"
         android:textSize="20sp"
         android:textColor="@color/basicBlack"
-        android:text="#p/mP"
         android:layout_marginRight="93dp"
         android:layout_marginEnd="93dp"
         android:layout_centerVertical="true"

@@ -6,10 +6,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URL;
@@ -20,6 +22,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import cwa115.trongame.Lists.CustomAdapter;
+import cwa115.trongame.Lists.ListItem;
 
 public class LobbyActivity extends AppCompatActivity {
 
@@ -96,7 +103,8 @@ public class LobbyActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
-        lobbyList = (ListView) findViewById(R.id.mainList);
+
+
 
         /*createLobby(getDataFromServer(BLABLABLA));*/
     }
@@ -104,11 +112,23 @@ public class LobbyActivity extends AppCompatActivity {
         startActivity(new Intent(this, HostingActivity.class));
     }
 
-    /*public void createLobby(JSONArray timsArray) {
-        ArrayAdapter lobbyListAdapter= new ArrayAdapter(this, )
-        for(int i=0; i<timsArray.length();i++){
-            JSONObject newRoom = timsArray.getJSONObject(i);
+    public void createLobby(JSONArray timsArray) {
 
+        List<ListItem> listOfRooms = new ArrayList<ListItem>();
+
+        try {
+            for (int i = 0; i < timsArray.length(); i++) {
+                JSONObject newRoom = timsArray.getJSONObject(i);
+                listOfRooms.add(new ListItem(newRoom.getString("name"), newRoom.getString("owner"),newRoom.getString("maxPlayers").toString() ));
+            }
+        }catch (JSONException e){
+            e.printStackTrace();
         }
-    }*/
+
+        lobbyList = (ListView) findViewById(R.id.mainList);
+        lobbyList.setClickable(true);
+        CustomAdapter adapter = new CustomAdapter(this, listOfRooms);
+        lobbyList.setAdapter(adapter);
+
+    }
 }
