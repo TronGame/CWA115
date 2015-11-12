@@ -3,8 +3,15 @@ package cwa115.trongame;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.net.URL;
 
 import java.io.BufferedReader;
@@ -17,7 +24,7 @@ import java.net.MalformedURLException;
 public class LobbyActivity extends AppCompatActivity {
 
     String dataToPut;
-
+    ListView lobbyList;
 
     public String getDataFromServer(String URL){
         String result="";
@@ -47,11 +54,6 @@ public class LobbyActivity extends AppCompatActivity {
         return result;
     };
 
-    /*****************************can be reused in your app*******************************
-     * a method to update or add data to the server
-     * @param URL
-     * @return
-     */
 
     public String putDataToServer(String URL){
         String status="Put the data to server successfully!";
@@ -94,8 +96,19 @@ public class LobbyActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
+        lobbyList = (ListView) findViewById(R.id.mainList);
+
+        /*createLobby(getDataFromServer(BLABLABLA));*/
     }
     public void showHostingActivity(View view) {
         startActivity(new Intent(this, HostingActivity.class));
     }
+
+    /*public void createLobby(JSONArray timsArray) {
+        ArrayAdapter lobbyListAdapter= new ArrayAdapter(this, )
+        for(int i=0; i<timsArray.length();i++){
+            JSONObject newRoom = timsArray.getJSONObject(i);
+
+        }
+    }*/
 }

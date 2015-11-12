@@ -23,7 +23,7 @@
             android:textSize="35sp"
             android:textColor="@color/basicBlack"/>
         <ListView
-            android:id="@+id/lobbyList"
+            android:id="@+id/mainList"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:background="@color/transparentWhite"
