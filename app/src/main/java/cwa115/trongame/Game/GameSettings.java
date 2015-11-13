@@ -11,6 +11,7 @@ public final class GameSettings {
     private static String playerName;
     private static int playerMarkerImage;
     private static int wallColor;
+    private static String token;
 
     /**
      * Sets the name of the local player.
@@ -59,5 +60,9 @@ public final class GameSettings {
      */
     public static String generateUniqueId() {
         return UUID.randomUUID().toString();
+    }
+
+    public static void setToken(String tk) {
+        token = tk;
     }
 }

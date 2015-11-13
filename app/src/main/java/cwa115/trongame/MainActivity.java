@@ -2,18 +2,18 @@ package cwa115.trongame;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
-
-import cwa115.trongame.Game.GameSettings;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -30,36 +30,76 @@ import com.facebook.login.widget.LoginButton;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import cwa115.trongame.Game.GameSettings;
+import cwa115.trongame.Network.HttpConnector;
+
 public class MainActivity extends AppCompatActivity {
 
     private final static int LOGIN_HOME = 0;
     private final static int LOGIN_WELCOME = 1;
     private final static int LOGIN_REGISTER = 2;
 
+    private final static String ACCOUNT_NAME_KEY = "accountName";
+    private final static String ACCOUNT_TOKEN_KEY = "accountToken";
+
     private CallbackManager callbackManager;
     private AccessToken token;
+    private SharedPreferences settings;
+
+    private HttpConnector dataServer;
+    private boolean accountRegistered;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        FacebookSdk.sdkInitialize(getApplicationContext());
         // Initialize the SDK before executing any other operations,
         // especially, if you're using Facebook UI elements.
+        FacebookSdk.sdkInitialize(getApplicationContext());
 
         setContentView(R.layout.activity_main);// activity_main contains facebook login button
 
         GameSettings.setPlayerMarkerImage(R.mipmap.markerk);
-        // Initialize SensorData
-        //SensorData.Initialize(this);
-        //SensorData.Test(this); // Only for testing purposes
+        dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
+        settings = getPreferences(MODE_PRIVATE);
+        if(settings.contains(ACCOUNT_NAME_KEY) && settings.contains(ACCOUNT_TOKEN_KEY)) {
+            // User is already registered
+            accountRegistered = true;
+            greetUser();
+        } else {
+            Button button = (Button) findViewById(R.id.start_button);
+            button.setText(getString(R.string.register));
+
+            // Allow the user to create an account
+            accountRegistered = false;
+            showFacebookLogin();
+        }
+    }
+
+    private void greetUser() {
+        String accountName = settings.getString(ACCOUNT_NAME_KEY, null);
+        String accountToken = settings.getString(ACCOUNT_TOKEN_KEY, null);
+        // TODO: check the correctness of the token
+
+        EditText nameBox = (EditText) findViewById(R.id.name_entry);
+        nameBox.setText(accountName);
+        nameBox.setEnabled(false);
+        GameSettings.setPlayerName(accountName);
+        GameSettings.setToken(accountToken);
+
+        // Disable Facebook login button
+        LoginButton button = (LoginButton) findViewById(R.id.facebook_login_button);
+        button.setEnabled(false);
+    }
+
+    private void showFacebookLogin() {
         callbackManager = CallbackManager.Factory.create();
         LoginButton loginButton = (LoginButton) findViewById(R.id.facebook_login_button);
         final ViewFlipper loginViewFlipper = (ViewFlipper) findViewById(R.id.login_view_flipper);
 
         token = AccessToken.getCurrentAccessToken();
-        if(token==null) {// No facebook user is signed in
+        if(token == null) { // No facebook user is signed in
             loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                 @Override
                 public void onSuccess(LoginResult loginResult) {
@@ -81,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(getBaseContext(),"Login error",Toast.LENGTH_SHORT).show();
                 }
             });
-        }else{// A facebook user is signed in
+        } else {// A facebook user is signed in
             loginViewFlipper.setDisplayedChild(LOGIN_HOME);
             // TODO: Get profile data (saved on our server) and display welcome message
             updateFacebookUserData();
@@ -189,15 +229,48 @@ public class MainActivity extends AppCompatActivity {
         ).executeAsync();
     }
 
+    private void registerAccount(final String name) {
+        final String query = "insertAccount?name=" + name;
+        dataServer.sendRequest(query, new HttpConnector.Callback() {
+            @Override
+            public void handleResult(String data) {
+                try {
+                    JSONObject result = new JSONObject(data);
+                    String token = result.getString("token");
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString(ACCOUNT_NAME_KEY, name);
+                    editor.putString(ACCOUNT_TOKEN_KEY, token);
+                    editor.commit();
+                    accountRegistered = true;
+                    Button button = (Button) findViewById(R.id.start_button);
+                    button.setText(getString(R.string.start));
+                    Toast.makeText(
+                            getBaseContext(), getString(R.string.account_created),
+                            Toast.LENGTH_SHORT
+                    ).show();
+                    greetUser();
+                } catch(JSONException e) {
+                    Toast.makeText(
+                            getBaseContext(), getString(R.string.register_failed),
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+            }
+        });
+    }
+
     public void showGameActivity(View view) {
         EditText nameBox = (EditText) findViewById(R.id.name_entry);
         GameSettings.setPlayerName(nameBox.getText().toString());
         startActivity(new Intent(this, GameActivity.class));
     }
+
     public void showLobbyActivity(View view) {
         EditText nameBox = (EditText) findViewById(R.id.name_entry);
-        GameSettings.setPlayerName(nameBox.getText().toString());
-        startActivity(new Intent(this, LobbyActivity.class));
+        if(accountRegistered)
+            startActivity(new Intent(this, LobbyActivity.class));
+        else
+            registerAccount(nameBox.getText().toString());
     }
 
 }

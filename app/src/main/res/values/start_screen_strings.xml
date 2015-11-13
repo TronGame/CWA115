@@ -3,6 +3,7 @@
     <string name="action_settings">Settings</string>
     <string name="enter_name">Enter your name</string>
     <string name="start">START</string>
+    <string name="register">REGISTER</string>
     <string name="hosting_name">Game name</string>
     <string name="title_activity_lobby">LobbyActivity</string>
     <string name="title_activity_hosting">HostingActivity</string>
@@ -15,4 +16,6 @@
     <string name="games_available">Games available</string>
     <string name="default_roomname">Default roomname</string>
     <string name="default_readybutton">Ready/Start game</string>
+    <string name="account_created">Account created.</string>
+    <string name="register_failed">"Could not register account.</string>
 </resources>
