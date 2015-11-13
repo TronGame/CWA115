@@ -18,4 +18,5 @@
     <string name="default_readybutton">Ready/Start game</string>
     <string name="account_created">Account created.</string>
     <string name="register_failed">"Could not register account.</string>
+    <string name="hosting_failed">Could not create new game.</string>
 </resources>

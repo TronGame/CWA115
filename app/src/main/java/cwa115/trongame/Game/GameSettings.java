@@ -11,7 +11,12 @@ public final class GameSettings {
     private static String playerName;
     private static int playerMarkerImage;
     private static int wallColor;
-    private static String token;
+    private static String playerToken;
+    private static int playerId;
+    private static boolean isOwner;
+    private static int gameId;
+    private static String gameToken;
+    private static String gameName;
 
     /**
      * Sets the name of the local player.
@@ -62,7 +67,35 @@ public final class GameSettings {
         return UUID.randomUUID().toString();
     }
 
-    public static void setToken(String tk) {
-        token = tk;
+    public static void setPlayerToken(String token) {
+        playerToken = token;
+    }
+
+    public static void setPlayerId(int id) {
+        playerId = id;
+    }
+
+    public static int getPlayerId() {
+        return playerId;
+    }
+
+    public static void setIsOwner(boolean isOwner) {
+        GameSettings.isOwner = isOwner;
+    }
+
+    public static void setGameId(int gameId) {
+        GameSettings.gameId = gameId;
+    }
+
+    public static void setGameToken(String gameToken) {
+        GameSettings.gameToken = gameToken;
+    }
+
+    public static void setGameName(String gameName) {
+        GameSettings.gameName = gameName;
+    }
+
+    public static String getPlayerToken() {
+        return playerToken;
     }
 }

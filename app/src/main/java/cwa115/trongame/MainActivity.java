@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private final static int LOGIN_REGISTER = 2;
 
     private final static String ACCOUNT_NAME_KEY = "accountName";
+    private final static String ACCOUNT_ID_KEY = "accountId";
     private final static String ACCOUNT_TOKEN_KEY = "accountToken";
 
     private CallbackManager callbackManager;
@@ -63,6 +64,10 @@ public class MainActivity extends AppCompatActivity {
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
         settings = getPreferences(MODE_PRIVATE);
+        showLoginOptions();
+    }
+
+    private void showLoginOptions() {
         if(settings.contains(ACCOUNT_NAME_KEY) && settings.contains(ACCOUNT_TOKEN_KEY)) {
             // User is already registered
             accountRegistered = true;
@@ -70,6 +75,9 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Button button = (Button) findViewById(R.id.start_button);
             button.setText(getString(R.string.register));
+            // Make sure the edit text and facebook button are enabled
+            findViewById(R.id.name_entry).setEnabled(true);
+            findViewById(R.id.facebook_login_button).setEnabled(true);
 
             // Allow the user to create an account
             accountRegistered = false;
@@ -79,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void greetUser() {
         String accountName = settings.getString(ACCOUNT_NAME_KEY, null);
+        int accountId = settings.getInt(ACCOUNT_ID_KEY, 0);
         String accountToken = settings.getString(ACCOUNT_TOKEN_KEY, null);
         // TODO: check the correctness of the token
 
@@ -86,11 +95,26 @@ public class MainActivity extends AppCompatActivity {
         nameBox.setText(accountName);
         nameBox.setEnabled(false);
         GameSettings.setPlayerName(accountName);
-        GameSettings.setToken(accountToken);
+        GameSettings.setPlayerId(accountId);
+        GameSettings.setPlayerToken(accountToken);
 
         // Disable Facebook login button
-        LoginButton button = (LoginButton) findViewById(R.id.facebook_login_button);
-        button.setEnabled(false);
+        findViewById(R.id.facebook_login_button).setEnabled(false);
+    }
+
+    public void resetAccountSettings(View view) {
+        if(!accountRegistered)
+            return;
+        accountRegistered = false;
+
+        // TODO: actually remove account from server
+
+        SharedPreferences.Editor editor = settings.edit();
+        editor.remove(ACCOUNT_NAME_KEY);
+        editor.remove(ACCOUNT_ID_KEY);
+        editor.remove(ACCOUNT_TOKEN_KEY);
+        editor.commit();
+        showLoginOptions();
     }
 
     private void showFacebookLogin() {
@@ -237,8 +261,10 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     JSONObject result = new JSONObject(data);
                     String token = result.getString("token");
+                    int identifier = result.getInt("id");
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString(ACCOUNT_NAME_KEY, name);
+                    editor.putInt(ACCOUNT_ID_KEY, identifier);
                     editor.putString(ACCOUNT_TOKEN_KEY, token);
                     editor.commit();
                     accountRegistered = true;
