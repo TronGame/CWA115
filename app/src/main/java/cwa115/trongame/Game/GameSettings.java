@@ -84,17 +84,6 @@ public final class GameSettings {
 
     public static int getUserId() {return userId; }
 
-    public static void setIsOwner(boolean isOwner) {
-        GameSettings.isOwner = isOwner;
-    }
-    
-    /**
-     * @return Is this player the owner?
-     */
-    public boolean isOwner() {
-        return isOwner;
-    }
-    
     public static void setGameId(int gameId) {
         GameSettings.gameId = gameId;
     }
@@ -110,4 +99,20 @@ public final class GameSettings {
     public static String getPlayerToken() {
         return playerToken;
     }
+
+    public static void setIsOwner(boolean bool) {
+        isOwner = bool;
+    }
+
+    /**
+     * @return Is this player the owner?
+     */
+    public static boolean isOwner() {
+        return isOwner;
+    }
+
+    public static int getGameId() {
+        return gameId;
+    }
+
 }

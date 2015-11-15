@@ -4,6 +4,7 @@
     <string name="wall_button_on_text">Start Wall</string>
     <string name="wall_button_off_text">Stop Wall</string>
     <string name="wall_button_clear_text">Clear Walls</string>
+    <string name="manual_location">Manual Location</string>
 
     <string name="wall_on_notification">Wall creation enabled.</string>
     <string name="wall_off_notification">Wall creation disabled.</string>
@@ -13,5 +14,6 @@
 
     <string name="distance_count_text">Travelled Distance</string>
 
-    <string name="king_of_hill_text">Get to the highest spot in _time_ minutes!</string>
+    <string name="king_of_hill_text">Get to the highest spot in %time minutes!</string>
+    <string name="score_received_text">You have won a price. Added %score points</string>
 </resources>

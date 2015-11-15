@@ -18,28 +18,44 @@ import cwa115.trongame.Utils.LatLngConversion;
  * The event handling the event where the players need to get to the highest point possible
  */
 public class KingOfHillEvent implements GameEvent {
-    public static final int TIME = 5*60;  // in seconds
-    public static final double[] PRICES = {300, 200, 100};
+    public static final int TIME = 5*60;                        // The time the event lasts in seconds
+    public static final double[] PRICES = {300, 200, 100};      // The scores that can be received by the winners
+
+    // elements of the json
     public static final String HEIGHT = "height";
-    public static final String RESULT = "result";
     public static final String EVENT_TYPE = "king_of_hill";
 
     @Override
+    /**
+     * @return the amount of time the event takes
+     */
     public int getTime() {
         return TIME;
     }
+
     @Override
+    /**
+     * @return the type of the event
+     */
     public String getEventType() {
         return EVENT_TYPE;
     }
 
     @Override
+    /**
+     * @param gameActivity The game activity
+     * @return The message that has to be showed on the screen
+     */
     public String getNotification(GameActivity gameActivity) {
-        // TODO make this less horrible
-        return gameActivity.getString(R.string.king_of_hill_text).replaceAll("_time_", ""+TIME);
+        return gameActivity.getString(R.string.king_of_hill_text).replaceAll("%time", ""+TIME);
     }
 
     @Override
+    /**
+     * Collect the data required to calculate the score at the end of the event
+     * @param gameActivity The game activity
+     * @return JSONObject containing the result
+     */
     public JSONObject collectData(GameActivity gameActivity) {
         JSONObject eventMessage = new JSONObject();
         try {
@@ -53,6 +69,11 @@ public class KingOfHillEvent implements GameEvent {
     }
 
     @Override
+    /**
+     * Calculate the winners of an event from the data collected in collectData
+     * @param results A list of JSONObject's containing the results of the event
+     * @return A list of the scores stored in EventResults
+     */
     public ArrayList<EventResult> calculateResults(ArrayList<JSONObject> results) {
         int maxWinners = PRICES.length;
         ArrayList<Double> winners = new ArrayList<>(Arrays.asList(new Double[maxWinners]));

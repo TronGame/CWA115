@@ -307,6 +307,10 @@ public class GameActivity extends AppCompatActivity implements
         }
     }
 
+    public void addScore(int score) {
+        travelledDistance += score;
+    }
+
     // endregion
 
     // region Permission handling
@@ -471,4 +475,5 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     // endregion
+
 }
