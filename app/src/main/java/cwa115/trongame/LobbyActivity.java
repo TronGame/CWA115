@@ -2,6 +2,8 @@ package cwa115.trongame;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +15,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import cwa115.trongame.Lists.CustomAdapter;
 import cwa115.trongame.Lists.ListItem;
@@ -20,14 +24,36 @@ import cwa115.trongame.Network.HttpConnector;
 
 public class LobbyActivity extends AppCompatActivity {
 
+    final static int GAME_LIST_REFRESH_TIME = 1000;
+
     private String dataToPut;
     private ListView lobbyList;
     private HttpConnector dataServer;
+    private Timer gameListUpdater;
+    private Handler gameListHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
+        gameListUpdater = new Timer();
+        gameListHandler = new Handler() {
+            public void handleMessage(Message msg) {
+                listGames();
+            }
+        };
+        gameListUpdater.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                gameListHandler.sendMessage(new Message());
+            }
+        }, 0, GAME_LIST_REFRESH_TIME);
+        listGames();
+    }
+    public void showHostingActivity(View view) {
+        startActivity(new Intent(this, HostingActivity.class));
+    }
+
+    private void listGames() {
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
         dataServer.sendRequest("listGames", new HttpConnector.Callback() {
 
@@ -41,9 +67,6 @@ public class LobbyActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-    public void showHostingActivity(View view) {
-        startActivity(new Intent(this, HostingActivity.class));
     }
 
     public void createLobby(JSONArray result) {
