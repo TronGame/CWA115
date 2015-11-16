@@ -22,6 +22,7 @@ public class HostingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_hosting);
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
+
     }
     public void showRoomActivity(View view) {
         EditText nameBox = (EditText) findViewById(R.id.game_name);
@@ -31,7 +32,7 @@ public class HostingActivity extends AppCompatActivity {
                 + Integer.toString(GameSettings.getUserId())
                 + "&name=" + gameName
                 + "&token=" + GameSettings.getPlayerToken()
-                + "&maxPlayers=25";
+                + getMaxPlayers();
         dataServer.sendRequest(query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
@@ -41,7 +42,7 @@ public class HostingActivity extends AppCompatActivity {
                     GameSettings.setGameId(result.getInt("id"));
                     GameSettings.setGameName(gameName);
                     GameSettings.setIsOwner(true);
-                    startActivity(new Intent(HostingActivity.this, RoomActivity.class));
+                    joinOwnGame();
                 } catch(JSONException e) {
                     Toast.makeText(
                             getBaseContext(), getString(R.string.hosting_failed),
@@ -50,6 +51,29 @@ public class HostingActivity extends AppCompatActivity {
                 }
             }
         });
+
+    }
+
+    private void joinOwnGame(){
+        String dataToSend = "joinGame?gameId=" + Integer.toString(GameSettings.getGameId())
+                +"&id="+ Integer.toString(GameSettings.getUserId())
+                +"&token="+GameSettings.getPlayerToken();
+        dataServer.sendRequest(dataToSend, new HttpConnector.Callback() {
+            @Override
+            public void handleResult(String data) {
+
+            }
+        });
+        startActivity(new Intent(HostingActivity.this, RoomActivity.class));
+
+    }
+    private int getMaxPlayers(){
+        EditText editMaxPlayers = (EditText)findViewById(R.id.maxPlayers);
+        String maxPlayers = editMaxPlayers.getText().toString();
+        if (maxPlayers.length() == 0)
+            return 1;
+        else
+            return Integer.getInteger(maxPlayers);
 
     }
 }
