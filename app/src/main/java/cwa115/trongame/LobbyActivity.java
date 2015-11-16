@@ -12,6 +12,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import cwa115.trongame.Lists.CustomAdapter;
@@ -23,6 +24,7 @@ public class LobbyActivity extends AppCompatActivity {
     private String dataToPut;
     private ListView lobbyList;
     private HttpConnector dataServer;
+    private HashMap<String,Integer> roomIds;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,11 +51,17 @@ public class LobbyActivity extends AppCompatActivity {
     public void createLobby(JSONArray result) {
 
         List<ListItem> listOfRooms = new ArrayList<>();
+        roomIds = new HashMap();
 
         try {
             for(int i = 0; i < result.length(); i++) {
                 JSONObject newRoom = result.getJSONObject(i);
-                listOfRooms.add(new ListItem(newRoom.getString("name"), newRoom.getString("owner"),newRoom.getString("maxPlayers").toString() ));
+                listOfRooms.add(new ListItem(
+                        newRoom.getString("name"),
+                        newRoom.getString("owner"),
+                        newRoom.getString("maxPlayers")
+                ));
+                roomIds.put(newRoom.getString("name"),newRoom.getInt("id"));
             }
         }catch (JSONException e){
             e.printStackTrace();
