@@ -62,15 +62,17 @@ public class GameEventHandler {
      * @param event The event to start
      */
     private void addPendingEvent(GameEvent event) {
-        final String eventType = event.getEventType();
-        eventUpdateHandler.broadCastEventStart(eventType);
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                eventUpdateHandler.broadCastEventEnd(eventType);
-            }
-        };
-        worker.schedule(task, event.getTime(), TimeUnit.SECONDS);
+        if (GameSettings.isOwner()) {
+            final String eventType = event.getEventType();
+            eventUpdateHandler.broadCastEventStart(eventType);
+            Runnable task = new Runnable() {
+                @Override
+                public void run() {
+                    eventUpdateHandler.broadCastEventEnd(eventType);
+                }
+            };
+            worker.schedule(task, event.getTime(), TimeUnit.SECONDS);
+        }
     }
 
     /**

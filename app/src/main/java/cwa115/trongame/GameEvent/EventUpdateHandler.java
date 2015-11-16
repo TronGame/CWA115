@@ -117,7 +117,7 @@ public class EventUpdateHandler implements SocketIoHandler {
     public void broadCastEventEnd(String eventType) {
         JSONObject eventEndMesssage = new JSONObject();
         try {
-            eventEndMesssage.put(Protocol.GAME_ID, GameSettings.getPlayerId());
+            eventEndMesssage.put(Protocol.GAME_ID, GameSettings.getGameId());
             eventEndMesssage.put(Protocol.EVENT_TYPE, eventType);
 
         } catch (JSONException e) {
