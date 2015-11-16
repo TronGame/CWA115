@@ -7,7 +7,9 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Lists.CustomAdapter;
 import cwa115.trongame.Lists.ListItem;
 import cwa115.trongame.Network.HttpConnector;
@@ -33,11 +36,13 @@ public class LobbyActivity extends AppCompatActivity {
     private HashMap<String,Integer> roomIds;
     private Timer gameListUpdater;
     private Handler gameListHandler;
+    private List<ListItem> listOfRooms;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
+        lobbyList.setClickable(true);
         gameListUpdater = new Timer();
         gameListHandler = new Handler() {
             public void handleMessage(Message msg) {
@@ -51,9 +56,6 @@ public class LobbyActivity extends AppCompatActivity {
         }, 0, GAME_LIST_REFRESH_TIME);
         listGames();
     }
-    public void showHostingActivity(View view) {
-        startActivity(new Intent(this, HostingActivity.class));
-    }
 
     private void listGames() {
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
@@ -63,17 +65,55 @@ public class LobbyActivity extends AppCompatActivity {
             public void handleResult(String data) {
                 try {
                     createLobby(new JSONArray(data));
-                } catch(JSONException e) {
+                } catch (JSONException e) {
                     // Ignore failed requests
                     Log.d("DATA SERVER", e.toString());
                 }
+
+                lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
+                        ListItem clickedItem = (ListItem) listOfRooms.get(position);
+                        String gameName = clickedItem.getGamename();
+
+                        GameSettings.setGameName(gameName);
+                        GameSettings.setGameId(roomIds.get(gameName));
+                        showToast("Joining " + gameName);
+
+                        final String query = "joinGame?"+
+                                "gameId="+roomIds.get(gameName) +
+                                "&id="+GameSettings.getPlayerId()+
+                                "&token="+GameSettings.getPlayerToken();
+
+                        dataServer.sendRequest(query, new HttpConnector.Callback() {
+                            @Override
+                            public void handleResult(String data) {
+                                try {
+                                    JSONObject result = new JSONObject(data);
+                                    // TODO check for errors
+                                    showRoomActivity();
+
+                                } catch (JSONException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                    }
+                });
             }
         });
     }
 
+    public void showHostingActivity(View view) {
+        startActivity(new Intent(this, HostingActivity.class));
+    }
+
+    private void showRoomActivity() {
+        startActivity(new Intent(this, RoomActivity.class));
+    }
+
     public void createLobby(JSONArray result) {
 
-        List<ListItem> listOfRooms = new ArrayList<>();
+        listOfRooms = new ArrayList<>();
         roomIds = new HashMap();
 
         try {
@@ -95,5 +135,12 @@ public class LobbyActivity extends AppCompatActivity {
         CustomAdapter adapter = new CustomAdapter(this, listOfRooms);
         lobbyList.setAdapter(adapter);
 
+    }
+
+    private void showToast(String text) {
+        Toast.makeText(
+                getBaseContext(), text,
+                Toast.LENGTH_SHORT
+        ).show();
     }
 }
