@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 import cwa115.trongame.Utils.LatLngConversion;
 import io.socket.client.IO;
@@ -28,7 +29,7 @@ public class SocketIoConnection implements Handler.Callback {
     private String groupId;
     private String sessionId;
     private Handler myOnReceiveHandler;
-    private SocketIoHandler onReceiveHandler;
+    private ArrayList<SocketIoHandler> onReceiveHandlers;
 
     private Socket socket;
     {
@@ -55,12 +56,13 @@ public class SocketIoConnection implements Handler.Callback {
         }
     };
 
-    public SocketIoConnection(String groupId, String sessionId, SocketIoHandler givenHandler) {
+    public SocketIoConnection(String groupId, String sessionId) {
         myOnReceiveHandler = new Handler(this);
         this.groupId = groupId;
         this.sessionId = sessionId;
 
-        onReceiveHandler = givenHandler;
+        onReceiveHandlers = new ArrayList<>();
+
         socket.on("broadcastReceived", handleMessage);
         socket.connect();
         try {
@@ -71,6 +73,10 @@ public class SocketIoConnection implements Handler.Callback {
         } catch(JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public void addSocketIoHandler(SocketIoHandler socketIoHandler) {
+        onReceiveHandlers.add(socketIoHandler);
     }
 
     /**
@@ -98,7 +104,9 @@ public class SocketIoConnection implements Handler.Callback {
     public boolean handleMessage(Message msg) {
         try {
             JSONObject message = new JSONObject(msg.getData().getString(BUNDLE_MESSAGE_KEY));
-            return onReceiveHandler.onMessage(message);
+            for (SocketIoHandler socketIoHandler: onReceiveHandlers)
+                socketIoHandler.onMessage(message);
+            return true;
         } catch (JSONException e) {
             e.printStackTrace();
             return false;

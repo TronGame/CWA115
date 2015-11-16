@@ -28,6 +28,8 @@ import com.google.maps.model.SnappedPoint;
 import java.util.ArrayList;
 
 import cwa115.trongame.Game.GameSettings;
+import cwa115.trongame.GameEvent.EventUpdateHandler;
+import cwa115.trongame.GameEvent.GameEventHandler;
 import cwa115.trongame.GoogleMapsApi.ApiListener;
 import cwa115.trongame.GoogleMapsApi.SnappedPointHandler;
 import cwa115.trongame.Location.CustomLocationListener;
@@ -36,6 +38,7 @@ import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
 import cwa115.trongame.Game.GameUpdateHandler;
+import cwa115.trongame.Network.SocketIoConnection;
 import cwa115.trongame.Sensor.SensorDataObservable;
 import cwa115.trongame.Sensor.SensorDataObserver;
 import cwa115.trongame.Sensor.SensorFlag;
@@ -76,19 +79,25 @@ public class GameActivity extends AppCompatActivity implements
     private GeoApiContext context;                      // The context that takes care of the location snapping
 
     // Location data
-    private LatLng gpsLoc;                              // Location of player
+    private LatLng gpsLoc;                            // Location of player
     private LatLng snappedGpsLoc;                       // Snapped location of player
     private double travelledDistance;                   // Distance travelled from the start
+    private double height;                              // The last recorded height of the player
 
     // Wall data
     private boolean creatingWall = false;               // Is the player creating a wall
     private String wallId;                              // The Wall id
 
-    // Player id
-    private String myId;
-
-    // Game update handler
+    // Networking
+    private SocketIoConnection connection;
     private GameUpdateHandler gameUpdateHandler;
+    private GameEventHandler gameEventHandler;
+
+    // region Get Variables
+    public double getHeight () {
+        return height;
+    }
+    // endregion
 
     // endregion
 
@@ -142,14 +151,13 @@ public class GameActivity extends AppCompatActivity implements
         // Player objects
         // -----------------------------------------------------------------------------------------
         // Store the player id
-        myId = "P" + GameSettings.generateUniqueId();
         GameSettings.setWallColor(
                 Color.rgb((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256))
         );
 
         // Create the player objects
         Player[] players = {
-                new Player(myId, GameSettings.getPlayerName(), new LatLng(0.0, 0.0))
+                new Player(GameSettings.getPlayerId(), GameSettings.getPlayerName(), new LatLng(0.0, 0.0))
         };
 
         // Draw the players on the map
@@ -160,7 +168,10 @@ public class GameActivity extends AppCompatActivity implements
         // Networking
         // -----------------------------------------------------------------------------------------
         // Create the gameUpdateHandler object
-        gameUpdateHandler = new GameUpdateHandler(myId, "testA1", "1", map, context);
+        connection = new SocketIoConnection("testA1", "1");
+
+        gameUpdateHandler = new GameUpdateHandler(connection, map, context);
+        gameEventHandler = new GameEventHandler(connection, this);
     }
 
     // endregion
@@ -189,7 +200,7 @@ public class GameActivity extends AppCompatActivity implements
         // Check is the player is (almost) on the road
         if (snappedDistance < MAX_ROAD_DISTANCE) {
             // Update the player marker and the camera
-            map.updatePlayer(myId, snappedGpsLoc);
+            map.updatePlayer(GameSettings.getPlayerId(), snappedGpsLoc);
             map.updateCamera(snappedGpsLoc);
 
             // Calculate the distance from the last location to the new location and show it on the screen
@@ -229,7 +240,7 @@ public class GameActivity extends AppCompatActivity implements
 
         } else {
             // Player is to far from the road
-            map.updatePlayer(myId, gpsLoc);     // Draw the player on the actual location instead
+            map.updatePlayer(GameSettings.getPlayerId(), gpsLoc);     // Draw the player on the actual location instead
             map.updateCamera(gpsLoc);           // Zoom to there as well
 
             // Send the player location
@@ -256,7 +267,7 @@ public class GameActivity extends AppCompatActivity implements
             // Create the wall object
             Wall wall = new Wall(
                     "W" + GameSettings.generateUniqueId() + "_" + GameSettings.getWallColor(),
-                    myId,
+                    GameSettings.getPlayerId(),
                     GameSettings.getWallColor(),
                     context);
             wallId = wall.getId();                      // Store the wall id
@@ -293,6 +304,10 @@ public class GameActivity extends AppCompatActivity implements
         if (wallId != null) {
             map.clear(wallId);    // Clear the wall from the map
         }
+    }
+
+    public void addScore(int score) {
+        travelledDistance += score;
     }
 
     // endregion
@@ -384,6 +399,7 @@ public class GameActivity extends AppCompatActivity implements
         if (distance >= LOCATION_THRESHOLD) {
             // Store the new location
             gpsLoc = newGpsLoc;
+            height = location.getAltitude();
 
             // Create a PendingResult object
             // This is used by the snappedPointHandler to snap the provided points to the road
@@ -436,7 +452,7 @@ public class GameActivity extends AppCompatActivity implements
      * @param message  the message shown in the notification
      * @param duration the time that the notification stays visible
      */
-    private void showNotification(String message, int duration) {
+    public void showNotification(String message, int duration) {
         // Create the layout used in the notification
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View layout = inflater.inflate(
@@ -458,4 +474,5 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     // endregion
+
 }

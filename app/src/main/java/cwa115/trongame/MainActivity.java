@@ -95,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
         nameBox.setText(accountName);
         nameBox.setEnabled(false);
         GameSettings.setPlayerName(accountName);
-        GameSettings.setPlayerId(accountId);
+        GameSettings.setUserId(accountId);
         GameSettings.setPlayerToken(accountToken);
 
         // Disable Facebook login button

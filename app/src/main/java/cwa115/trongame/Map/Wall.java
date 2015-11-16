@@ -125,8 +125,7 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
         if (distance < minDistance) {return true; }
 
         // Has the player crossed the wall ?
-        // TODO: this may cause a problem if the player cycles around the end of a wall !
-        boolean hasCrossed = false;
+        // TODO: this may cause a problem if the player cycles around the end of a wall
         Vector2D pt1 = new Vector2D(current);
         Vector2D pt2 = new Vector2D(last);
         int end = points.size();
@@ -136,40 +135,21 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
             if (i + 1 < end) {
                 Vector2D ptB = new Vector2D(points.get(i + 1));
 
-                // Direction vector of the line AB
-                Vector2D ab = ptB.subtract(ptA);
-                ab = ab.divide(ab.getLength());
+                // TODO: check special cases
+                double xCross =
+                        (-pt1.y*(pt1.x - pt2.x)- ptA.y*(ptA.x-ptB.x)-pt1.x*(pt1.y-pt2.y)+ptA.x*(ptA.y-ptB.y))/
+                                (pt1.y-pt2.y-ptA.y+ptB.y);
 
-                // Direction vector perpendicular to the line AB
-                Vector2D v = new Vector2D(ab.y, -ab.x);
+                double yCross =
+                        (pt2.y-pt1.y)*(xCross - pt1.x)/(pt2.x-pt1.x) + pt1.y;
 
-                Vector2D r1 = ptA.subtract(pt1);  // Vector from pt1 to ptA
-                Vector2D f1 = ptB.subtract(pt1);  // Vector from pt1 to ptB
-                
-                double a1 = ab.product(r1);       // Length of the projection of r1 on the line AB
-                double b1 = ab.product(f1);       // Length of the projection of f1 on the line AB
-                double v1 = v.product(r1);        // Length of the projection of r1 on v
-                
-                Vector2D r2 = ptA.subtract(pt2);  // Vector from pt2 to ptA
-                Vector2D f2 = ptB.subtract(pt2);  // Vector from pt2 to ptB
-
-                double a2 = ab.product(r2);       // Length of the projection of r2 on the line AB
-                double b2 = ab.product(f2);       // Length of the projection of f2 on the line AB
-                double v2 = v.product(r1);        // Length of the projection of r2 on v
-
-                // if a and b have the same sign the projections of r and f on AB
-                // are facing the same direction. This means that the perpendicular projection
-                // of pt on AB isn't in between ptA and ptB. We check this for both current and last
-                // current and last also need to be on opposite sides of the line segment
-                // this is what the last check verifies
-                if (Math.signum(a1 * b1) != -1 && Math.signum(a2 * b2) != -1 && Math.signum(v1 * v2) != -1) {
-                    hasCrossed = true;
-                    break;
+                if ((ptA.x<=xCross && xCross<=ptB.x || ptB.x<=xCross && xCross<=ptA.x) && (ptA.y<=yCross && yCross<=ptB.y || ptB.y<=yCross && yCross<=ptA.y)) {
+                        return true;
                 }
             }
         }
             
-        return hasCrossed;
+        return false;
     }
 
     /**

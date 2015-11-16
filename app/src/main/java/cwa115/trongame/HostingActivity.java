@@ -28,7 +28,7 @@ public class HostingActivity extends AppCompatActivity {
         final String gameName = nameBox.getText().toString();
         final String query =
                 "insertGame?owner="
-                + Integer.toString(GameSettings.getPlayerId())
+                + Integer.toString(GameSettings.getUserId())
                 + "&name=" + gameName
                 + "&token=" + GameSettings.getPlayerToken()
                 + "&maxPlayers=25";
