@@ -89,6 +89,10 @@ public final class GameSettings {
         GameSettings.gameName = gameName;
     }
 
+    public static String getGameName(){
+        return gameName;
+    }
+
     public static String getPlayerToken() {
         return playerToken;
     }
