@@ -151,7 +151,6 @@ public class GameActivity extends AppCompatActivity implements
         // Player objects
         // -----------------------------------------------------------------------------------------
         // Store the player id
-        GameSettings.setPlayerId("P" + GameSettings.generateUniqueId());
         GameSettings.setWallColor(
                 Color.rgb((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256))
         );

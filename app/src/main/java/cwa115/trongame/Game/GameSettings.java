@@ -13,7 +13,6 @@ public final class GameSettings {
     private static int wallColor;
     private static String playerToken;
     private static int userId;
-    private static String playerId;
     private static boolean isOwner;
     private static int gameId;
     private static String gameToken;
@@ -72,17 +71,11 @@ public final class GameSettings {
         playerToken = token;
     }
 
-    public static void setPlayerId(String id) {
-        playerId = id;
-    }
-
-    public static String getPlayerId() {
-        return playerId;
-    }
-
     public static void setUserId(int id) { userId = id; }
 
     public static int getUserId() {return userId; }
+
+    public static String getPlayerId() {return String.valueOf(userId);}
 
     public static void setGameId(int gameId) {
         GameSettings.gameId = gameId;
