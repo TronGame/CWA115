@@ -32,7 +32,7 @@ public class HostingActivity extends AppCompatActivity {
                 + Integer.toString(GameSettings.getUserId())
                 + "&name=" + gameName
                 + "&token=" + GameSettings.getPlayerToken()
-                + getMaxPlayers();
+                + "&maxPlayers=" + getMaxPlayers();
         dataServer.sendRequest(query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
@@ -61,11 +61,9 @@ public class HostingActivity extends AppCompatActivity {
         dataServer.sendRequest(dataToSend, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
-
+                startActivity(new Intent(HostingActivity.this, RoomActivity.class));
             }
         });
-        startActivity(new Intent(HostingActivity.this, RoomActivity.class));
-
     }
     private int getMaxPlayers(){
         EditText editMaxPlayers = (EditText)findViewById(R.id.maxPlayers);
