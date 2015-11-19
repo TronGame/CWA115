@@ -1,5 +1,6 @@
 package cwa115.trongame.Game;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -14,9 +15,11 @@ public final class GameSettings {
     private static String playerToken;
     private static int userId;
     private static boolean isOwner;
+    private static int ownerId;
     private static int gameId;
     private static String gameToken;
     private static String gameName;
+    private static List<Integer> playersInGame;
     
     /**
      * Sets the name of the local player.
@@ -108,8 +111,28 @@ public final class GameSettings {
         return isOwner;
     }
 
+    public static void setOwnerId(int id) {
+        ownerId = id;
+    }
+
+    public static int getOwner() {
+        return ownerId;
+    }
+
     public static int getGameId() {
         return gameId;
+    }
+
+    public static List<Integer> getPlayersInGame() {
+        return playersInGame;
+    }
+
+    public static void setPlayersInGame(List<Integer> players) {
+        playersInGame = players;
+    }
+
+    public static void addPlayerToGame(int playerId) {
+        playersInGame.add(playerId);
     }
 
 }

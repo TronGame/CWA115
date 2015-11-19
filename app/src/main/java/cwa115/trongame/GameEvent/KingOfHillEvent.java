@@ -77,7 +77,7 @@ public class KingOfHillEvent implements GameEvent {
     public ArrayList<EventResult> calculateResults(ArrayList<JSONObject> results) {
         int maxWinners = PRICES.length;
         ArrayList<Double> winners = new ArrayList<>(Arrays.asList(new Double[maxWinners]));
-        ArrayList<String> playerIds = new ArrayList<>(Arrays.asList(new String[maxWinners]));
+        ArrayList<Integer> playerIds = new ArrayList<>(Arrays.asList(new Integer[maxWinners]));
 
         for (JSONObject result: results) {
             try {
@@ -87,7 +87,7 @@ public class KingOfHillEvent implements GameEvent {
                         if (height>winners.get(i)) {
                             winners.add(i, height);
                             winners.remove(winners.size() - 1);
-                            playerIds.add(i, (String) result.get(GameUpdateHandler.Protocol.PLAYER_ID));
+                            playerIds.add(i, (int) result.get(GameUpdateHandler.Protocol.PLAYER_ID));
                             playerIds.remove(playerIds.size()-1);
                             break;
                         }

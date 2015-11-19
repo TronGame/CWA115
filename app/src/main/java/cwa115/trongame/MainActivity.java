@@ -58,9 +58,13 @@ public class MainActivity extends AppCompatActivity {
         // especially, if you're using Facebook UI elements.
         FacebookSdk.sdkInitialize(getApplicationContext());
 
-        setContentView(R.layout.activity_main);// activity_main contains facebook login button
+        // activity_main contains facebook login button
+        setContentView(R.layout.activity_main);
 
+        // Set the player marker that appears on the map
         GameSettings.setPlayerMarkerImage(R.mipmap.markerk);
+
+        // Create the server that controls the game management
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
         settings = getPreferences(MODE_PRIVATE);
