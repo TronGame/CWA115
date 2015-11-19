@@ -31,7 +31,6 @@ public class LobbyActivity extends AppCompatActivity {
     final static int GAME_LIST_REFRESH_TIME = 1000;
 
     private String dataToPut;
-    private ListView lobbyList;
     private HttpConnector dataServer;
     private HashMap<String,Integer> roomIds;
     private Timer gameListUpdater;
@@ -42,9 +41,11 @@ public class LobbyActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
+        ListView lobbyList = (ListView) findViewById(R.id.mainList);
         lobbyList.setClickable(true);
         gameListUpdater = new Timer();
         gameListHandler = new Handler() {
+            @Override
             public void handleMessage(Message msg) {
                 listGames();
             }
@@ -60,7 +61,6 @@ public class LobbyActivity extends AppCompatActivity {
     private void listGames() {
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
         dataServer.sendRequest("listGames", new HttpConnector.Callback() {
-
             @Override
             public void handleResult(String data) {
                 try {
@@ -69,7 +69,7 @@ public class LobbyActivity extends AppCompatActivity {
                     // Ignore failed requests
                     Log.d("DATA SERVER", e.toString());
                 }
-
+                ListView lobbyList = (ListView) findViewById(R.id.mainList);
                 lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
                         ListItem clickedItem = (ListItem) listOfRooms.get(position);
@@ -130,6 +130,7 @@ public class LobbyActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        ListView lobbyList = (ListView) findViewById(R.id.lobby_list);
         lobbyList = (ListView) findViewById(R.id.mainList);
         lobbyList.setClickable(true);
         CustomAdapter adapter = new CustomAdapter(this, listOfRooms);
