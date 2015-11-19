@@ -24,7 +24,7 @@ public class EventUpdateHandler implements SocketIoHandler {
         public static final String EVENT_RESULT_MESSAGE = "sendResult";
         public static final String EVENT_SCORE_MESSAGE = "scoreMessage";
         public static final String PLAYER_ID = "playerId";
-        public static final String GAME_ID = "gameId";
+        public static final String OWNER_ID = "ownerId";
         public static final String EVENT_TYPE = "eventType";
         public static final String EVENT_SCORE = "score";
     }
@@ -51,7 +51,7 @@ public class EventUpdateHandler implements SocketIoHandler {
                 case Protocol.START_EVENT_MESSAGE:
                     // Start the event
                     gameEventHandler.startEvent(
-                            Integer.valueOf(message.getString(Protocol.GAME_ID)),
+                            Integer.valueOf(message.getString(Protocol.OWNER_ID)),
                             message.getString(Protocol.EVENT_TYPE)
                     );
                     break;
@@ -59,22 +59,22 @@ public class EventUpdateHandler implements SocketIoHandler {
                     // End the event
                     // Calculate the event result and send the information to the host
                     gameEventHandler.endEvent(
-                            Integer.valueOf(message.getString(Protocol.GAME_ID)),
+                            Integer.valueOf(message.getString(Protocol.OWNER_ID)),
                             message.getString(Protocol.EVENT_TYPE)
                     );
                     break;
                 case Protocol.EVENT_SCORE_MESSAGE:
                     // Check if the score is yours and add it.
                     gameEventHandler.addScore(
-                            Integer.valueOf(message.getString(Protocol.GAME_ID)),
-                            message.getString(Protocol.PLAYER_ID),
+                            Integer.valueOf(message.getString(Protocol.OWNER_ID)),
+                            Integer.valueOf(message.getString(Protocol.PLAYER_ID)),
                             Integer.valueOf(message.getString(Protocol.EVENT_SCORE)));
                     break;
 
                 case Protocol.EVENT_RESULT_MESSAGE:
                     // Store the result of an event
                     gameEventHandler.storeResult(
-                            message.getString(Protocol.PLAYER_ID),
+                            Integer.valueOf(message.getString(Protocol.PLAYER_ID)),
                             message
                     );
                     break;
@@ -99,7 +99,7 @@ public class EventUpdateHandler implements SocketIoHandler {
      * @param playerId The id of the player that send the result
      * @param result The result of the event
      */
-    public void sendEventResult(String playerId, JSONObject result) {
+    public void sendEventResult(int playerId, JSONObject result) {
         try {
             result.put(Protocol.PLAYER_ID, playerId);
         } catch(JSONException e) {
@@ -117,7 +117,7 @@ public class EventUpdateHandler implements SocketIoHandler {
     public void broadCastEventEnd(String eventType) {
         JSONObject eventEndMesssage = new JSONObject();
         try {
-            eventEndMesssage.put(Protocol.GAME_ID, GameSettings.getGameId());
+            eventEndMesssage.put(Protocol.OWNER_ID, GameSettings.getUserId());
             eventEndMesssage.put(Protocol.EVENT_TYPE, eventType);
 
         } catch (JSONException e) {
@@ -133,7 +133,7 @@ public class EventUpdateHandler implements SocketIoHandler {
     public void broadCastEventStart(String eventType) {
         JSONObject eventStartMesssage = new JSONObject();
         try {
-            eventStartMesssage.put(Protocol.GAME_ID, GameSettings.getPlayerId());
+            eventStartMesssage.put(Protocol.OWNER_ID, GameSettings.getUserId());
             eventStartMesssage.put(Protocol.EVENT_TYPE, eventType);
 
         } catch (JSONException e) {
@@ -147,10 +147,10 @@ public class EventUpdateHandler implements SocketIoHandler {
      * @param playerId The id of the player who has to receive the score
      * @param score The score the player has to receive.
      */
-    public void sendEventScore(String playerId, double score) {
+    public void sendEventScore(int playerId, double score) {
         JSONObject scoreMessage = new JSONObject();
         try {
-            scoreMessage.put(Protocol.GAME_ID, GameSettings.getPlayerId());
+            scoreMessage.put(Protocol.OWNER_ID, GameSettings.getUserId());
             scoreMessage.put(Protocol.PLAYER_ID, playerId);
             scoreMessage.put(Protocol.EVENT_SCORE, score);
         } catch(JSONException e) {
