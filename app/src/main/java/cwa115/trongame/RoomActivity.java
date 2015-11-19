@@ -86,11 +86,10 @@ public class RoomActivity extends AppCompatActivity {
         int numberOfTints = (int) Math.ceil(Math.cbrt(maxPlayers));
         int colorIndent= (int) Math.floor(256. / numberOfTints);
         List<Integer> colorList = new ArrayList<>();
-        for (int red = 0; red < numberOfTints; red+=colorIndent) {
-            for (int green = 0; green < numberOfTints; green+=colorIndent) {
-                for (int blue = 0; blue < numberOfTints; blue+=colorIndent) {
-                    int new_color=Color.argb(255, red, green, blue);
-                    colorList.add(new_color);
+        for(int red = 0; red < 256; red += colorIndent) {
+            for(int green = 0; green < 256; green += colorIndent) {
+                for(int blue = 0; blue < 256; blue += colorIndent) {
+                    colorList.add(Color.rgb(red, green, blue));
                     if(colorList.size() == maxPlayers)
                         return colorList;
                 }
