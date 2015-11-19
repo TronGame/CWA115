@@ -22,8 +22,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import cwa115.trongame.Game.GameSettings;
-import cwa115.trongame.Lists.CustomAdapter;
-import cwa115.trongame.Lists.ListItem;
+import cwa115.trongame.Lists.LobbyCustomAdapter;
+import cwa115.trongame.Lists.LobbyListItem;
 import cwa115.trongame.Network.HttpConnector;
 
 public class LobbyActivity extends AppCompatActivity {
@@ -35,7 +35,7 @@ public class LobbyActivity extends AppCompatActivity {
     private HashMap<String,Integer> roomIds;
     private Timer gameListUpdater;
     private Handler gameListHandler;
-    private List<ListItem> listOfRooms;
+    private List<LobbyListItem> listOfRooms;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +72,7 @@ public class LobbyActivity extends AppCompatActivity {
                 ListView lobbyList = (ListView) findViewById(R.id.mainList);
                 lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
-                        ListItem clickedItem = (ListItem) listOfRooms.get(position);
+                        LobbyListItem clickedItem = (LobbyListItem) listOfRooms.get(position);
                         String gameName = clickedItem.getGamename();
 
                         GameSettings.setGameName(gameName);
@@ -119,7 +119,7 @@ public class LobbyActivity extends AppCompatActivity {
         try {
             for(int i = 0; i < result.length(); i++) {
                 JSONObject newRoom = result.getJSONObject(i);
-                listOfRooms.add(new ListItem(
+                listOfRooms.add(new LobbyListItem(
                         newRoom.getString("name"),
                         newRoom.getString("owner"),
                         newRoom.getString("maxPlayers")
@@ -133,7 +133,7 @@ public class LobbyActivity extends AppCompatActivity {
         ListView lobbyList = (ListView) findViewById(R.id.lobby_list);
         lobbyList = (ListView) findViewById(R.id.mainList);
         lobbyList.setClickable(true);
-        CustomAdapter adapter = new CustomAdapter(this, listOfRooms);
+        LobbyCustomAdapter adapter = new LobbyCustomAdapter(this, listOfRooms);
         lobbyList.setAdapter(adapter);
 
     }

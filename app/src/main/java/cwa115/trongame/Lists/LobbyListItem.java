@@ -1,12 +1,12 @@
 package cwa115.trongame.Lists;
 
-public class ListItem {
+public class LobbyListItem {
     private String gamename;
     private String host;
     private String players;
 
-    // Constructor for the ListItem class
-    public ListItem(String name, String host, String players) {
+    // Constructor for the LobbyListItem class
+    public LobbyListItem(String name, String host, String players) {
         super();
         this.gamename = name;
         this.host = host;

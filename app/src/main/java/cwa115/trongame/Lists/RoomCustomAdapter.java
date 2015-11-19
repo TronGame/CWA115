@@ -1,7 +1,5 @@
 package cwa115.trongame.Lists;
 
-
-
 import java.util.List;
 
 
@@ -14,22 +12,22 @@ import android.widget.TextView;
 
 import cwa115.trongame.R;
 
-public class CustomAdapter extends BaseAdapter {
+public class RoomCustomAdapter extends BaseAdapter {
     private Context context;
 
-    private List<ListItem> lobbyList;
+    private List<RoomListItem> roomList;
 
-    public CustomAdapter(Context context, List<ListItem> lobbyList) {
+    public RoomCustomAdapter(Context context, List<RoomListItem> roomList) {
         this.context = context;
-        this.lobbyList = lobbyList;
+        this.roomList = roomList;
     }
 
     public int getCount() {
-        return lobbyList.size();
+        return roomList.size();
     }
 
     public Object getItem(int position) {
-        return lobbyList.get(position);
+        return roomList.get(position);
     }
 
     public long getItemId(int position) {
@@ -37,20 +35,15 @@ public class CustomAdapter extends BaseAdapter {
     }
 
     public View getView(int position, View convertView, ViewGroup viewGroup) {
-        ListItem entry = lobbyList.get(position);
+        RoomListItem entry = roomList.get(position);
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.basic_lobby_row, null);
+            convertView = inflater.inflate(R.layout.basic_room_row, null);
         }
-        TextView gameName = (TextView) convertView.findViewById(R.id.gameName);
-        gameName.setText(entry.getGamename());
-
-        TextView host = (TextView) convertView.findViewById(R.id.hostName);
-        host.setText(entry.getHost());
-
-        TextView players = (TextView) convertView.findViewById(R.id.nb_players);
-        players.setText(entry.getPlayers());
+        TextView playerName = (TextView) convertView.findViewById(R.id.roomPlayerName);
+        playerName.setText(entry.getPlayerName());
+        playerName.setTextColor(entry.getColor());
 
         return convertView;
     }

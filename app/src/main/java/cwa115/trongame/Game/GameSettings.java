@@ -19,6 +19,8 @@ public final class GameSettings {
     private static int gameId;
     private static String gameToken;
     private static String gameName;
+    private static int maxPlayers;
+
     private static List<Integer> playersInGame;
     
     /**
@@ -61,6 +63,19 @@ public final class GameSettings {
      * @param color the given color
      */
     public static void setWallColor(int color) {wallColor = color; }
+
+    /**
+     * set the max players
+     * @param max_nb_Players the max number of players
+     */
+    public static void setMaxPlayers(int max_nb_Players){
+        maxPlayers=max_nb_Players;
+    }
+
+    public static int getMaxPlayers(){
+        return maxPlayers;
+    }
+
 
     /**
      * (Randomly) generates a unique ID.
