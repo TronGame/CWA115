@@ -84,6 +84,7 @@ public class LobbyActivity extends AppCompatActivity {
                                 "&id="+GameSettings.getPlayerId()+
                                 "&token="+GameSettings.getPlayerToken();
 
+                        GameSettings.setMaxPlayers(clickedItem.getPlayersAsInteger());
                         dataServer.sendRequest(query, new HttpConnector.Callback() {
                             @Override
                             public void handleResult(String data) {
@@ -122,7 +123,7 @@ public class LobbyActivity extends AppCompatActivity {
                 listOfRooms.add(new LobbyListItem(
                         newRoom.getString("name"),
                         newRoom.getString("owner"),
-                        newRoom.getString("maxPlayers")
+                        newRoom.getInt("maxPlayers")
                 ));
                 roomIds.put(newRoom.getString("name"),newRoom.getInt("id"));
             }
@@ -130,8 +131,7 @@ public class LobbyActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        ListView lobbyList = (ListView) findViewById(R.id.lobby_list);
-        lobbyList = (ListView) findViewById(R.id.mainList);
+        ListView lobbyList = (ListView) findViewById(R.id.mainList);
         lobbyList.setClickable(true);
         LobbyCustomAdapter adapter = new LobbyCustomAdapter(this, listOfRooms);
         lobbyList.setAdapter(adapter);

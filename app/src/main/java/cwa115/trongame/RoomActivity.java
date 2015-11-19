@@ -58,7 +58,7 @@ public class RoomActivity extends AppCompatActivity {
 
     public void listPlayers(){
 
-        String query = "showGame?gameID=" + GameSettings.getGameId();
+        String query = "showGame?gameId=" + GameSettings.getGameId();
 
         dataServer.sendRequest(query, new HttpConnector.Callback() {
             @Override

@@ -27,12 +27,14 @@ public class HostingActivity extends AppCompatActivity {
     public void showRoomActivity(View view) {
         EditText nameBox = (EditText) findViewById(R.id.game_name);
         final String gameName = nameBox.getText().toString();
+        final int maxPlayers = getMaxPlayers();
+        GameSettings.setMaxPlayers(maxPlayers);
         final String query =
                 "insertGame?owner="
                 + Integer.toString(GameSettings.getUserId())
                 + "&name=" + gameName
                 + "&token=" + GameSettings.getPlayerToken()
-                + "&maxPlayers=" + getMaxPlayers();
+                + "&maxPlayers=" + Integer.toString(maxPlayers);
         dataServer.sendRequest(query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
@@ -71,7 +73,7 @@ public class HostingActivity extends AppCompatActivity {
         if (maxPlayers.length() == 0)
             return 1;
         else
-            return Integer.getInteger(maxPlayers);
+            return Integer.parseInt(maxPlayers);
 
     }
 }
