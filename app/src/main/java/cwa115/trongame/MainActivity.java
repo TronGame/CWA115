@@ -258,7 +258,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void registerAccount(final String name) {
-        final String query = "insertAccount?nam e=" + name;
+        final String query = "insertAccount?name=" + name;
         dataServer.sendRequest(query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
