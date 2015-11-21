@@ -6,6 +6,7 @@ import android.util.Log;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.model.SnappedPoint;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -117,6 +118,44 @@ public class LatLngConversion {
             // TODO: do something useful
         }
         return result;
+    }
+    /**
+     * Extracts points from a given JSON object.
+     * @param object the given JSON object
+     * @return the extracted point
+     */
+    public static ArrayList<LatLng> getPointsFromJSON(JSONObject object) {
+        try {
+            ArrayList<LatLng> points = new ArrayList<>();
+            JSONArray list = object.getJSONArray("points");
+            for (int i=0; i<list.length(); i++) {
+                points.add(getPointFromJSON((JSONObject)list.get(i)));
+            }
+            return points;
+        } catch(JSONException e) {
+            // TODO: do something useful
+            return null;
+        }
+    }
+
+    /**
+     * Creates a JSON object from an array of points
+     * @param points the given LatLng
+     * @return a JSON object representing the given point
+     */
+    public static JSONObject getJSONFromPoints(ArrayList<LatLng> points) {
+        try {
+            JSONObject result = new JSONObject();
+            JSONArray list = new JSONArray();
+            for (LatLng point : points) {
+                list.put(getJSONFromPoint(point));
+            }
+            result.put("points", list);
+            return result;
+        } catch(JSONException e) {
+            // TODO: do something useful
+            return null;
+        }
     }
     // endregion
 

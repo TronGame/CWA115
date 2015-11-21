@@ -11,6 +11,8 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.gms.games.Game;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -77,6 +79,7 @@ public class LobbyActivity extends AppCompatActivity {
 
                         GameSettings.setGameName(gameName);
                         GameSettings.setGameId(roomIds.get(gameName));
+                        GameSettings.setOwnerId(clickedItem.getHostId());
                         showToast("Joining " + gameName);
 
                         final String query = "joinGame?"+
@@ -122,7 +125,8 @@ public class LobbyActivity extends AppCompatActivity {
                 JSONObject newRoom = result.getJSONObject(i);
                 listOfRooms.add(new LobbyListItem(
                         newRoom.getString("name"),
-                        newRoom.getString("owner"),
+                        newRoom.getString("ownerName"),
+                        newRoom.getInt("owner"),
                         newRoom.getInt("maxPlayers")
                 ));
                 roomIds.put(newRoom.getString("name"),newRoom.getInt("id"));

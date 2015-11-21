@@ -150,20 +150,8 @@ public class GameActivity extends AppCompatActivity implements
 
         // Player objects
         // -----------------------------------------------------------------------------------------
-        // Store the player id
-        GameSettings.setWallColor(
-                Color.rgb((int) (Math.random() * 256), (int) (Math.random() * 256), (int) (Math.random() * 256))
-        );
-
-        // Create the player objects
-        Player[] players = {
-                new Player(GameSettings.getPlayerId(), GameSettings.getPlayerName(), new LatLng(0.0, 0.0))
-        };
-
-        // Draw the players on the map
-        for (Player player : players) {
-            map.addMapItem(player);         // Add the players to the map object
-        }
+        // Create the player
+        map.addMapItem(new Player(GameSettings.getPlayerId(), GameSettings.getPlayerName(), new LatLng(0.0, 0.0)));
 
         // Networking
         // -----------------------------------------------------------------------------------------
@@ -266,12 +254,15 @@ public class GameActivity extends AppCompatActivity implements
             creatingWall = true;                        // The player is now creating a wall
             // Create the wall object
             Wall wall = new Wall(
-                    "W" + GameSettings.generateUniqueId() + "_" + GameSettings.getWallColor(),
+                    "W" + GameSettings.generateUniqueId(),
                     GameSettings.getPlayerId(),
                     GameSettings.getWallColor(),
                     context);
             wallId = wall.getId();                      // Store the wall id
             map.addMapItem(wall);                       // Add the wall to the map
+
+            // Tell the other devices that a new wall has been created
+            gameUpdateHandler.sendCreateWall(wallId, new ArrayList<LatLng>(), GameSettings.getWallColor());
 
             // Update the button
             Button button = (Button) view.findViewById(R.id.wallButton);
@@ -282,9 +273,7 @@ public class GameActivity extends AppCompatActivity implements
         } else {
             // Stop creating the wall
             creatingWall = false;                       // The player is no longer creating a wall
-
-            // map.removeMapItem(wallId);               // Remove the wall from the map TODO: should this happen?
-            wallId = null;                              // Destroy the wall object
+            wallId = null;                              // Forget about the current wall
 
             // Update the button
             Button button = (Button) view.findViewById(R.id.wallButton);

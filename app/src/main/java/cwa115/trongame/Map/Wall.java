@@ -182,9 +182,16 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
         ArrayList<ArrayList<LatLng>> newWallPoints = createHole(HOLE_SIZE, point);
         for (int i=0; i<newWallPoints.size(); i++) {
             newWalls.add(
-                    new Wall(id+"_"+i, ownerId, color, newWallPoints.get(i), context)
+                    new Wall(id+"_"+(newWallPoints.size()-i), ownerId, color, newWallPoints.get(i), context)
             );
         }
+
+        // Add the new current Wall to the list as well (this one only contains the current location)
+        ArrayList<LatLng> currentPoint = new ArrayList<>();
+        currentPoint.add(point);
+        newWalls.add(new Wall(id+"_"+0, ownerId, color, currentPoint, context));
+
+        // Return the result
         return newWalls;
     }
 

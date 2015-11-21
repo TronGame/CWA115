@@ -43,7 +43,7 @@ public class HostingActivity extends AppCompatActivity {
                     GameSettings.setGameToken(result.getString("token"));
                     GameSettings.setGameId(result.getInt("id"));
                     GameSettings.setGameName(gameName);
-                    GameSettings.setIsOwner(true);
+                    GameSettings.setOwnerId(GameSettings.getUserId());
                     joinOwnGame();
                 } catch(JSONException e) {
                     Toast.makeText(

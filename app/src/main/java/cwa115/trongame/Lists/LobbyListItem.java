@@ -3,13 +3,15 @@ package cwa115.trongame.Lists;
 public class LobbyListItem {
     private String gamename;
     private String host;
+    private int hostId;
     private int players;
 
     // Constructor for the LobbyListItem class
-    public LobbyListItem(String name, String host, int maxPlayers) {
+    public LobbyListItem(String name, String host, int hostId, int maxPlayers) {
         super();
         this.gamename = name;
         this.host = host;
+        this.hostId = hostId;
         this.players = maxPlayers;
     }
 
@@ -27,6 +29,12 @@ public class LobbyListItem {
     }
     public void setHost(String host) {
         this.host = host;
+    }
+    public int getHostId() {
+        return hostId;
+    }
+    public void setHostId(int hostId) {
+        this.hostId = hostId;
     }
     public int getPlayersAsInteger() {
         return players;

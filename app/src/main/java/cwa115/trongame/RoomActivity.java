@@ -11,6 +11,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 
+import com.google.android.gms.games.Game;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -98,6 +100,30 @@ public class RoomActivity extends AppCompatActivity {
         return colorList;
     }
     public void showGameActivity(View view) {
+
+        String query = "showGame?gameId=" + GameSettings.getGameId();
+
+        dataServer.sendRequest(query, new HttpConnector.Callback() {
+            @Override
+            public void handleResult(String data) {
+                try {
+                    JSONObject result = new JSONObject(data);
+                    JSONArray players = result.getJSONArray("players");
+                    List<Integer> listOfPlayerIds = new ArrayList<>();
+                    for (int i = 0; i < players.length(); i++) {
+                        JSONObject player = players.getJSONObject(i);
+                        listOfPlayerIds.add(player.getInt("id"));
+                        // TODO make sure that this happens more reliably (the server might have to store player color as well?)
+                        if (player.getInt("id") == GameSettings.getUserId())
+                            GameSettings.setWallColor(listOfColors.get(i));
+                    }
+                    GameSettings.setPlayersInGame(listOfPlayerIds);
+                } catch (JSONException e) {
+
+                }
+            }
+        });
+
         startActivity(new Intent(this, GameActivity.class));
     }
 

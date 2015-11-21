@@ -14,7 +14,6 @@ public final class GameSettings {
     private static int wallColor;
     private static String playerToken;
     private static int userId;
-    private static boolean isOwner;
     private static int ownerId;
     private static int gameId;
     private static String gameToken;
@@ -115,15 +114,11 @@ public final class GameSettings {
         return playerToken;
     }
 
-    public static void setIsOwner(boolean bool) {
-        isOwner = bool;
-    }
-
     /**
      * @return Is this player the owner?
      */
     public static boolean isOwner() {
-        return isOwner;
+        return ownerId==userId;
     }
 
     public static void setOwnerId(int id) {

@@ -8,6 +8,8 @@ import com.google.maps.GeoApiContext;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
@@ -31,6 +33,7 @@ public class GameUpdateHandler implements SocketIoHandler {
         public static final String MESSAGE_TYPE = "type";
         public static final String UPDATE_POSITION_MESSAGE = "updatePosition";
         public static final String UPDATE_WALL_MESSAGE = "updateWall";
+        public static final String CREATE_WALL_MESSAGE = "createWall";
 
         public static final String PLAYER_ID = "playerId";
         public static final String PLAYER_NAME = "playerName";
@@ -38,6 +41,8 @@ public class GameUpdateHandler implements SocketIoHandler {
 
         public static final String WALL_ID = "wallId";
         public static final String WALL_POINT = "point";
+        public static final String WALL_POINTS = "points";
+        public static final String WALL_COLOR = "color";
     }
 
     public GameUpdateHandler(SocketIoConnection socket, Map map, GeoApiContext context) {
@@ -74,6 +79,17 @@ public class GameUpdateHandler implements SocketIoHandler {
                             message.getString(Protocol.WALL_ID),
                             LatLngConversion.getPointFromJSON(
                                     message.getJSONObject(Protocol.WALL_POINT)
+                            )
+                    );
+                    break;
+                // Create a new wall
+                case Protocol.CREATE_WALL_MESSAGE:
+                    onRemoteWallCreated(
+                            message.getString(Protocol.PLAYER_ID),
+                            message.getString(Protocol.WALL_ID),
+                            message.getInt(Protocol.WALL_COLOR),
+                            LatLngConversion.getPointsFromJSON(
+                                    message.getJSONObject(Protocol.WALL_POINTS)
                             )
                     );
                     break;
@@ -121,20 +137,30 @@ public class GameUpdateHandler implements SocketIoHandler {
     public void onRemoteWallUpdate(String playerId, String wallId, LatLng point) {
         if(GameSettings.getPlayerId().equals(playerId))
             return; // We sent this ourselves
-        if(!map.hasObject(wallId)) {
-            // Get the color of the wall from the wallid
-            String[] split = wallId.split("_");
-            int color = Integer.parseInt(split[split.length - 1]);
-
-            map.addMapItem(new Wall(wallId, playerId, color, context));
-            Log.d("SERVER", "New wall created by " + playerId + " at " + point.toString());
-        } else {
+        if(map.hasObject(wallId)) {
             Wall remoteWall = (Wall)map.getItemById(wallId);
             if(!remoteWall.getOwnerId().equals(playerId))
                 return;
             remoteWall.addPoint(point);
             Log.d("SERVER", "Update wall " + wallId + " of " + playerId + " by " + point.toString());
             map.redraw(remoteWall.getId());
+        }
+    }
+
+    /**
+     * Called when a remote wall is created
+     * @param playerId the player identifier of the wall owner
+     * @param wallId the identifier of the wall
+     * @param color the color of the wall
+     * @param points the points of the wall
+     */
+    public void onRemoteWallCreated(String playerId, String wallId, int color, ArrayList<LatLng> points) {
+        if(GameSettings.getPlayerId().equals(playerId))
+            return; // We sent this ourselves
+        if(!map.hasObject(wallId)) {
+            map.addMapItem(new Wall(wallId, playerId, color, points, context));
+            map.redraw(wallId);
+            Log.d("SERVER", "New wall created by " + playerId);
         }
     }
 
@@ -172,5 +198,25 @@ public class GameUpdateHandler implements SocketIoHandler {
             // end of the world
         }
         socket.sendMessage(updateWallMessage, Protocol.UPDATE_WALL_MESSAGE);
+    }
+
+    /**
+     * Create a new wall on the other devices
+     * @param wallId The id of the newly created wall
+     * @param points The points inside of the newly created wall
+     * @param color The color of the newly created wall
+     */
+    public void sendCreateWall(String wallId, ArrayList<LatLng> points, int color) {
+        JSONObject createWallMessage = new JSONObject();
+        try {
+            createWallMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
+            createWallMessage.put(Protocol.WALL_ID, wallId);
+            createWallMessage.put(Protocol.WALL_COLOR, color);
+            createWallMessage.put(Protocol.WALL_POINTS, LatLngConversion.getJSONFromPoints(points));
+
+        } catch(JSONException e) {
+            // end of the world
+        }
+        socket.sendMessage(createWallMessage, Protocol.CREATE_WALL_MESSAGE);
     }
 }
