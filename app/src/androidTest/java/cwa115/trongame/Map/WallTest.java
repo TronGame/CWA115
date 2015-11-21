@@ -25,6 +25,6 @@ public class WallTest extends TestCase{
         }
         LatLng pt1 = new LatLng(1.0, 1.0);
         LatLng pt2 = new LatLng(2.0, 5.0);
-        assertEquals(wall.hasCrossed(pt1, pt2, 100000, false), true);
+        assertEquals(wall.hasCrossed(pt1, pt2, 100000, ""), true);
     }
 }

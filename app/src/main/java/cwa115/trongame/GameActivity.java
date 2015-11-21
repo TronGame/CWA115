@@ -2,7 +2,6 @@ package cwa115.trongame;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -28,7 +27,6 @@ import com.google.maps.model.SnappedPoint;
 import java.util.ArrayList;
 
 import cwa115.trongame.Game.GameSettings;
-import cwa115.trongame.GameEvent.EventUpdateHandler;
 import cwa115.trongame.GameEvent.GameEventHandler;
 import cwa115.trongame.GoogleMapsApi.ApiListener;
 import cwa115.trongame.GoogleMapsApi.SnappedPointHandler;
@@ -64,7 +62,8 @@ public class GameActivity extends AppCompatActivity implements
     // Location thresholds
     private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(10);   // About 10m
     private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(30);    // About 10m
-    private static final double MAX_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(1);    // About 1m
+    private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(1);     // About 1m
+    private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(20);     // About 20m
 
     // Permission request ids
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
@@ -202,19 +201,22 @@ public class GameActivity extends AppCompatActivity implements
             TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
             distanceView.setText(String.valueOf(LatLngConversion.latLngDistanceToMeter(travelledDistance)));
 
-            snappedGpsLoc = newSnappedGpsLoc;   // update the snapped location
-
             // Send the player location
             gameUpdateHandler.sendMyLocation(snappedGpsLoc);
 
             // Wall functionality
             Wall[] walls = map.getWalls();
             for (Wall wall : walls) {
-                // Check if the player isn't to close to a wall
-                double distanceToWall = wall.getDistanceTo(snappedGpsLoc);
-                if (distanceToWall < MAX_WALL_DISTANCE) {
-                    // Show the "player to close to wall" notification
-                    showNotification(getString(R.string.wall_too_close), Toast.LENGTH_LONG);
+                // Check if the player hasn't crossed a wall
+                if (wall.hasCrossed(snappedGpsLoc, newSnappedGpsLoc, MIN_WALL_DISTANCE, GameSettings.getPlayerId())) {
+                    // Show the "player crossed wall" notification
+                    showNotification(getString(R.string.wall_crossed), Toast.LENGTH_LONG);
+                } else {
+                    // Check if the player isn't to close to a wall
+                    if (wall.getDistanceTo(newSnappedGpsLoc, MIN_WALL_WARNING_DISTANCE, GameSettings.getPlayerId()) < MIN_WALL_WARNING_DISTANCE) {
+                        // Show the "player to close to wall" notification
+                        showNotification(getString(R.string.wall_too_close), Toast.LENGTH_LONG);
+                    }
                 }
             }
 
@@ -225,6 +227,8 @@ public class GameActivity extends AppCompatActivity implements
                 gameUpdateHandler.sendUpdateWall(snappedGpsLoc, wallId);
                 map.redraw(wall.getId());       // Redraw the wall on the map
             }
+
+            snappedGpsLoc = newSnappedGpsLoc;   // update the snapped location
 
         } else {
             // Player is to far from the road
