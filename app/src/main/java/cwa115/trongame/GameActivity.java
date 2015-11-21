@@ -25,6 +25,7 @@ import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.GameEvent.GameEventHandler;
@@ -78,12 +79,13 @@ public class GameActivity extends AppCompatActivity implements
     private GeoApiContext context;                      // The context that takes care of the location snapping
 
     // Location data
-    private LatLng gpsLoc;                            // Location of player
+    private LatLng gpsLoc;                              // Location of player
     private LatLng snappedGpsLoc;                       // Snapped location of player
     private double travelledDistance;                   // Distance travelled from the start
     private double height;                              // The last recorded height of the player
 
     // Wall data
+    private double holeSize = LatLngConversion.meterToLatLngDistance(50);
     private boolean creatingWall = false;               // Is the player creating a wall
     private String wallId;                              // The Wall id
 
@@ -159,6 +161,7 @@ public class GameActivity extends AppCompatActivity implements
 
         gameUpdateHandler = new GameUpdateHandler(connection, map, context);
         gameEventHandler = new GameEventHandler(connection, this);
+        //gameEventHandler.start();
     }
 
     // endregion
@@ -266,7 +269,7 @@ public class GameActivity extends AppCompatActivity implements
             map.addMapItem(wall);                       // Add the wall to the map
 
             // Tell the other devices that a new wall has been created
-            gameUpdateHandler.sendCreateWall(wallId, new ArrayList<LatLng>(), GameSettings.getWallColor());
+            gameUpdateHandler.sendCreateWall(GameSettings.getPlayerId(), wallId, new ArrayList<LatLng>(), GameSettings.getWallColor());
 
             // Update the button
             Button button = (Button) view.findViewById(R.id.wallButton);
@@ -284,7 +287,7 @@ public class GameActivity extends AppCompatActivity implements
             button.setText(getString(R.string.wall_button_on_text));
 
             // Show the "stopped creating wall" notification
-            showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_SHORT);
+            showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_LONG);
         }
     }
 
@@ -297,6 +300,28 @@ public class GameActivity extends AppCompatActivity implements
         if (wallId != null) {
             map.clear(wallId);    // Clear the wall from the map
         }
+    }
+
+    public void breakWall(View view) {
+        Wall[] walls = map.getWalls();
+        for (Wall wall : walls) {
+            ArrayList<Wall> newWalls = wall.splitWall(snappedGpsLoc, holeSize);
+            if (newWalls != null && newWalls.size() > 0) {
+                // The wall has to be split
+                for (int i=0; i<newWalls.size(); i++) {
+                    Wall newWall = newWalls.get(i);
+                    if (newWall.getId().equals(wallId)) {
+                        // Remove the old wall
+                        map.removeMapItem(newWall.getId());
+                    }
+
+                    // Add the new wall to the game
+                    map.addMapItem(newWall);
+                    gameUpdateHandler.sendCreateWall(newWall.getOwnerId(), newWall.getId(), newWall.getPoints(), newWall.getColor());
+                }
+            }
+        }
+        showNotification(getString(R.string.wall_breaker_notification), Toast.LENGTH_SHORT);
     }
 
     public void addScore(int score) {

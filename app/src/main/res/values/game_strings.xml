@@ -4,10 +4,12 @@
     <string name="wall_button_on_text">Start Wall</string>
     <string name="wall_button_off_text">Stop Wall</string>
     <string name="wall_button_clear_text">Clear Walls</string>
+    <string name="wall_button_break_text">Break Walls</string>
     <string name="manual_location">Manual Location</string>
 
-    <string name="wall_on_notification">Wall creation enabled.</string>
-    <string name="wall_off_notification">Wall creation disabled.</string>
+    <string name="wall_on_notification">Wall creation enabled</string>
+    <string name="wall_off_notification">Wall creation disabled</string>
+    <string name="wall_breaker_notification">Wall breaker activated</string>
 
     <string name="wall_too_close">Very close to wall</string>
     <string name="wall_crossed">Crossed Wall (Game Over)</string>

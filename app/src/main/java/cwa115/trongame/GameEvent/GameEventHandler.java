@@ -42,6 +42,9 @@ public class GameEventHandler {
     public GameEventHandler (SocketIoConnection connection, GameActivity gameActivity) {
         this.gameActivity = gameActivity;
         this.eventUpdateHandler = new EventUpdateHandler(connection, this);
+    }
+
+    public void start() {
         // TODO add random time here
         addPendingEvent(new KingOfHillEvent());
     }

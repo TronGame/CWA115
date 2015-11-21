@@ -34,12 +34,14 @@ public class GameUpdateHandler implements SocketIoHandler {
         public static final String UPDATE_POSITION_MESSAGE = "updatePosition";
         public static final String UPDATE_WALL_MESSAGE = "updateWall";
         public static final String CREATE_WALL_MESSAGE = "createWall";
+        public static final String REMOVE_WALL_MESSAGE = "removeWall";
 
         public static final String PLAYER_ID = "playerId";
         public static final String PLAYER_NAME = "playerName";
         public static final String PLAYER_LOCATION = "location";
 
         public static final String WALL_ID = "wallId";
+        public static final String WALL_OWNER_ID = "wallOwnerId";
         public static final String WALL_POINT = "point";
         public static final String WALL_POINTS = "points";
         public static final String WALL_COLOR = "color";
@@ -86,11 +88,19 @@ public class GameUpdateHandler implements SocketIoHandler {
                 case Protocol.CREATE_WALL_MESSAGE:
                     onRemoteWallCreated(
                             message.getString(Protocol.PLAYER_ID),
+                            message.getString(Protocol.WALL_OWNER_ID),
                             message.getString(Protocol.WALL_ID),
                             message.getInt(Protocol.WALL_COLOR),
                             LatLngConversion.getPointsFromJSON(
                                     message.getJSONObject(Protocol.WALL_POINTS)
                             )
+                    );
+                    break;
+                // Remove a wall
+                case Protocol.REMOVE_WALL_MESSAGE:
+                    onRemoteWallRemoved(
+                            message.getString(Protocol.PLAYER_ID),
+                            message.getString(Protocol.WALL_ID)
                     );
                     break;
                 default:
@@ -139,8 +149,6 @@ public class GameUpdateHandler implements SocketIoHandler {
             return; // We sent this ourselves
         if(map.hasObject(wallId)) {
             Wall remoteWall = (Wall)map.getItemById(wallId);
-            if(!remoteWall.getOwnerId().equals(playerId))
-                return;
             remoteWall.addPoint(point);
             Log.d("SERVER", "Update wall " + wallId + " of " + playerId + " by " + point.toString());
             map.redraw(remoteWall.getId());
@@ -154,13 +162,33 @@ public class GameUpdateHandler implements SocketIoHandler {
      * @param color the color of the wall
      * @param points the points of the wall
      */
-    public void onRemoteWallCreated(String playerId, String wallId, int color, ArrayList<LatLng> points) {
+    public void onRemoteWallCreated(String playerId, String ownerId, String wallId, int color, ArrayList<LatLng> points) {
         if(GameSettings.getPlayerId().equals(playerId))
             return; // We sent this ourselves
         if(!map.hasObject(wallId)) {
             map.addMapItem(new Wall(wallId, playerId, color, points, context));
             map.redraw(wallId);
             Log.d("SERVER", "New wall created by " + playerId);
+        } else {
+            // Remove the old wall
+            map.removeMapItem(wallId);
+            // Update the wall
+            map.addMapItem(new Wall(wallId, playerId, color, points, context));
+            map.redraw(wallId);
+            Log.d("SERVER", "Wall updated by " + playerId);
+        }
+    }
+
+    /**
+     * Clears a wall from the map. Note: this doesn't remove the wall from the mapItems list.
+     * @param playerId The player that issued the command
+     * @param wallId The wall that has to be removed
+     */
+    public void onRemoteWallRemoved(String playerId, String wallId) {
+        if(GameSettings.getPlayerId().equals(playerId))
+            return; // We sent this ourselves
+        if(!map.hasObject(wallId)) {
+            map.clear(wallId);
         }
     }
 
@@ -202,14 +230,16 @@ public class GameUpdateHandler implements SocketIoHandler {
 
     /**
      * Create a new wall on the other devices
+     * @param ownerId the player identifier of the wall owner
      * @param wallId The id of the newly created wall
      * @param points The points inside of the newly created wall
      * @param color The color of the newly created wall
      */
-    public void sendCreateWall(String wallId, ArrayList<LatLng> points, int color) {
+    public void sendCreateWall(String ownerId, String wallId, ArrayList<LatLng> points, int color) {
         JSONObject createWallMessage = new JSONObject();
         try {
             createWallMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
+            createWallMessage.put(Protocol.WALL_OWNER_ID, ownerId);
             createWallMessage.put(Protocol.WALL_ID, wallId);
             createWallMessage.put(Protocol.WALL_COLOR, color);
             createWallMessage.put(Protocol.WALL_POINTS, LatLngConversion.getJSONFromPoints(points));
@@ -218,5 +248,16 @@ public class GameUpdateHandler implements SocketIoHandler {
             // end of the world
         }
         socket.sendMessage(createWallMessage, Protocol.CREATE_WALL_MESSAGE);
+    }
+
+    public void sendRemoveWall(String wallId) {
+        JSONObject removeWallMessage = new JSONObject();
+        try {
+            removeWallMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
+            removeWallMessage.put(Protocol.WALL_ID, wallId);
+        } catch (JSONException e) {
+
+        }
+        socket.sendMessage(removeWallMessage, Protocol.REMOVE_WALL_MESSAGE);
     }
 }

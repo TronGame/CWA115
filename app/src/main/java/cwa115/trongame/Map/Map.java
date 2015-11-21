@@ -53,6 +53,9 @@ public class Map implements OnMapReadyCallback {
      * @param item the item that needs to be added
      */
     public void addMapItem(DrawableMapItem item) {
+        if (mapItems.keySet().contains(item.getId())) {
+            return;
+        }
         // Is the item a wall?
         if (item instanceof Wall)
             walls.add((Wall)item);
@@ -67,10 +70,15 @@ public class Map implements OnMapReadyCallback {
      * @param itemId The item that needs to be removed
      */
     public void removeMapItem(String itemId) {
+        if (!mapItems.keySet().contains(itemId)) {
+            return;
+        }
+        DrawableMapItem oldItem = mapItems.get(itemId);
+        if (oldItem instanceof Wall) {
+            walls.remove(oldItem);
+        }
         clear(itemId);
-        DrawableMapItem item = mapItems.remove(itemId);
-        if (item instanceof Wall)
-            walls.remove(item);
+        mapItems.remove(itemId);
     }
 
     /**

@@ -29,8 +29,6 @@ import cwa115.trongame.Utils.Vector2D;
 public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
 
     static final private int LINE_WIDTH = 15;
-    static final private double SPLIT_DISTANCE = LatLngConversion.meterToLatLngDistance(20);
-    static final private double HOLE_SIZE = LatLngConversion.meterToLatLngDistance(20);
 
     private String id;                      // The wall id
     private String ownerId;                 // The id of the owner
@@ -109,6 +107,10 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
     }
 
     public void clear(GoogleMap map) {
+        // Clear all the points
+        points = new ArrayList<>();
+
+        // Clear the polyline from the map
         if (line != null) {
             line.remove();
         }
@@ -194,25 +196,42 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
     }
 
     /**
+     * Get the points of the wall
+     */
+    public ArrayList<LatLng> getPoints() {
+        return new ArrayList<>(points);
+    }
+
+    /**
+     * Get the color of the wall
+     */
+    public int getColor() {
+        return color;
+    }
+
+    /**
      * Split a wall in two
      * @param point the point at which the wall will be split
      */
-    public ArrayList<Wall> splitWall(LatLng point) {
-        if (getDistanceTo(point) > HOLE_SIZE)
+    public ArrayList<Wall> splitWall(LatLng point, double holeSize) {
+        if (getDistanceTo(point) > holeSize)
+            return null;
+
+        if (points.size() <= 0)
             return null;
 
         ArrayList<Wall> newWalls = new ArrayList<>();
-        ArrayList<ArrayList<LatLng>> newWallPoints = createHole(HOLE_SIZE, point);
+        ArrayList<ArrayList<LatLng>> newWallPoints = createHole(holeSize, point);
         for (int i=0; i<newWallPoints.size(); i++) {
             newWalls.add(
                     new Wall("W"+GameSettings.generateUniqueId(), ownerId, color, newWallPoints.get(i), context)
             );
         }
 
-        // Add the new current Wall to the list as well (this one only contains the current location)
+        // Add the new current Wall to the list as well (this one only contains the current location and has the id of the original wall)
         ArrayList<LatLng> currentPoint = new ArrayList<>();
-        currentPoint.add(point);
-        newWalls.add(new Wall("W"+GameSettings.generateUniqueId(), ownerId, color, currentPoint, context));
+        currentPoint.add(points.get(points.size()-1));
+        newWalls.add(new Wall(id, ownerId, color, currentPoint, context));
 
         // Return the result
         return newWalls;
@@ -240,6 +259,7 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
                 currentWallPart.add(points.get(i));
 
             // Check if the current segment intersects with the hole boundary
+            // TODO when a point or a line is exactly at distance dist there might be problems (a large part of the wall will be removed)
             Line line = new Line(new Vector2D(points.get(i)), new Vector2D(points.get(i+1)));
             Vector2D[] newPoints = line.getPointAtDist(dist, pt);
             for (Vector2D newPt : newPoints) {
