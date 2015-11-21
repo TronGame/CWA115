@@ -68,6 +68,7 @@ public class GameEventHandler {
         if (GameSettings.isOwner()) {
             final String eventType = event.getEventType();
             timerHandler = new Handler() {
+                @Override
                 public void handleMessage(Message message) {
                     eventUpdateHandler.broadCastEventEnd(message.getData().getString("eventType"));
                 }
