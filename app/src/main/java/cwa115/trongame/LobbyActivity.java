@@ -136,9 +136,18 @@ public class LobbyActivity extends AppCompatActivity {
         }
 
         ListView lobbyList = (ListView) findViewById(R.id.mainList);
+
+        // Store the scroll position
+        View view = lobbyList.getChildAt(0);
+        int indexPosition = lobbyList.getFirstVisiblePosition();
+        int top = (view == null) ? 0 : (view.getTop() - lobbyList.getPaddingTop());
+
         lobbyList.setClickable(true);
         LobbyCustomAdapter adapter = new LobbyCustomAdapter(this, listOfRooms);
         lobbyList.setAdapter(adapter);
+
+        // Reset the scroll position
+        lobbyList.setSelectionFromTop(indexPosition, top);
 
     }
 
