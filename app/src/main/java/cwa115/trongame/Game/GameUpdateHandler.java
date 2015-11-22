@@ -1,6 +1,7 @@
 package cwa115.trongame.Game;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.GeoApiContext;

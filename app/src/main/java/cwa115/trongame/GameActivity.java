@@ -62,7 +62,7 @@ public class GameActivity extends AppCompatActivity implements
     // -----------------------------------------------------------------------------------------------------------------
     // Location thresholds
     private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(10);   // About 10m
-    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(30);    // About 10m
+    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(100);    // About 10m
     private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(1);     // About 1m
     private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(20);     // About 20m
 
@@ -157,7 +157,7 @@ public class GameActivity extends AppCompatActivity implements
         // Networking
         // -----------------------------------------------------------------------------------------
         // Create the gameUpdateHandler object
-        connection = new SocketIoConnection("testA1", "1");
+        connection = new SocketIoConnection("testA1", String.valueOf(GameSettings.getGameId()));
 
         gameUpdateHandler = new GameUpdateHandler(connection, map, context);
         gameEventHandler = new GameEventHandler(connection, this);
@@ -183,21 +183,21 @@ public class GameActivity extends AppCompatActivity implements
 
         // Calculate the distance between the snapped location and the actual location
         // So this is basically the distance to the road
-        double snappedDistance = new Vector2D(gpsLoc).subtract(new Vector2D(snappedGpsLoc)).getLength();
+        double snappedDistance = LatLngConversion.getDistancePoints(gpsLoc, newSnappedGpsLoc);
 
         // Log.d("VALUE", "Snapped Distance "+String.valueOf(snappedDistance));
 
         // Check is the player is (almost) on the road
         if (snappedDistance < MAX_ROAD_DISTANCE) {
             // Update the player marker and the camera
-            map.updatePlayer(GameSettings.getPlayerId(), snappedGpsLoc);
-            map.updateCamera(snappedGpsLoc);
+            map.updatePlayer(GameSettings.getPlayerId(), newSnappedGpsLoc);
+            map.updateCamera(newSnappedGpsLoc);
 
             // Calculate the distance from the last location to the new location and show it on the screen
             double distance = 0.0;
             if (!(snappedGpsLoc.longitude == 0 && snappedGpsLoc.latitude == 0)) {
                 // This checks if there has been a previous location update
-                distance = new Vector2D(snappedGpsLoc).subtract(new Vector2D(newSnappedGpsLoc)).getLength();
+                distance = LatLngConversion.getDistancePoints(snappedGpsLoc, newSnappedGpsLoc);
             }
             travelledDistance += distance;
 
@@ -205,10 +205,10 @@ public class GameActivity extends AppCompatActivity implements
             distanceView.setText(String.valueOf(LatLngConversion.latLngDistanceToMeter(travelledDistance)));
 
             // Send the player location
-            gameUpdateHandler.sendMyLocation(snappedGpsLoc);
+            gameUpdateHandler.sendMyLocation(newSnappedGpsLoc);
 
             // Wall functionality
-            Wall[] walls = map.getWalls();
+            ArrayList<Wall> walls = map.getWalls();
             for (Wall wall : walls) {
                 // Check if the player hasn't crossed a wall
                 if (wall.hasCrossed(snappedGpsLoc, newSnappedGpsLoc, MIN_WALL_DISTANCE, GameSettings.getPlayerId())) {
@@ -226,8 +226,8 @@ public class GameActivity extends AppCompatActivity implements
             Wall wall = (Wall)map.getItemById(wallId);
             // Update the wall (this must happen after the "player to close to wall" check
             if (creatingWall) {
-                wall.addPoint(snappedGpsLoc);   // Add the new point to the wall
-                gameUpdateHandler.sendUpdateWall(snappedGpsLoc, wallId);
+                wall.addPoint(newSnappedGpsLoc);   // Add the new point to the wall
+                gameUpdateHandler.sendUpdateWall(newSnappedGpsLoc, wallId);
                 map.redraw(wall.getId());       // Redraw the wall on the map
             }
 
@@ -277,18 +277,20 @@ public class GameActivity extends AppCompatActivity implements
 
             // Show the "creating wall" notification
             showNotification(getString(R.string.wall_on_notification), Toast.LENGTH_SHORT);
-        } else {
-            // Stop creating the wall
-            creatingWall = false;                       // The player is no longer creating a wall
-            wallId = null;                              // Forget about the current wall
-
-            // Update the button
-            Button button = (Button) view.findViewById(R.id.wallButton);
-            button.setText(getString(R.string.wall_button_on_text));
-
-            // Show the "stopped creating wall" notification
-            showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_LONG);
         }
+//        else {
+//            // Stop creating the wall
+//            creatingWall = false;                       // The player is no longer creating a wall
+//            clearWall(null);                            // Clear the current wall
+//            wallId = null;                              // Forget about the current wall
+//
+//            // Update the button
+//            Button button = (Button) view.findViewById(R.id.wallButton);
+//            button.setText(getString(R.string.wall_button_on_text));
+//
+//            // Show the "stopped creating wall" notification
+//            showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_LONG);
+//        }
     }
 
     /**
@@ -299,14 +301,15 @@ public class GameActivity extends AppCompatActivity implements
         // Is there a wall right now?
         if (wallId != null) {
             map.clear(wallId);    // Clear the wall from the map
+            gameUpdateHandler.sendRemoveWall(wallId);
         }
     }
 
     public void breakWall(View view) {
-        Wall[] walls = map.getWalls();
+        ArrayList<Wall> walls = map.getWalls();
         for (Wall wall : walls) {
             ArrayList<Wall> newWalls = wall.splitWall(snappedGpsLoc, holeSize);
-            if (newWalls != null && newWalls.size() > 0) {
+            if (newWalls != null) {
                 // The wall has to be split
                 for (int i=0; i<newWalls.size(); i++) {
                     Wall newWall = newWalls.get(i);
@@ -408,7 +411,7 @@ public class GameActivity extends AppCompatActivity implements
         // Store the new location in a LatLng object
         LatLng newGpsLoc = new LatLng(location.getLatitude(), location.getLongitude());
         // Calculate the distance between the new location and the last location
-        double distance = new Vector2D(newGpsLoc).subtract(new Vector2D(gpsLoc)).getLength();
+        double distance = LatLngConversion.getDistancePoints(gpsLoc, newGpsLoc);
 
         // Log.d("VALUE", "Distance " + String.valueOf(distance));
 

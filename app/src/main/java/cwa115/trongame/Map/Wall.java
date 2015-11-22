@@ -138,21 +138,25 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
      * @return the distance between the point and the wall.
      */
     public double getDistanceTo(LatLng point, double minDistance, String playerId) {
-        boolean awayFromPlayer = playerId!=ownerId;
+        if (points.size() <= 0)
+            return Double.POSITIVE_INFINITY;
+
+        boolean awayFromPlayer = !playerId.equals(ownerId);
         ArrayList<LatLng> points = new ArrayList<>(this.points);
         int n = points.size()-1;
         while (n>=0 && !awayFromPlayer) {
-            if (LatLngConversion.getDistancePoints(point, points.get(n)) < minDistance)
+            if (LatLngConversion.getDistancePoints(point, points.get(n)) < minDistance) {
                 points.remove(n);
+                n-=1;
+            }
             else
                 awayFromPlayer = true;
-            n+=1;
         }
         return PolyLineUtils.getDistanceToLine(new Vector2D(point), points);
     }
 
     public boolean hasCrossed(LatLng last, LatLng current, double minDistance, String playerId) {
-        boolean awayFromPlayer = playerId!=ownerId;
+        boolean awayFromPlayer = !playerId.equals(ownerId);
         ArrayList<LatLng> points = new ArrayList<>(this.points);
         int n = points.size()-1;
         while (n>=0 && !awayFromPlayer) {
@@ -178,10 +182,12 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
             Line line1 = new Line(ptA, ptB);
             Line line2 = new Line(pt1, pt2);
 
-            Vector2D intersect = line1.getIntersect(line2);
+            if (line1.isDefined() && line2.isDefined()) {
+                Vector2D intersect = line1.getIntersect(line2);
 
-            if (line1.isOn(intersect)) {
+                if (line1.isOn(intersect) && line2.isOn(intersect)) {
                     return true;
+                }
             }
         }
             
@@ -222,6 +228,9 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
 
         ArrayList<Wall> newWalls = new ArrayList<>();
         ArrayList<ArrayList<LatLng>> newWallPoints = createHole(holeSize, point);
+        if (newWallPoints == null)
+            return null;
+
         for (int i=0; i<newWallPoints.size(); i++) {
             newWalls.add(
                     new Wall("W"+GameSettings.generateUniqueId(), ownerId, color, newWallPoints.get(i), context)
@@ -253,31 +262,37 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
         ArrayList<LatLng> currentWallPart = new ArrayList<>();
         Vector2D pt = new Vector2D(point);
 
-        for (int i=0; i<points.size()-1; i++) {
+        for (int i=0; i<points.size(); i++) {
             // If the current point is not inside of the hole it can be added to the current wall.
             if (isFar)
                 currentWallPart.add(points.get(i));
 
-            // Check if the current segment intersects with the hole boundary
-            // TODO when a point or a line is exactly at distance dist there might be problems (a large part of the wall will be removed)
-            Line line = new Line(new Vector2D(points.get(i)), new Vector2D(points.get(i+1)));
-            Vector2D[] newPoints = line.getPointAtDist(dist, pt);
-            for (Vector2D newPt : newPoints) {
-                if (line.isOn(newPt)) {
-                    if (isFar) {
-                        // End the current wall (we have entered the hole)
-                        currentWallPart.add(new LatLng(newPt.x, newPt.y));
-                        isFar = false;
-                        result.add(new ArrayList<>(currentWallPart));
-                        currentWallPart = new ArrayList<>();
-                    } else {
-                        // Start a new wall (we have left the hole)
-                        currentWallPart.add(new LatLng(newPt.x, newPt.y));
-                        isFar = true;
+            if (i != points.size()-1) {
+                // Check if the current segment intersects with the hole boundary
+                // TODO when a point or a line is exactly at distance dist there might be problems (a large part of the wall will be removed)
+                Vector2D start = new Vector2D(points.get(i));
+                Vector2D end = new Vector2D(points.get(i + 1));
+                Line line = new Line(start, end);
+                Vector2D[] newPoints = line.getPointAtDist(dist, pt);
+                for (Vector2D newPt : newPoints) {
+                    if (line.isOn(newPt) && !newPt.equals(end)) {
+                        if (isFar) {
+                            // End the current wall (we have entered the hole)
+                            currentWallPart.add(new LatLng(newPt.y, newPt.x));
+                            isFar = false;
+                            result.add(new ArrayList<>(currentWallPart));
+                            currentWallPart = new ArrayList<>();
+                        } else {
+                            // Start a new wall (we have left the hole)
+                            currentWallPart.add(new LatLng(newPt.y, newPt.x));
+                            isFar = true;
+                        }
                     }
                 }
             }
         }
+        if (isFar)
+            result.add(currentWallPart);
 
         return result;
     }

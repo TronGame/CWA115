@@ -44,8 +44,8 @@ public class Map implements OnMapReadyCallback {
     /**
      * Get all of the wall objects on the map
      */
-    public Wall[] getWalls() {
-        return (Wall[])walls.toArray();
+    public ArrayList<Wall> getWalls() {
+        return walls;
     }
 
     /**

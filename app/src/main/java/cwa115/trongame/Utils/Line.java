@@ -8,10 +8,12 @@ public class Line {
     Vector2D end;
 
     public Line(Vector2D start, Vector2D end) {
-        if (start.equals(end))
-            return;
         this.start = start;
         this.end = end;
+    }
+
+    public boolean isDefined() {
+        return !start.equals(end);
     }
 
     public double getLength() {
@@ -31,12 +33,28 @@ public class Line {
     }
 
     public Vector2D getIntersect(Line other) {
-        double xCo = - (getYIntercept()-other.getYIntercept()) / (getRico()-other.getRico());
-        double yCo = getY(xCo);
+        if (!isDefined() || !other.isDefined())
+            return null;
+
+        double xCo;
+        double yCo;
+        if (Double.isInfinite(getRico())) {
+            xCo = start.x;
+            yCo = other.getY(xCo);
+        } else if (Double.isInfinite(other.getRico())) {
+            xCo = other.start.x;
+            yCo = getY(xCo);
+        } else {
+            xCo = -(getYIntercept() - other.getYIntercept()) / (getRico() - other.getRico());
+            yCo = getY(xCo);
+        }
         return new Vector2D(xCo, yCo);
     }
 
     public Vector2D[] getPointAtDist(double dist, Vector2D pt) {
+        if (!isDefined())
+            return new Vector2D[0];
+
         double r = getRico();
         double q = getYIntercept();
 
@@ -44,11 +62,29 @@ public class Line {
             return new Vector2D[0];
         }
 
-        double xCo1 = (pt.x + pt.y*r - r*q + Math.sqrt(-Math.pow(pt.x*r, 2) + 2*pt.x*pt.y*r - 2*pt.x*r*q - Math.pow(pt.y, 2) + 2*pt.y*q + Math.pow(dist*r, 2) + Math.pow(dist, 2) - Math.pow(q, 2))) / (Math.pow(r, 2) - 1);
-        double yCo1 = getY(xCo1);
+        double xCo1; double xCo2; double yCo1; double yCo2;
 
-        double xCo2 = (pt.x + pt.y*r - r*q - Math.sqrt(-Math.pow(pt.x*r, 2) + 2*pt.x*pt.y*r - 2*pt.x*r*q - Math.pow(pt.y, 2) + 2*pt.y*q + Math.pow(dist*r, 2) + Math.pow(dist, 2) - Math.pow(q, 2))) / (Math.pow(r, 2) - 1);
-        double yCo2 = getY(xCo1);
+        if (Double.isInfinite(r)) {
+            xCo1 = start.x;
+            yCo1 = pt.y + Math.sqrt(Math.pow(dist, 2)-Math.pow(start.x-pt.x, 2));
+
+            xCo2 = start.x;
+            yCo2 = pt.y - Math.sqrt(Math.pow(dist, 2)-Math.pow(start.x-pt.x, 2));
+        } else {
+            double a = Math.pow(r, 2)+1;
+            double b = 2*q*r - 2*pt.x - 2*r*pt.y;
+            double c = Math.pow(q, 2) - 2*q*pt.y + Math.pow(pt.x, 2) + Math.pow(pt.y, 2) - Math.pow(dist, 2);
+            if (a==0) {
+                return new Vector2D[] {
+                        new Vector2D(-c/b, getY(-c/b))
+                };
+            }
+            xCo1 = -(b + Math.sqrt(Math.pow(b, 2) - 4*a*c))/(2*a);
+            yCo1 = getY(xCo1);
+
+            xCo2 = -(b - Math.sqrt(Math.pow(b, 2) - 4*a*c))/(2*a);
+            yCo2 = getY(xCo2);
+        }
 
         return new Vector2D[] {
                 new Vector2D(xCo1, yCo1),
@@ -57,13 +93,18 @@ public class Line {
     }
 
     public boolean isOn(Vector2D pt) {
-        return (start.x <= pt.x && pt.x <= end.x) || (start.x >= pt.x && pt.x >= end.x);
+        return ((start.x <= pt.x && pt.x <= end.x) || (start.x >= pt.x && pt.x >= end.x)) && 
+                ((start.y <= pt.y && pt.y <= end.y) || (start.y >= pt.y && pt.y >= end.y));
     }
 
     public double distanceTo(Vector2D pt) {
         double a = getRico();
         double b = -1;
         double c = getYIntercept();
+
+        if (Double.isInfinite(a)) {
+            return Math.abs(pt.x - start.x);
+        }
 
         return Math.abs(a*pt.x + b*pt.y + c)/Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
     }
@@ -72,6 +113,10 @@ public class Line {
         double a = getRico();
         double b = -1;
         double c = getYIntercept();
+
+        if (Double.isInfinite(a)) {
+            return new Vector2D(start.x, pt.y);
+        }
 
         double xCo = (b*(b*pt.x - a*pt.y) - a*c)/Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
         double yCo = getY(xCo);

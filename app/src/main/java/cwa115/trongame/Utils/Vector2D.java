@@ -43,4 +43,8 @@ public class Vector2D {
         return new Vector2D(x*a, y*a);
     }
 
+    public boolean equals(Vector2D other) {
+        return (x == other.x && y == other.y);
+    }
+
 }

@@ -71,7 +71,7 @@ public class RoomActivity extends AppCompatActivity {
                     JSONArray players = result.getJSONArray("players");
                     for (int i = 0; i < players.length(); i++) {
                         JSONObject player = players.getJSONObject(i);
-                        listOfPlayerNames.add(new RoomListItem(player.getString("name"),listOfColors.get(i)));
+                        listOfPlayerNames.add(new RoomListItem(player.getString("name"), listOfColors.get(i)));
                     }
                 } catch (JSONException e) {
                 }
@@ -99,7 +99,7 @@ public class RoomActivity extends AppCompatActivity {
         }
         return colorList;
     }
-    public void showGameActivity(View view) {
+    public void gameReady(View view) {
 
         String query = "showGame?gameId=" + GameSettings.getGameId();
 
@@ -118,12 +118,15 @@ public class RoomActivity extends AppCompatActivity {
                             GameSettings.setWallColor(listOfColors.get(i));
                     }
                     GameSettings.setPlayersInGame(listOfPlayerIds);
+                    showGameActivity();
                 } catch (JSONException e) {
 
                 }
             }
         });
+    }
 
+    private void showGameActivity() {
         startActivity(new Intent(this, GameActivity.class));
     }
 
