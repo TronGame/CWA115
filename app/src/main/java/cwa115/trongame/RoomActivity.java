@@ -10,8 +10,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -133,7 +131,7 @@ public class RoomActivity extends AppCompatActivity {
                             GameSettings.setWallColor(listOfColors.get(i));
                     }
                     GameSettings.setPlayersInGame(listOfPlayerIds);
-                    // startGame();
+                    startGame();
                     showGameActivity();
 
                 } catch (JSONException e) {
