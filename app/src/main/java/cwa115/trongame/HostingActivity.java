@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -29,12 +30,15 @@ public class HostingActivity extends AppCompatActivity {
         final String gameName = nameBox.getText().toString();
         final int maxPlayers = getMaxPlayers();
         GameSettings.setMaxPlayers(maxPlayers);
+        CheckBox breakWallBox = (CheckBox) findViewById(R.id.checkBoxWallBreaker);
+        final boolean canBreakWalls = breakWallBox.isChecked();
         final String query =
                 "insertGame?owner="
                 + Integer.toString(GameSettings.getUserId())
                 + "&name=" + gameName
                 + "&token=" + GameSettings.getPlayerToken()
-                + "&maxPlayers=" + Integer.toString(maxPlayers);
+                + "&maxPlayers=" + Integer.toString(maxPlayers)
+                + "&canBreakWall="+ (canBreakWalls ? "1" : "0");
         dataServer.sendRequest(query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {

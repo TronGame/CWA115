@@ -19,6 +19,7 @@ public final class GameSettings {
     private static String gameToken;
     private static String gameName;
     private static int maxPlayers;
+    private static boolean canBreakWall;
 
     private static List<Integer> playersInGame;
     
@@ -145,4 +146,11 @@ public final class GameSettings {
         playersInGame.add(playerId);
     }
 
+    public static void setCanBreakWall(boolean bool){
+        canBreakWall=bool;
+    }
+
+    public static boolean getCanBreakWall(){
+        return canBreakWall
+    }
 }
