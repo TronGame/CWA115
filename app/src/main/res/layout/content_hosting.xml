@@ -37,6 +37,7 @@
         android:id="@+id/textView" />
 
     <EditText
+        android:inputType="numberDecimal"
         android:textColor="@color/basicBlack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
