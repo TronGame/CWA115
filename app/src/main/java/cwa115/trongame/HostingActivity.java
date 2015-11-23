@@ -48,6 +48,7 @@ public class HostingActivity extends AppCompatActivity {
                     GameSettings.setGameId(result.getInt("id"));
                     GameSettings.setGameName(gameName);
                     GameSettings.setOwnerId(GameSettings.getUserId());
+                    GameSettings.setCanBreakWall(canBreakWalls);
                     joinOwnGame();
                 } catch(JSONException e) {
                     Toast.makeText(

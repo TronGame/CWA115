@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import org.json.JSONArray;
@@ -143,7 +144,7 @@ public class RoomActivity extends AppCompatActivity {
     }
 
     private void startGame() {
-        String query = "startGame?token=" + GameSettings.getGameId();
+        String query = "startGame?token=" + GameSettings.getGameToken();
 
         dataServer.sendRequest(query, new HttpConnector.Callback() {
             @Override

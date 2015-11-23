@@ -103,6 +103,10 @@ public final class GameSettings {
         GameSettings.gameToken = gameToken;
     }
 
+    public static String getGameToken() {
+        return gameToken;
+    }
+
     public static void setGameName(String gameName) {
         GameSettings.gameName = gameName;
     }
@@ -119,7 +123,7 @@ public final class GameSettings {
      * @return Is this player the owner?
      */
     public static boolean isOwner() {
-        return ownerId==userId;
+        return (ownerId==userId) && gameToken != null;
     }
 
     public static void setOwnerId(int id) {
