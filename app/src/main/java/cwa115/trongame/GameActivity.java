@@ -25,7 +25,6 @@ import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
 
 import java.util.ArrayList;
-import java.util.Objects;
 
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.GameEvent.GameEventHandler;
@@ -42,7 +41,6 @@ import cwa115.trongame.Sensor.SensorDataObservable;
 import cwa115.trongame.Sensor.SensorDataObserver;
 import cwa115.trongame.Sensor.SensorFlag;
 import cwa115.trongame.Utils.LatLngConversion;
-import cwa115.trongame.Utils.Vector2D;
 
 /**
  * The Game activity
@@ -65,6 +63,7 @@ public class GameActivity extends AppCompatActivity implements
     private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(100);    // About 10m
     private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(1);     // About 1m
     private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(20);     // About 20m
+    private static final int KILL_SCORE = 500;
 
     // Permission request ids
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
@@ -89,6 +88,10 @@ public class GameActivity extends AppCompatActivity implements
     private boolean creatingWall = false;               // Is the player creating a wall
     private String wallId;                              // The Wall id
 
+    // Game data
+    private boolean isAlive;
+    private int playersAliveCount;
+
     // Networking
     private SocketIoConnection connection;
     private GameUpdateHandler gameUpdateHandler;
@@ -111,6 +114,10 @@ public class GameActivity extends AppCompatActivity implements
         // Content of Activity
         // -----------------------------------------------------------------------------------------
         setContentView(R.layout.activity_game);
+        if (!GameSettings.getCanBreakWall()) {
+            Button wallBreaker = (Button) findViewById(R.id.breakWallButton);
+            wallBreaker.setVisibility(View.GONE);
+        }
 
         // Sensor tracking
         // -----------------------------------------------------------------------------------------
@@ -159,16 +166,20 @@ public class GameActivity extends AppCompatActivity implements
         // Create the gameUpdateHandler object
         connection = new SocketIoConnection("testA1", String.valueOf(GameSettings.getGameId()));
 
-        gameUpdateHandler = new GameUpdateHandler(connection, map, context);
+        gameUpdateHandler = new GameUpdateHandler(this, connection, map, context);
         gameEventHandler = new GameEventHandler(connection, this);
         //gameEventHandler.start();
+
+        // Start the game
+        isAlive = true;
+        playersAliveCount = GameSettings.getPlayersInGame().size();
     }
 
     // endregion
 
     // region Game functionality
     // ---------------------------------------------------------------------------------------------
-
+    // region Game Updates
     /**
      * Most of the game functionality happens in this function.
      * It is called when a location update is snapped to the road by the snappedPointHandler
@@ -192,43 +203,46 @@ public class GameActivity extends AppCompatActivity implements
             // Update the player marker and the camera
             map.updatePlayer(GameSettings.getPlayerId(), newSnappedGpsLoc);
             map.updateCamera(newSnappedGpsLoc);
-
-            // Calculate the distance from the last location to the new location and show it on the screen
-            double distance = 0.0;
-            if (!(snappedGpsLoc.longitude == 0 && snappedGpsLoc.latitude == 0)) {
-                // This checks if there has been a previous location update
-                distance = LatLngConversion.getDistancePoints(snappedGpsLoc, newSnappedGpsLoc);
-            }
-            travelledDistance += distance;
-
-            TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
-            distanceView.setText(String.valueOf(LatLngConversion.latLngDistanceToMeter(travelledDistance)));
-
             // Send the player location
             gameUpdateHandler.sendMyLocation(newSnappedGpsLoc);
 
-            // Wall functionality
-            ArrayList<Wall> walls = map.getWalls();
-            for (Wall wall : walls) {
-                // Check if the player hasn't crossed a wall
-                if (wall.hasCrossed(snappedGpsLoc, newSnappedGpsLoc, MIN_WALL_DISTANCE, GameSettings.getPlayerId())) {
-                    // Show the "player crossed wall" notification
-                    showNotification(getString(R.string.wall_crossed), Toast.LENGTH_LONG);
-                } else {
-                    // Check if the player isn't to close to a wall
-                    if (wall.getDistanceTo(newSnappedGpsLoc, MIN_WALL_WARNING_DISTANCE, GameSettings.getPlayerId()) < MIN_WALL_WARNING_DISTANCE) {
-                        // Show the "player to close to wall" notification
-                        showNotification(getString(R.string.wall_too_close), Toast.LENGTH_LONG);
+            if (isAlive) {
+                // Calculate the distance from the last location to the new location and show it on the screen
+                double distance = 0.0;
+                if (!(snappedGpsLoc.longitude == 0 && snappedGpsLoc.latitude == 0)) {
+                    // This checks if there has been a previous location update
+                    distance = LatLngConversion.getDistancePoints(snappedGpsLoc, newSnappedGpsLoc);
+                }
+                travelledDistance += distance;
+
+                TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
+                distanceView.setText(String.valueOf(LatLngConversion.latLngDistanceToMeter(travelledDistance)));
+
+                // Wall functionality
+                ArrayList<Wall> walls = map.getWalls();
+                for (Wall wall : walls) {
+                    // Check if the player hasn't crossed a wall
+                    if (wall.hasCrossed(snappedGpsLoc, newSnappedGpsLoc, MIN_WALL_DISTANCE, GameSettings.getPlayerId())) {
+                        // Show the "player crossed wall" notification
+                        showNotification(getString(R.string.wall_crossed), Toast.LENGTH_LONG);
+                        String killerName = ((Player)map.getItemById(wall.getOwnerId())).getName(); // TODO this is kind of ugly
+                        onDeath(wall.getOwnerId(), killerName);
+                    } else {
+                        // Check if the player isn't to close to a wall
+                        if (wall.getDistanceTo(newSnappedGpsLoc, MIN_WALL_WARNING_DISTANCE, GameSettings.getPlayerId()) < MIN_WALL_WARNING_DISTANCE) {
+                            // Show the "player to close to wall" notification
+                            showNotification(getString(R.string.wall_too_close), Toast.LENGTH_LONG);
+                        }
                     }
                 }
-            }
 
-            Wall wall = (Wall)map.getItemById(wallId);
-            // Update the wall (this must happen after the "player to close to wall" check
-            if (creatingWall) {
-                wall.addPoint(newSnappedGpsLoc);   // Add the new point to the wall
-                gameUpdateHandler.sendUpdateWall(newSnappedGpsLoc, wallId);
-                map.redraw(wall.getId());       // Redraw the wall on the map
+                Wall wall = (Wall) map.getItemById(wallId);
+                // Update the wall (this must happen after the "player to close to wall" check
+                if (creatingWall) {
+                    wall.addPoint(newSnappedGpsLoc);   // Add the new point to the wall
+                    gameUpdateHandler.sendUpdateWall(newSnappedGpsLoc, wallId);
+                    map.redraw(wall.getId());       // Redraw the wall on the map
+                }
             }
 
             snappedGpsLoc = newSnappedGpsLoc;   // update the snapped location
@@ -241,13 +255,18 @@ public class GameActivity extends AppCompatActivity implements
             // Send the player location
             gameUpdateHandler.sendMyLocation(gpsLoc);
 
-            // Show the "player to far from road" notification
-            showNotification(getString(R.string.road_too_far), Toast.LENGTH_LONG);
+            if (isAlive) {
+                // onDeath("", ""); TODO kill player?
+                // Show the "player to far from road" notification
+                showNotification(getString(R.string.road_too_far), Toast.LENGTH_LONG);
+            }
         }
 
         return false;   // This is used by the snappedPointHandler
     }
+    // endregion
 
+    // region Wall Controls
     /**
      * Called when the start/stop wall button is pressed
      * or when the proximity sensor detects something
@@ -272,25 +291,24 @@ public class GameActivity extends AppCompatActivity implements
             gameUpdateHandler.sendCreateWall(GameSettings.getPlayerId(), wallId, new ArrayList<LatLng>(), GameSettings.getWallColor());
 
             // Update the button
-            Button button = (Button) view.findViewById(R.id.wallButton);
+            Button button = (Button) view.findViewById(R.id.toggleWallButton);
             button.setText(getString(R.string.wall_button_off_text));
 
             // Show the "creating wall" notification
             showNotification(getString(R.string.wall_on_notification), Toast.LENGTH_SHORT);
         }
-//        else {
-//            // Stop creating the wall
-//            creatingWall = false;                       // The player is no longer creating a wall
-//            clearWall(null);                            // Clear the current wall
-//            wallId = null;                              // Forget about the current wall
-//
-//            // Update the button
-//            Button button = (Button) view.findViewById(R.id.wallButton);
-//            button.setText(getString(R.string.wall_button_on_text));
-//
-//            // Show the "stopped creating wall" notification
-//            showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_LONG);
-//        }
+        else {
+            // Stop creating the wall
+            creatingWall = false;                       // The player is no longer creating a wall
+            wallId = null;                              // Forget about the current wall
+
+            // Update the button
+            Button button = (Button) view.findViewById(R.id.toggleWallButton);
+            button.setText(getString(R.string.wall_button_on_text));
+
+            // Show the "stopped creating wall" notification
+            showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_LONG);
+        }
     }
 
     /**
@@ -326,9 +344,56 @@ public class GameActivity extends AppCompatActivity implements
         }
         showNotification(getString(R.string.wall_breaker_notification), Toast.LENGTH_SHORT);
     }
+    // endregion
 
     public void addScore(int score) {
         travelledDistance += score;
+    }
+
+    public void onDeath(String killerId, String killerName) {
+        // Hide all wall controls
+        Button startWallButton = (Button) findViewById(R.id.toggleWallButton);
+        startWallButton.setVisibility(View.GONE);
+
+        Button clearWallButton = (Button) findViewById(R.id.clearWallButton);
+        clearWallButton.setVisibility(View.GONE);
+
+        Button breakWallButton = (Button) findViewById(R.id.breakWallButton);
+        breakWallButton.setVisibility(View.GONE);
+
+        // Stop creating the wall
+        creatingWall = false;
+        wallId = null;
+
+        // Tell the applications that the player has died
+        isAlive = false;
+        showNotification(getString(R.string.you_died_text), Toast.LENGTH_LONG);
+        gameUpdateHandler.sendDeathMessage(killerId, killerName);
+    }
+
+    public void playerDied(String playerName, String killerId, String killerName) {
+        playersAliveCount -= 1;
+        // TODO check if the game has ended (owner has to send endGame message)
+        if (killerId.equals("")) {
+            showNotification(
+                    getString(R.string.player_died_text).replaceAll("%name", playerName),
+                    Toast.LENGTH_LONG
+            );
+        } else {
+            if (GameSettings.getPlayerId().equals(killerId)) {
+                addScore(KILL_SCORE);
+                showNotification(
+                        getString(R.string.player_killed_text).replaceAll("%name", playerName).replaceAll("%killer", "you")
+                                +" "+getString(R.string.score_received_text).replaceAll("%score", String.valueOf(KILL_SCORE)),
+                        Toast.LENGTH_LONG
+                );
+            } else {
+                showNotification(
+                        getString(R.string.player_killed_text).replaceAll("%name", playerName).replaceAll("%killer", killerName),
+                        Toast.LENGTH_LONG
+                );
+            }
+        }
     }
 
     // endregion
@@ -451,7 +516,7 @@ public class GameActivity extends AppCompatActivity implements
             return;
 
         int proximityCount = (int) data;
-        findViewById(R.id.wallButton).performClick();       // Press the Start/Stop wall button
+        findViewById(R.id.toggleWallButton).performClick();       // Press the Start/Stop wall button
     }
 
     /**

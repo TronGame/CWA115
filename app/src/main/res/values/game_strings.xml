@@ -18,5 +18,10 @@
     <string name="distance_count_text">Travelled Distance</string>
 
     <string name="king_of_hill_text">Get to the highest spot in %time minutes!</string>
-    <string name="score_received_text">You have won a price. Added %score points</string>
+    <string name="event_won_text">You have won a price in the last event.</string>
+    <string name="score_received_text">Added %score points</string>
+
+    <string name="you_died_text">You have died</string>
+    <string name="player_died_text">Player %name, has died.</string>
+    <string name="player_killed_text">Player %name, was killed by %killer.</string>
 </resources>

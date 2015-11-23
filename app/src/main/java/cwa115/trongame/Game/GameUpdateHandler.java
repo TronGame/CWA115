@@ -3,6 +3,7 @@ package cwa115.trongame.Game;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.android.gms.games.Game;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.GeoApiContext;
 
@@ -11,6 +12,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import cwa115.trongame.GameActivity;
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
@@ -25,6 +27,7 @@ import cwa115.trongame.Utils.LatLngConversion;
 public class GameUpdateHandler implements SocketIoHandler {
     private SocketIoConnection socket;                  // The socket connection
     private Map map;                                    // The map object to draw the objects on
+    private GameActivity gameActivity;                  // The game activity
     private GeoApiContext context;                      // The context that takes care of the location snapping
 
     /**
@@ -33,6 +36,7 @@ public class GameUpdateHandler implements SocketIoHandler {
     public class Protocol {
         public static final String MESSAGE_TYPE = "type";
         public static final String UPDATE_POSITION_MESSAGE = "updatePosition";
+        public static final String PLAYER_DEAD_MESSAGE = "playerDead";
         public static final String UPDATE_WALL_MESSAGE = "updateWall";
         public static final String CREATE_WALL_MESSAGE = "createWall";
         public static final String REMOVE_WALL_MESSAGE = "removeWall";
@@ -40,6 +44,8 @@ public class GameUpdateHandler implements SocketIoHandler {
         public static final String PLAYER_ID = "playerId";
         public static final String PLAYER_NAME = "playerName";
         public static final String PLAYER_LOCATION = "location";
+        public static final String PLAYER_KILLER_ID = "playerKillerId";
+        public static final String PLAYER_KILLER_NAME = "playerKillerName";
 
         public static final String WALL_ID = "wallId";
         public static final String WALL_OWNER_ID = "wallOwnerId";
@@ -48,10 +54,11 @@ public class GameUpdateHandler implements SocketIoHandler {
         public static final String WALL_COLOR = "color";
     }
 
-    public GameUpdateHandler(SocketIoConnection socket, Map map, GeoApiContext context) {
+    public GameUpdateHandler(GameActivity gameActivity, SocketIoConnection socket, Map map, GeoApiContext context) {
         this.map = map;
         this.context = context;
         this.socket = socket;
+        this.gameActivity = gameActivity;
 
         socket.addSocketIoHandler(this);
     }
@@ -75,6 +82,14 @@ public class GameUpdateHandler implements SocketIoHandler {
                             )
                     );
                     break;
+                case Protocol.PLAYER_DEAD_MESSAGE:
+                    // Tell GameActivity that the player has died
+                    onPlayerDead(
+                            message.getString(Protocol.PLAYER_ID),
+                            message.getString(Protocol.PLAYER_NAME),
+                            message.getString(Protocol.PLAYER_KILLER_ID),
+                            message.getString(Protocol.PLAYER_KILLER_NAME)
+                    );
                 // Add a point to a wall
                 case Protocol.UPDATE_WALL_MESSAGE:
                     onRemoteWallUpdate(
@@ -137,6 +152,17 @@ public class GameUpdateHandler implements SocketIoHandler {
         }
 
         Log.d("SERVER", "Location of " + playerId + " updated to " + location.toString());
+    }
+
+    /**
+     * Called when a player has died
+     * @param playerId The id of the player that died
+     * @param killerId The id of the player that killed the dead player (is null when the player died for another reason)
+     */
+    private void onPlayerDead(String playerId, String playerName, String killerId, String killerName) {
+        if(GameSettings.getPlayerId().equals(playerId))
+            return; // We sent this ourselves
+        gameActivity.playerDied(playerName, killerId, killerName);
     }
 
     /**
@@ -212,6 +238,23 @@ public class GameUpdateHandler implements SocketIoHandler {
         // Send the message over the socket
         socket.sendMessage(locationMessage, Protocol.UPDATE_POSITION_MESSAGE);
     }
+
+    public void sendDeathMessage(String killerId, String killerName) {
+        // Create the message that will be send over the socket connection
+        JSONObject deathMessage = new JSONObject();
+        try {
+            deathMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
+            deathMessage.put(Protocol.PLAYER_NAME, GameSettings.getPlayerName());
+            deathMessage.put(Protocol.PLAYER_KILLER_ID, killerId);
+            deathMessage.put(Protocol.PLAYER_KILLER_NAME, killerName);
+        } catch (JSONException e) {
+            // end of the world
+        }
+
+        // Send the message over the socket
+        socket.sendMessage(deathMessage, Protocol.UPDATE_POSITION_MESSAGE);
+    }
+
 
     /**
      * Send an extra wall point to the other players.

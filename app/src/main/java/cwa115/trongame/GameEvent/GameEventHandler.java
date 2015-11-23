@@ -174,7 +174,8 @@ public class GameEventHandler {
                 gameActivity.addScore(score);
                 // TODO also show place in ranking
                 gameActivity.showNotification(
-                        gameActivity.getString(R.string.king_of_hill_text).replaceAll("%score", ""+score),
+                        gameActivity.getString(R.string.event_won_text) +" "+
+                        gameActivity.getString(R.string.score_received_text).replaceAll("%score", ""+score),
                         Toast.LENGTH_LONG
                 );
             }

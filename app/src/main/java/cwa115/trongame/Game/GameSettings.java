@@ -151,6 +151,6 @@ public final class GameSettings {
     }
 
     public static boolean getCanBreakWall(){
-        return canBreakWall
+        return canBreakWall;
     }
 }

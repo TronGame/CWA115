@@ -5,13 +5,15 @@ public class LobbyListItem {
     private String host;
     private int hostId;
     private int players;
+    private boolean canBreakWalls;
 
     // Constructor for the LobbyListItem class
-    public LobbyListItem(String name, String host, int hostId, int maxPlayers) {
+    public LobbyListItem(String name, String host, int hostId, int maxPlayers, boolean canBreakWalls) {
         super();
         this.gamename = name;
         this.host = host;
         this.hostId = hostId;
+        this.canBreakWalls = canBreakWalls;
         this.players = maxPlayers;
     }
 
@@ -45,6 +47,5 @@ public class LobbyListItem {
     public void setPlayers(int players) {
         this.players = players;
     }
-
-
+    public boolean getCanBreakWall() {return this.canBreakWalls;}
 }

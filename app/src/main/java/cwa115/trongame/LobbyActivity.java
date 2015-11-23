@@ -80,6 +80,7 @@ public class LobbyActivity extends AppCompatActivity {
                         GameSettings.setGameName(gameName);
                         GameSettings.setGameId(roomIds.get(gameName));
                         GameSettings.setOwnerId(clickedItem.getHostId());
+                        GameSettings.setCanBreakWall(clickedItem.getCanBreakWall());
                         showToast("Joining " + gameName);
 
                         final String query = "joinGame?"+
@@ -127,7 +128,8 @@ public class LobbyActivity extends AppCompatActivity {
                         newRoom.getString("name"),
                         newRoom.getString("ownerName"),
                         newRoom.getInt("owner"),
-                        newRoom.getInt("maxPlayers")
+                        newRoom.getInt("maxPlayers"),
+                        (newRoom.getInt("canBreakWall") == 1)
                 ));
                 roomIds.put(newRoom.getString("name"),newRoom.getInt("id"));
             }

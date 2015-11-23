@@ -7,11 +7,10 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
-
-import com.google.android.gms.games.Game;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -41,11 +40,21 @@ public class RoomActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_room);
-        dataServer = new HttpConnector(getString(R.string.dataserver_url));
+
+        // Set the room name
         final TextView roomname = (TextView)findViewById(R.id.roomname);
         roomname.setText(GameSettings.getGameName());
+
+        // Only the owner can start the game
+        final Button startButton = (Button)findViewById(R.id.readyButton);
+        if (!GameSettings.isOwner())
+            startButton.setVisibility(View.GONE);
+
+        dataServer = new HttpConnector(getString(R.string.dataserver_url));
+
         listOfColors = colorListMaker();
         roomUpdater = new Timer();
+
         roomHandler = new Handler() {
             public void handleMessage(Message msg) {
                 listPlayers();
@@ -74,6 +83,7 @@ public class RoomActivity extends AppCompatActivity {
                         listOfPlayerNames.add(new RoomListItem(player.getString("name"), listOfColors.get(i)));
                     }
                 } catch (JSONException e) {
+                    e.printStackTrace();
                 }
                 ListView lobbyList = (ListView) findViewById(R.id.room_list);
                 RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
@@ -118,10 +128,24 @@ public class RoomActivity extends AppCompatActivity {
                             GameSettings.setWallColor(listOfColors.get(i));
                     }
                     GameSettings.setPlayersInGame(listOfPlayerIds);
+                    // startGame();
                     showGameActivity();
-                } catch (JSONException e) {
 
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
+            }
+        });
+    }
+
+    private void startGame() {
+        String query = "startGame?token=" + GameSettings.getGameId();
+
+        dataServer.sendRequest(query, new HttpConnector.Callback() {
+            @Override
+            public void handleResult(String data) {
+                // TODO check for errors
+                showGameActivity();
             }
         });
     }
