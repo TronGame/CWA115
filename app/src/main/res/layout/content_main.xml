@@ -32,7 +32,7 @@
         <ViewFlipper
             android:layout_weight="2"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
             android:layout_above="@+id/start_button"
             android:layout_marginBottom="30dp"
             android:id="@+id/login_view_flipper">
@@ -45,12 +45,12 @@
                 <com.facebook.login.widget.LoginButton
                     android:id="@+id/facebook_login_button"
                     android:layout_width="wrap_content"
-                    android:layout_height="40dp"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal" />
 
                 <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="20dp"
+                    android:layout_height="wrap_content"
                     android:text="OR"
                     android:layout_marginBottom="5dp"
                     android:layout_marginTop="5dp"
@@ -58,7 +58,7 @@
 
                 <EditText
                     android:layout_width="wrap_content"
-                    android:layout_height="30dp"
+                    android:layout_height="wrap_content"
                     android:textColor="@color/basicBlack"
                     android:id="@+id/name_entry"
                     android:textSize="30sp"
@@ -94,14 +94,12 @@
 
         <LinearLayout
             android:layout_weight="4"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:layout_gravity="center">
 
-            <Space
-                android:layout_weight="2"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+
             <Button
                 android:layout_weight="1"
                 android:layout_width="wrap_content"
@@ -110,54 +108,33 @@
                 android:textColor="@color/basicWhite"
                 android:textStyle="bold"
                 android:id="@+id/start_button"
-                android:textSize="50sp"
+                android:textSize="60sp"
                 android:paddingLeft="40dp"
                 android:paddingRight="40dp"
-                android:paddingBottom="80dp"
-                android:paddingTop="80dp"
+                android:paddingBottom="40dp"
+                android:paddingTop="40dp"
                 android:onClick="showLobbyActivity"
-                android:background="@drawable/round_button"
+                android:background="@drawable/rounded_button_blue"
                 android:layout_gravity="center"
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="10dp" />
-            <Space
-                android:layout_weight="2"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent" />
+
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_weight="1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <Button
-                android:layout_weight="1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Developers shortcut"
-                android:background="@color/basicWhite"
-                android:onClick="gameReady"
-                android:id="@+id/button2" />
-
-            <Space
-                android:layout_weight="0.5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
 
             <Button
                 android:layout_weight="1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Delete account"
-                android:background="@color/basicWhite"
+                android:background="@drawable/rounded_button_blue"
                 android:onClick="resetAccountSettings"
-                android:id="@+id/button" />
+                android:id="@+id/button"
+                android:padding="2sp"
+                android:layout_gravity="center_horizontal" />
 
-        </LinearLayout>
 
     </LinearLayout>
 

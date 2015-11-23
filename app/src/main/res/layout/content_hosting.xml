@@ -99,7 +99,7 @@
         android:textSize="40sp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/rounded_button"
+        android:background="@drawable/rounded_button_blue"
         android:padding="5dp"/>
 
 </RelativeLayout>

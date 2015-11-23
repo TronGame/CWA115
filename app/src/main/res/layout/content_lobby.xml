@@ -37,7 +37,7 @@
             android:textSize="35sp"
             android:layout_marginTop="10dp"
             android:padding="10dp"
-            android:background="@drawable/rounded_button"
+            android:background="@drawable/rounded_button_blue"
             android:onClick="showHostingActivity"/>
 
 </LinearLayout>
