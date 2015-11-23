@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Button button = (Button) findViewById(R.id.start_button);
             button.setText(getString(R.string.register));
+            button.setTextSize(40);
             // Make sure the edit text and facebook button are enabled
             findViewById(R.id.name_entry).setEnabled(true);
             findViewById(R.id.facebook_login_button).setEnabled(true);
@@ -274,6 +275,7 @@ public class MainActivity extends AppCompatActivity {
                     accountRegistered = true;
                     Button button = (Button) findViewById(R.id.start_button);
                     button.setText(getString(R.string.start));
+                    button.setTextSize(60);
                     Toast.makeText(
                             getBaseContext(), getString(R.string.account_created),
                             Toast.LENGTH_SHORT

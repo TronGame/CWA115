@@ -55,43 +55,20 @@
         android:textColor="@color/basicBlack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/Unlimited_walls"
-        android:textSize="25sp"
-        android:layout_below="@+id/textView"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="15dp"
-        android:id="@+id/textView2" />
-
-    <CheckBox
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:checked="true"
-        android:layout_alignTop="@+id/textView2"
-        android:layout_alignRight="@+id/maxPlayers"
-        android:layout_alignEnd="@+id/maxPlayers"
-        android:id="@+id/checkBox" />
-
-
-    <TextView
-        android:textColor="@color/basicBlack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:text="@string/item_wall_breaker"
         android:textSize="25sp"
-        android:layout_below="@+id/checkBox"
+        android:id="@+id/textView5"
+        android:layout_below="@+id/maxPlayers"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="15dp"
-        android:id="@+id/textView5" />
+        android:layout_alignParentStart="true" />
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:checked="false"
         android:id="@+id/checkBoxWallBreaker"
-        android:layout_alignBottom="@+id/textView5"
-        android:layout_alignLeft="@+id/checkBox"
-        android:layout_alignStart="@+id/checkBox" />
+        android:layout_alignTop="@+id/textView5"
+        android:layout_alignRight="@+id/maxPlayers"
+        android:layout_alignEnd="@+id/maxPlayers" />
     <Button
         android:onClick="showRoomActivity"
         android:layout_width="wrap_content"
