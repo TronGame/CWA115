@@ -77,6 +77,10 @@ public class RoomActivity extends AppCompatActivity {
                 List<RoomListItem> listOfPlayerNames = new ArrayList<>();
                 try {
                     JSONObject result = new JSONObject(data);
+                    if(result.getInt("hasStarted") == 1) {
+                        gameReady(null);
+                        return;
+                    }
                     JSONArray players = result.getJSONArray("players");
                     for (int i = 0; i < players.length(); i++) {
                         JSONObject player = players.getJSONObject(i);
