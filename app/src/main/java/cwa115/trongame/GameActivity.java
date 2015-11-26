@@ -168,7 +168,7 @@ public class GameActivity extends AppCompatActivity implements
 
         gameUpdateHandler = new GameUpdateHandler(this, connection, map, context);
         gameEventHandler = new GameEventHandler(connection, this);
-        //gameEventHandler.start();
+        gameEventHandler.start();
 
         // Start the game
         isAlive = true;

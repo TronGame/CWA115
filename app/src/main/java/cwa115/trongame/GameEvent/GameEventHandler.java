@@ -46,7 +46,21 @@ public class GameEventHandler {
 
     public void start() {
         // TODO add random time here
-        addPendingEvent(new KingOfHillEvent());
+        int time = 2;
+        timerHandler = new Handler() {
+            @Override
+            public void handleMessage(Message message) {
+                addPendingEvent(new KingOfHillEvent());
+            }
+        };
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                Message message = new Message();
+                timerHandler.sendMessage(message);
+            }
+        };
+        worker.schedule(task, time, TimeUnit.SECONDS);
     }
 
     /**
