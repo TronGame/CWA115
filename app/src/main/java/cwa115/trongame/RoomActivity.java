@@ -33,6 +33,7 @@ public class RoomActivity extends AppCompatActivity {
     private Timer roomUpdater;
     private Handler roomHandler;
     private List<Integer> listOfColors;
+    private boolean hasStarted;
 
 
     @Override
@@ -64,6 +65,8 @@ public class RoomActivity extends AppCompatActivity {
                 roomHandler.sendMessage(new Message());
             }
         }, 0, ROOM_LIST_REFRESH_TIME);
+
+        hasStarted = false;
     }
 
     public void listPlayers(){
@@ -156,6 +159,9 @@ public class RoomActivity extends AppCompatActivity {
     }
 
     private void showGameActivity() {
+        if(hasStarted)
+            return;
+        hasStarted = true;
         startActivity(new Intent(this, GameActivity.class));
     }
 
