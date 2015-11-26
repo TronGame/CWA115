@@ -77,6 +77,7 @@ public class RoomActivity extends AppCompatActivity {
                 try {
                     JSONObject result = new JSONObject(data);
                     if(result.getBoolean("hasStarted")) {
+                        roomUpdater.cancel();
                         gameReady(null);
                         return;
                     }
@@ -143,6 +144,7 @@ public class RoomActivity extends AppCompatActivity {
 
     private void startGame() {
         String query = "startGame?token=" + GameSettings.getGameToken();
+        roomUpdater.cancel();
 
         dataServer.sendRequest(query, new HttpConnector.Callback() {
             @Override
