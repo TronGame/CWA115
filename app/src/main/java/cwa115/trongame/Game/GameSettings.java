@@ -22,6 +22,7 @@ public final class GameSettings {
     private static boolean canBreakWall;
 
     private static List<Integer> playersInGame;
+    private static int[] friends;
     
     /**
      * Sets the name of the local player.
@@ -149,6 +150,10 @@ public final class GameSettings {
     public static void addPlayerToGame(int playerId) {
         playersInGame.add(playerId);
     }
+
+    public static void setFriends(int[] playerFriends){ friends = playerFriends; }
+
+    public static int[] getFriends(){ return friends; }
 
     public static void setCanBreakWall(boolean bool){
         canBreakWall=bool;
