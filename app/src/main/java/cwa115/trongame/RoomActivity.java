@@ -111,6 +111,7 @@ public class RoomActivity extends AppCompatActivity
                         RoomListItem clickedItem = listOfPlayerNames.get(position);
                         selectedPlayerName= clickedItem.getPlayerName();
                         selectedPlayerId=clickedItem.getPlayerId();
+                        showNoticeDialog();
                     }
                 });
             }
@@ -134,7 +135,7 @@ public class RoomActivity extends AppCompatActivity
         }
         return colorList;
     }
-    public void showNoticeDialog(View view) {
+    public void showNoticeDialog() {
         // Create an instance of the dialog fragment and show it
         DialogFragment dialog = new PopUp();
         Bundle bundle = new Bundle();

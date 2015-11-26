@@ -25,4 +25,5 @@
     <string name="decline_popup">No</string>
     <string name="playerKickSucceed">The player was successfully kicked</string>
     <string name="playerKickFail">The player could not be kicked</string>
+    <string name="leave_game">Leave</string>
 </resources>
