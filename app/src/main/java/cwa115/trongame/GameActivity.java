@@ -482,7 +482,7 @@ public class GameActivity extends AppCompatActivity implements
 
         // If the location is to close to the last location nothing needs to happen
         // This decreases the amount of work the application needs to do
-        if (distance >= LOCATION_THRESHOLD) {
+        if (distance >= 0) {
             // Store the new location
             gpsLoc = newGpsLoc;
             height = location.getAltitude();

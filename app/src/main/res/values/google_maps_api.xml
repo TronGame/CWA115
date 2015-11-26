@@ -3,6 +3,9 @@
         AIzaSyCnlvkCZPkp_EkyfJiwf_5f7-a86tnPHxQ
     </string>
     <string name="google_maps_key_server" translatable="false" templateMergeStrategy="preserve">
+        AIzaSyCbtgheUHiIYiXGRx4xm4D7XY_PzEMlRkE
+    </string>
+    <string name="google_maps_key_server_backup" translatable="false" templateMergeStrategy="preserve">
           AIzaSyBCT-9-ApbKK22DlqOMywuMLnOe6mblRik
     </string>
 </resources>
