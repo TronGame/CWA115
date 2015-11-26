@@ -72,6 +72,8 @@ public class GameEventHandler {
         switch (eventType) {
             case KingOfHillEvent.EVENT_TYPE:
                 return new KingOfHillEvent();
+            case ShowOffEvent.EVENT_TYPE:
+                return new ShowOffEvent();
             default:
                 return null;
         }

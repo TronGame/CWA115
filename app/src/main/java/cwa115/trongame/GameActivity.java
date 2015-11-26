@@ -27,6 +27,7 @@ import com.google.maps.model.SnappedPoint;
 import java.util.ArrayList;
 
 import cwa115.trongame.Game.GameSettings;
+import cwa115.trongame.Game.GameUpdateHandler;
 import cwa115.trongame.GameEvent.GameEventHandler;
 import cwa115.trongame.GoogleMapsApi.ApiListener;
 import cwa115.trongame.GoogleMapsApi.SnappedPointHandler;
@@ -35,8 +36,8 @@ import cwa115.trongame.Location.LocationObserver;
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
-import cwa115.trongame.Game.GameUpdateHandler;
 import cwa115.trongame.Network.SocketIoConnection;
+import cwa115.trongame.Sensor.HorizontalAccelerationDataHolder;
 import cwa115.trongame.Sensor.SensorDataObservable;
 import cwa115.trongame.Sensor.SensorDataObserver;
 import cwa115.trongame.Sensor.SensorFlag;
@@ -82,6 +83,7 @@ public class GameActivity extends AppCompatActivity implements
     private LatLng snappedGpsLoc;                       // Snapped location of player
     private double travelledDistance;                   // Distance travelled from the start
     private double height;                              // The last recorded height of the player
+    private double acceleration;                        // Cumulative acceleration
 
     // Wall data
     private double holeSize = LatLngConversion.meterToLatLngDistance(50);
@@ -101,6 +103,8 @@ public class GameActivity extends AppCompatActivity implements
     public double getHeight () {
         return height;
     }
+
+    public double getAcceleration() { return acceleration; }
     // endregion
 
     // endregion
@@ -122,8 +126,26 @@ public class GameActivity extends AppCompatActivity implements
         // Sensor tracking
         // -----------------------------------------------------------------------------------------
         // Initialize sensorDataObservable and proximityObserver
+        acceleration = 0;
         sensorDataObservable = new SensorDataObservable(this);
         sensorDataObservable.startSensorTracking(SensorFlag.PROXIMITY, this);
+        sensorDataObservable.startSensorTracking(SensorFlag.ACCELEROMETER, new SensorDataObserver() {
+            @Override
+            public void updateSensor(SensorDataObservable observable, Object data) {
+                // Check whether it was the proximity sensor that detected something
+                if (observable != sensorDataObservable)
+                    return;
+                if(data instanceof HorizontalAccelerationDataHolder) {
+                    HorizontalAccelerationDataHolder holder = (HorizontalAccelerationDataHolder) data;
+                    acceleration += holder.getAccelerationMagnitude();
+                }
+            }
+
+            @Override
+            public int getCountLimit() {
+                return 0;
+            }
+        });
 
         // Location tracking
         // -----------------------------------------------------------------------------------------
@@ -313,7 +335,6 @@ public class GameActivity extends AppCompatActivity implements
 
     /**
      * Called when the clear wall button is pressed
-     * @param view
      */
     public void clearWall(View view) {
         // Is there a wall right now?
@@ -515,7 +536,6 @@ public class GameActivity extends AppCompatActivity implements
         if (observable != sensorDataObservable)
             return;
 
-        int proximityCount = (int) data;
         findViewById(R.id.toggleWallButton).performClick();       // Press the Start/Stop wall button
     }
 
