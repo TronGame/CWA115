@@ -150,7 +150,7 @@ public class RoomActivity extends AppCompatActivity
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         // User touched the dialog's positive button
-        String query = "kickPlayer?playerId=" + Integer.toString(selectedPlayerId) + "&gameId"+ GameSettings.getGameId() +"&token=" + GameSettings.getGameToken() ;
+        String query = "kickPlayer?playerId=" + Integer.toString(selectedPlayerId) + "&gameId="+ GameSettings.getGameId() +"&token=" + GameSettings.getGameToken() ;
 
         dataServer.sendRequest(query, new HttpConnector.Callback() {
             @Override

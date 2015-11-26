@@ -13,4 +13,5 @@
     <color name="notificationRed">#FF0000</color>
     <color name="tronOrange">#ffa900</color>
     <color name="tronOrangeLight">#ffc53b</color>
+    <color name="uplayDarkBlue">#1d75bd</color>
 </resources>
