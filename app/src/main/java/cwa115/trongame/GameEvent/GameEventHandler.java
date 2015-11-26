@@ -70,7 +70,7 @@ public class GameEventHandler {
      */
     private GameEvent getEvent(String eventType) {
         switch (eventType) {
-            case "king_of_hill":
+            case KingOfHillEvent.EVENT_TYPE:
                 return new KingOfHillEvent();
             default:
                 return null;
@@ -123,14 +123,16 @@ public class GameEventHandler {
      * @param result The result of the player
      */
     public void storeResult(int playerId, JSONObject result) {
-        List<Integer> players = GameSettings.getPlayersInGame();
-        if (!players.contains(playerId)) {
-            Log.d("GameEvents", "got result from player that is not in this game: " + playerId);
-            return;
-        }
+        if (currentEvent != null) {
+            List<Integer> players = GameSettings.getPlayersInGame();
+            if (!players.contains(playerId)) {
+                Log.d("GameEvents", "got result from player that is not in this game: " + playerId);
+                return;
+            }
 
-        if (GameSettings.isOwner()) {
-            results.add(result);
+            if (GameSettings.isOwner()) {
+                results.add(result);
+            }
         }
     }
 
@@ -166,8 +168,9 @@ public class GameEventHandler {
      */
     public void startEvent(int ownerId, String eventType) {
         if (ownerId == GameSettings.getOwner()) {
-            if (currentEvent != null) {
+            if (currentEvent == null) {
                 currentEvent = getEvent(eventType);
+                results = new ArrayList<>();
                 String notification = currentEvent.getNotification(gameActivity);
                 gameActivity.showNotification(notification, Toast.LENGTH_LONG);
             } else {

@@ -1,5 +1,7 @@
 package cwa115.trongame.GameEvent;
 
+import android.util.Log;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -18,7 +20,7 @@ import cwa115.trongame.Utils.LatLngConversion;
  * The event handling the event where the players need to get to the highest point possible
  */
 public class KingOfHillEvent implements GameEvent {
-    public static final int TIME = 5*60;                        // The time the event lasts in seconds
+    public static final int TIME = 20;                        // The time the event lasts in seconds
     public static final double[] PRICES = {300, 200, 100};      // The scores that can be received by the winners
 
     // elements of the json
@@ -47,7 +49,7 @@ public class KingOfHillEvent implements GameEvent {
      * @return The message that has to be showed on the screen
      */
     public String getNotification(GameActivity gameActivity) {
-        return gameActivity.getString(R.string.king_of_hill_text).replaceAll("%time", ""+TIME);
+        return gameActivity.getString(R.string.king_of_hill_text).replaceAll("%time", ""+TIME/60);
     }
 
     @Override
@@ -81,10 +83,10 @@ public class KingOfHillEvent implements GameEvent {
 
         for (JSONObject result: results) {
             try {
-                if (result.get(EventUpdateHandler.Protocol.EVENT_TYPE) == EVENT_TYPE) {
-                    double height = (double)result.get(HEIGHT);
-                    for (int i=0; i< winners.size(); i++) {
-                        if (height>winners.get(i)) {
+                if (result.getString(EventUpdateHandler.Protocol.EVENT_TYPE) == EVENT_TYPE) {
+                    double height = result.getDouble(HEIGHT);
+                    for (int i=0; i<winners.size(); i++) {
+                        if (winners.get(i) == null || height > winners.get(i)) {
                             winners.add(i, height);
                             winners.remove(winners.size() - 1);
                             playerIds.add(i, (int) result.get(GameUpdateHandler.Protocol.PLAYER_ID));

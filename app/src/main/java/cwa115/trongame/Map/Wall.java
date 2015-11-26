@@ -159,15 +159,12 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
         boolean awayFromPlayer = !playerId.equals(ownerId);
         ArrayList<LatLng> points = new ArrayList<>(this.points);
         int n = points.size()-1;
-        if (n<0) {
-            return false;
-        }
         while (n>=0 && !awayFromPlayer) {
             if (LatLngConversion.getDistancePoints(current, points.get(n)) < minDistance)
                 points.remove(n);
             else
                 awayFromPlayer = true;
-            n+=1;
+            n-=1;
         }
         double distance = PolyLineUtils.getDistanceToLine(new Vector2D(current), points);
         if (distance < minDistance) {return true; }

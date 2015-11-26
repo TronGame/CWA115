@@ -225,8 +225,8 @@ public class GameActivity extends AppCompatActivity implements
                     if (wall.hasCrossed(snappedGpsLoc, newSnappedGpsLoc, MIN_WALL_DISTANCE, GameSettings.getPlayerId())) {
                         // Show the "player crossed wall" notification
                         showNotification(getString(R.string.wall_crossed), Toast.LENGTH_LONG);
-                        String killerName = ((Player)map.getItemById(wall.getOwnerId())).getName(); // TODO this is kind of ugly
-                        onDeath(wall.getOwnerId(), killerName);
+                        // String killerName = ((Player)map.getItemById(wall.getOwnerId())).getName(); // TODO this is kind of ugly
+                        // onDeath(wall.getOwnerId(), killerName);
                     } else {
                         // Check if the player isn't to close to a wall
                         if (wall.getDistanceTo(newSnappedGpsLoc, MIN_WALL_WARNING_DISTANCE, GameSettings.getPlayerId()) < MIN_WALL_WARNING_DISTANCE) {
@@ -482,7 +482,7 @@ public class GameActivity extends AppCompatActivity implements
 
         // If the location is to close to the last location nothing needs to happen
         // This decreases the amount of work the application needs to do
-        if (distance >= 0) {
+        if (distance >= LOCATION_THRESHOLD) {
             // Store the new location
             gpsLoc = newGpsLoc;
             height = location.getAltitude();

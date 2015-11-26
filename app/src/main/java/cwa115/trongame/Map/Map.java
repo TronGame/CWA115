@@ -25,6 +25,7 @@ public class Map implements OnMapReadyCallback {
     private ArrayList<DrawableMapItem> pendingItemsClear;   // The items that still need to be cleared
 
     private CameraUpdate cameraUpdate;                      // The next camera position update
+    private boolean firstCameraHandled = false;
 
     /**
      * Class initializer
@@ -37,7 +38,6 @@ public class Map implements OnMapReadyCallback {
         pendingItemsDraw = new ArrayList<>();       // The list of items that still have to be updated
         pendingItemsClear = new ArrayList<>();      // The list of items that need to be cleared
 
-        // cameraUpdate = CameraUpdateFactory.zoomTo(MapZoom); // The next update for the camera
         mapFragment.getMapAsync(this);                      // Update the map (on a different thread)
     }
 
@@ -159,6 +159,11 @@ public class Map implements OnMapReadyCallback {
      */
     @Override
     public void onMapReady(GoogleMap map) {
+        if (!firstCameraHandled) {
+            cameraUpdate = CameraUpdateFactory.zoomTo(MapZoom); // The next update for the camera
+            firstCameraHandled = true;
+        }
+
         if (cameraUpdate != null) {
             map.animateCamera(cameraUpdate);
             cameraUpdate = null;
