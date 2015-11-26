@@ -3,13 +3,15 @@ package cwa115.trongame.Lists;
 public class RoomListItem {
     private String playerName;
     private int color;
+    private int id;
 
 
     // Constructor for the LobbyListItem class
-    public RoomListItem(String name, int color) {
+    public RoomListItem(String name, int color, int id) {
         super();
         this.playerName = name;
         this.color =color;
+        this.id = id;
     }
 
     // Getter and setter methods for all the fields.
@@ -24,7 +26,14 @@ public class RoomListItem {
     public int getColor() {
         return color;
     }
-    public void setplayers(int color) {
+    public void setColor(int color) {
         this.color = color;
     }
+    public int getPlayerId(){
+        return id;
+    }
+    public void setPlayerId(int playerId){
+        id = playerId;
+    }
+
 }

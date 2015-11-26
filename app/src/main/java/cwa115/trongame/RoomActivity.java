@@ -8,9 +8,14 @@ import android.os.Message;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.gms.games.Game;
+import com.google.android.gms.games.Games;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -38,7 +43,8 @@ public class RoomActivity extends AppCompatActivity
     private Handler roomHandler;
     private List<Integer> listOfColors;
     private boolean hasStarted;
-
+    private int selectedPlayerId;
+    private String selectedPlayerName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +86,7 @@ public class RoomActivity extends AppCompatActivity
         dataServer.sendRequest(query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
-                List<RoomListItem> listOfPlayerNames = new ArrayList<>();
+                final List<RoomListItem> listOfPlayerNames = new ArrayList<>();
                 try {
                     JSONObject result = new JSONObject(data);
                     if(result.getBoolean("hasStarted")) {
@@ -91,7 +97,7 @@ public class RoomActivity extends AppCompatActivity
                     JSONArray players = result.getJSONArray("players");
                     for (int i = 0; i < players.length(); i++) {
                         JSONObject player = players.getJSONObject(i);
-                        listOfPlayerNames.add(new RoomListItem(player.getString("name"), listOfColors.get(i)));
+                        listOfPlayerNames.add(new RoomListItem(player.getString("name"), listOfColors.get(i), player.getInt("id") ));
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -99,6 +105,14 @@ public class RoomActivity extends AppCompatActivity
                 ListView lobbyList = (ListView) findViewById(R.id.room_list);
                 RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
                 lobbyList.setAdapter(adapter);
+
+                lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
+                        RoomListItem clickedItem = listOfPlayerNames.get(position);
+                        selectedPlayerName= clickedItem.getPlayerName();
+                        selectedPlayerId=clickedItem.getPlayerId();
+                    }
+                });
             }
         });
 
@@ -124,7 +138,7 @@ public class RoomActivity extends AppCompatActivity
         // Create an instance of the dialog fragment and show it
         DialogFragment dialog = new PopUp();
         Bundle bundle = new Bundle();
-        bundle.putString(PopUp.BUNDLE_MESSAGE_KEY, "test");
+        bundle.putString(PopUp.BUNDLE_MESSAGE_KEY, "Do you want to kick"+ selectedPlayerName);
         dialog.setArguments(bundle);
         dialog.show(getSupportFragmentManager(), "NoticeDialogFragment");
     }
@@ -135,14 +149,27 @@ public class RoomActivity extends AppCompatActivity
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         // User touched the dialog's positive button
-        TextView temp = (TextView) findViewById(R.id.roomname);
-        temp.setTextColor(64);
+        String query = "kickPlayer?playerId=" + Integer.toString(selectedPlayerId) + "&gameId"+ GameSettings.getGameId() +"&token=" + GameSettings.getGameToken() ;
+
+        dataServer.sendRequest(query, new HttpConnector.Callback() {
+            @Override
+            public void handleResult(String data) {
+                try {
+                    JSONObject result = new JSONObject(data);
+                    if (result.getBoolean("succes")) {
+                        Toast.makeText(getBaseContext(), getString(R.string.playerKickSucceed), Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getBaseContext(), getString(R.string.playerKickFail), Toast.LENGTH_SHORT).show();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
     public void onDialogNegativeClick(DialogFragment dialog) {
-        TextView temp = (TextView) findViewById(R.id.roomname);
-        temp.setTextColor(0);
     }
 
     public void gameReady(View view) {

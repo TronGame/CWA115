@@ -23,4 +23,6 @@
     <string name="hosting_failed">Could not create new game.</string>
     <string name="accept_popup">Yes</string>
     <string name="decline_popup">No</string>
+    <string name="playerKickSucceed">The player was successfully kicked</string>
+    <string name="playerKickFail">The player could not be kicked</string>
 </resources>
