@@ -37,7 +37,7 @@ public class Map implements OnMapReadyCallback {
         pendingItemsDraw = new ArrayList<>();       // The list of items that still have to be updated
         pendingItemsClear = new ArrayList<>();      // The list of items that need to be cleared
 
-        cameraUpdate = CameraUpdateFactory.zoomTo(MapZoom); // The next update for the camera
+        // cameraUpdate = CameraUpdateFactory.zoomTo(MapZoom); // The next update for the camera
         mapFragment.getMapAsync(this);                      // Update the map (on a different thread)
     }
 

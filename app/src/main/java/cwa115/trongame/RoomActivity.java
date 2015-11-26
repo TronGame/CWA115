@@ -10,8 +10,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,6 +33,7 @@ public class RoomActivity extends AppCompatActivity {
     private Timer roomUpdater;
     private Handler roomHandler;
     private List<Integer> listOfColors;
+    private boolean hasStarted;
 
 
     @Override
@@ -66,6 +65,8 @@ public class RoomActivity extends AppCompatActivity {
                 roomHandler.sendMessage(new Message());
             }
         }, 0, ROOM_LIST_REFRESH_TIME);
+
+        hasStarted = false;
     }
 
     public void listPlayers(){
@@ -79,6 +80,7 @@ public class RoomActivity extends AppCompatActivity {
                 try {
                     JSONObject result = new JSONObject(data);
                     if(result.getBoolean("hasStarted")) {
+                        roomUpdater.cancel();
                         gameReady(null);
                         return;
                     }
@@ -133,7 +135,7 @@ public class RoomActivity extends AppCompatActivity {
                             GameSettings.setWallColor(listOfColors.get(i));
                     }
                     GameSettings.setPlayersInGame(listOfPlayerIds);
-                    // startGame();
+                    startGame();
                     showGameActivity();
 
                 } catch (JSONException e) {
@@ -145,6 +147,7 @@ public class RoomActivity extends AppCompatActivity {
 
     private void startGame() {
         String query = "startGame?token=" + GameSettings.getGameToken();
+        roomUpdater.cancel();
 
         dataServer.sendRequest(query, new HttpConnector.Callback() {
             @Override
@@ -156,6 +159,9 @@ public class RoomActivity extends AppCompatActivity {
     }
 
     private void showGameActivity() {
+        if(hasStarted)
+            return;
+        hasStarted = true;
         startActivity(new Intent(this, GameActivity.class));
     }
 
