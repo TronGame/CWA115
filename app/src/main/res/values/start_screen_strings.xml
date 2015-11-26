@@ -22,6 +22,7 @@
     <string name="delete_failed">"Could not delete account.</string>
     <string name="hosting_failed">Could not create new game.</string>
     <string name="welcome_message">Welcome back %1$s!</string>
+    <string name="delete_account">Delete account</string>
     <string name="or">OR</string>
     <string name="accept_popup">Yes</string>
     <string name="decline_popup">No</string>

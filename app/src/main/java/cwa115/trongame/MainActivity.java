@@ -1,12 +1,11 @@
 package cwa115.trongame;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.StringRes;
 import android.support.v7.app.AppCompatActivity;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,9 +35,7 @@ import org.json.JSONObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Network.HttpConnector;
@@ -60,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean accountRegistered;
 
     private ViewFlipper loginViewFlipper;
-    private Button roundButton;
+    private Button mainButton, deleteButton;
     private TextView loginWelcomeTextView;
 
     @Override
@@ -85,15 +82,10 @@ public class MainActivity extends AppCompatActivity {
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
         settings = getPreferences(MODE_PRIVATE);
-        showLoginOptions();
 
-        if(!accountRegistered) {
-            Button buttonDelete = (Button) findViewById(R.id.button);
-            buttonDelete.setVisibility(Button.GONE);
-        }
-    }
         loginViewFlipper = (ViewFlipper)findViewById(R.id.login_view_flipper);
-        roundButton = (Button)findViewById(R.id.round_button);
+        mainButton = (Button)findViewById(R.id.main_button);
+        deleteButton = (Button)findViewById(R.id.delete_button);
         loginWelcomeTextView = (TextView)findViewById(R.id.login_welcome_textview);
 
         if(settings.contains(ACCOUNT_NAME_KEY) && settings.contains(ACCOUNT_TOKEN_KEY))
@@ -103,7 +95,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showWelcomeView() {
-        roundButton.setText(getString(R.string.start));
+        mainButton.setText(getString(R.string.start));
+        mainButton.setTextSize(60);
+        deleteButton.setVisibility(View.VISIBLE);
         // User is already registered
         accountRegistered = true;
         facebookToken = AccessToken.getCurrentAccessToken();
@@ -115,7 +109,6 @@ public class MainActivity extends AppCompatActivity {
         String accountToken = settings.getString(ACCOUNT_TOKEN_KEY, null);
 
         loginViewFlipper.setDisplayedChild(LOGIN_WELCOME);// Show welcome screen
-        roundButton.setText(getString(R.string.start));
         loginWelcomeTextView.setText(String.format(getString(R.string.welcome_message), accountName));
 
         // TODO: check the correctness of the token
@@ -125,26 +118,10 @@ public class MainActivity extends AppCompatActivity {
         GameSettings.setPlayerToken(accountToken);
     }
 
-    public void resetAccountSettings(View view) {
-        if(!accountRegistered)
-            return;
-        accountRegistered = false;
-
-        deleteAccount(GameSettings.getUserId(), GameSettings.getPlayerToken());
-
-        if(isFacebookUser())
-            LoginManager.getInstance().logOut();
-        facebookToken = null;// Reset token
-        SharedPreferences.Editor editor = settings.edit();
-        editor.remove(ACCOUNT_NAME_KEY);
-        editor.remove(ACCOUNT_ID_KEY);
-        editor.remove(ACCOUNT_TOKEN_KEY);
-        editor.commit();
-        showLoginView();
-    }
-
     private void showLoginView() {
-        roundButton.setText(getString(R.string.register));
+        mainButton.setText(getString(R.string.register));
+        mainButton.setTextSize(40);
+        deleteButton.setVisibility(View.GONE);
         accountRegistered = false;
         loginViewFlipper.setDisplayedChild(LOGIN_HOME);
 
@@ -164,15 +141,34 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCancel() {
                 Log.d("FACEBOOK_LOGIN", "Login canceled");
-                Toast.makeText(getBaseContext(), "Login canceled", Toast.LENGTH_SHORT).show();
+                showToast("Login canceled");
             }
 
             @Override
             public void onError(FacebookException error) {
                 Log.e("FACEBOOK_LOGIN", "Login error: " + error.toString());
-                Toast.makeText(getBaseContext(), "Login error", Toast.LENGTH_SHORT).show();
+                showToast("Login error");
             }
         });
+    }
+
+    public void resetAccountSettings(View view) {
+        if(!accountRegistered)
+            return;
+        accountRegistered = false;
+
+        deleteAccount(GameSettings.getUserId(), GameSettings.getPlayerToken());
+
+        if(isFacebookUser())
+            LoginManager.getInstance().logOut();// Logout from facebook
+        facebookToken = null;// Reset token
+
+        SharedPreferences.Editor editor = settings.edit();
+        editor.remove(ACCOUNT_NAME_KEY);
+        editor.remove(ACCOUNT_ID_KEY);
+        editor.remove(ACCOUNT_TOKEN_KEY);
+        editor.commit();
+        showLoginView();
     }
 
     @Override
@@ -225,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
         final ProgressDialog progressDialog = ProgressDialog.show(this, "Loading userdata", "Please wait...", true, false);
         /* make the API call */
         Bundle params = new Bundle();
-        params.putString("fields","name,picture,friends");
+        params.putString("fields", "name,picture,friends");
         new GraphRequest(
                 facebookToken,
                 "/" + facebookToken.getUserId(),
@@ -304,10 +300,7 @@ public class MainActivity extends AppCompatActivity {
                     JSONObject result = new JSONObject(data);
                     registerAccount(name, pictureUrl, new JSONArray(result.getString("friends")), Long.parseLong(facebookToken.getUserId()));
                 } catch (JSONException e) {
-                    Toast.makeText(
-                            getBaseContext(), getString(R.string.register_failed),
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    showToast(R.string.register_failed);
                 }
             }
         });
@@ -318,18 +311,7 @@ public class MainActivity extends AppCompatActivity {
         if(pictureUrl!=null && !pictureUrl.isEmpty()) query += "&pictureUrl=" + pictureUrl;
         if(friends!=null && friends.length()!=0) query += "&friends=" + friends;
         if(facebookId!=null) query += "&facebookId=" + facebookId;
-        try {
-            // encode query (replace space by %20 and encode other special characters)
-            URI uri = new URI(null,null,"insertAccount",query,null);
-            query = uri.toString();
-        }catch(URISyntaxException e){
-            Log.e("REGISTER_ACCOUNT","Wrong parameters URI specified");
-            // if encoding fails, make sure query contains at least the right command
-            // this way a valid request can be made, although it will presumably fail because
-            // it's not encoded right.
-            query = "insertAccount?" + query;
-        }
-        dataServer.sendRequest(query, new HttpConnector.Callback() {
+        dataServer.sendRequest(encodeServerCommand("insertAccount", query), new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 try {
@@ -341,22 +323,10 @@ public class MainActivity extends AppCompatActivity {
                     editor.putInt(ACCOUNT_ID_KEY, identifier);
                     editor.putString(ACCOUNT_TOKEN_KEY, token);
                     editor.commit();
-                    accountRegistered = true;
-                    Button buttonStart = (Button) findViewById(R.id.start_button);
-                    buttonStart.setText(getString(R.string.start));
-                    buttonStart.setTextSize(60);
-                    Button buttonDelete = (Button) findViewById(R.id.button);
-                    buttonDelete.setVisibility(Button.VISIBLE);
-                    Toast.makeText(
-                            getBaseContext(), getString(R.string.account_created),
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    showToast(R.string.account_created);
                     showWelcomeView();
                 } catch(JSONException e) {
-                    Toast.makeText(
-                            getBaseContext(), getString(R.string.register_failed),
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    showToast(R.string.register_failed);
                 }
             }
         });
@@ -370,27 +340,15 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     JSONObject result = new JSONObject(data);
                     String success = result.getString("success");
-                    Button buttonStart = (Button) findViewById(R.id.start_button);
-                    buttonStart.setText(getString(R.string.register));
-                    Button buttonDelete = (Button) findViewById(R.id.button);
-                    buttonDelete.setVisibility(Button.GONE);
                     if(success == "true") {
-                        Toast.makeText(
-                                getBaseContext(), getString(R.string.account_deleted),
-                                Toast.LENGTH_SHORT
-                        ).show();
+                        showToast(R.string.account_deleted);
+                        showLoginView();
                     }
-                    else {
-                        Toast.makeText(
-                                getBaseContext(), getString(R.string.delete_failed),
-                                Toast.LENGTH_SHORT
-                        ).show();
-                    }
+                    else
+                        showToast(R.string.delete_failed);
+
                 } catch (JSONException e) {
-                    Toast.makeText(
-                            getBaseContext(), getString(R.string.delete_failed),
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    showToast(R.string.delete_failed);
                 }
             }
         });
@@ -400,10 +358,29 @@ public class MainActivity extends AppCompatActivity {
         return (facebookToken!=null);
     }
 
-    public void showGameActivity(View view) {
-        EditText nameBox = (EditText) findViewById(R.id.name_entry);
-        GameSettings.setPlayerName(nameBox.getText().toString());
-        startActivity(new Intent(this, GameActivity.class));
+    private void showToast(String text){
+        Toast.makeText(
+                getBaseContext(),
+                text,
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+    private void showToast(@StringRes int resId){
+        showToast(getString(resId));
+    }
+
+    private String encodeServerCommand(String action, String query){
+        try {
+            // encode query (replace space by %20 and encode other special characters)
+            URI uri = new URI(null,null,action,query,null);
+            return uri.toString();
+        }catch(URISyntaxException e){
+            Log.e("URI_ENCODING","Wrong parameters URI specified. Action: " + action + " ; Query: " + query);
+            // if encoding fails, make sure query contains at least the right command
+            // this way a valid request can be made, although it will presumably fail because
+            // it's not encoded right.
+            return action + "?" + query;
+        }
     }
 
     public void showLobbyActivity(View view) {

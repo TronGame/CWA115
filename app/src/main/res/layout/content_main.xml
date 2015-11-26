@@ -11,109 +11,124 @@
     android:background="@drawable/basic_background"
     >
 
-    <ViewFlipper
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/round_button"
-        android:layout_marginBottom="30dp"
-        android:id="@+id/login_view_flipper">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <TextView
+            android:layout_weight="1"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:textStyle="bold"
+            android:text="@string/game_name"
+            android:textColor="@color/basicBlack"
+            android:textSize="60sp"
+            android:textAlignment="center"
+            android:layout_gravity="center"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/textView4"/>
+
+        <ViewFlipper
+            android:layout_weight="2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_above="@+id/start_button"
+            android:layout_marginBottom="30dp"
+            android:id="@+id/login_view_flipper">
 
-            <com.facebook.login.widget.LoginButton
-                android:id="@+id/facebook_login_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/or"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="15dp"
-                android:layout_marginTop="15dp"/>
-
-            <EditText
-                android:textColor="@color/basicBlack"
-                android:id="@+id/name_entry"
-                android:textSize="30sp"
-                android:gravity="center"
-                android:hint="@string/enter_name"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="35dp"
-                android:background="@drawable/rounded_textview"/>
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <com.facebook.login.widget.LoginButton
+                    android:id="@+id/facebook_login_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/or"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_gravity="center_horizontal"/>
+
+                <EditText
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/basicBlack"
+                    android:id="@+id/name_entry"
+                    android:textSize="30sp"
+                    android:textAlignment="center"
+                    android:layout_gravity="center_horizontal"
+                    android:hint="@string/enter_name"
+                    android:background="@drawable/rounded_textview"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/welcome_message"
+                    android:id="@+id/login_welcome_textview"/>
+
+            </LinearLayout>
+
+        </ViewFlipper>
+
+        <LinearLayout
+            android:layout_weight="4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center">
+
+
+            <Button
+                android:layout_weight="1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/start"
+                android:textColor="@color/basicWhite"
+                android:textStyle="bold"
+                android:id="@+id/main_button"
+                android:textSize="60sp"
+                android:paddingLeft="40dp"
+                android:paddingRight="40dp"
+                android:paddingBottom="40dp"
+                android:paddingTop="40dp"
+                android:onClick="showLobbyActivity"
+                android:background="@drawable/rounded_button_blue"
+                android:layout_gravity="center"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="10dp" />
+
 
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
+
+        <Button
+            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:text="@string/delete_account"
+            android:background="@drawable/rounded_button_blue"
+            android:onClick="resetAccountSettings"
+            android:id="@+id/delete_button"
+            android:padding="2sp"
+            android:layout_gravity="center_horizontal" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/welcome_message"
-                android:id="@+id/login_welcome_textview"/>
 
-        </LinearLayout>
+    </LinearLayout>
 
-    </ViewFlipper>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:text="@string/game_name"
-        android:textColor="@color/basicBlack"
-        android:textSize="60sp"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/textView4"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/register"
-        android:textColor="@color/basicWhite"
-        android:textStyle="bold"
-        android:id="@+id/round_button"
-        android:textSize="50sp"
-        android:paddingLeft="40dp"
-        android:paddingRight="40dp"
-        android:paddingBottom="80dp"
-        android:paddingTop="80dp"
-        android:onClick="showLobbyActivity"
-        android:background="@drawable/round_button"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="90dp" />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Developers shortcut"
-        android:background="@color/basicWhite"
-        android:padding="5dp"
-        android:onClick="showGameActivity"
-        android:id="@+id/button2"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Delete account"
-        android:background="@color/basicWhite"
-        android:padding="5dp"
-        android:onClick="resetAccountSettings"
-        android:id="@+id/button"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
 
 </RelativeLayout>
