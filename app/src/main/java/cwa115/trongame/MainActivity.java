@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Set the player marker that appears on the map
-        GameSettings.setPlayerMarkerImage(R.mipmap.markerk);
+        GameSettings.setPlayerMarkerImage(R.mipmap.marker);
 
         // Create the server that controls the game management
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
