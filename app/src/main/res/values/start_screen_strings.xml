@@ -18,6 +18,8 @@
     <string name="default_readybutton">Start game</string>
     <string name="account_created">Account created.</string>
     <string name="register_failed">"Could not register account.</string>
+    <string name="account_deleted">Account deleted.</string>
+    <string name="delete_failed">"Could not delete account.</string>
     <string name="hosting_failed">Could not create new game.</string>
     <string name="accept_popup">Yes</string>
     <string name="decline_popup">No</string>

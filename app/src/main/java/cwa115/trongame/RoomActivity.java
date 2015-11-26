@@ -120,7 +120,7 @@ public class RoomActivity extends AppCompatActivity
         }
         return colorList;
     }
-    public void showNoticeDialog() {
+    public void showNoticeDialog(View view) {
         // Create an instance of the dialog fragment and show it
         DialogFragment dialog = new PopUp();
         Bundle bundle = new Bundle();

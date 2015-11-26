@@ -47,7 +47,7 @@ import cwa115.trongame.Utils.LatLngConversion;
  * Controls all of the game functionality
  * implements:
  *      TODO: update this
- *      LocationObserver: ability receive location updates with updateLocation function
+ *      LocationObserver: ability to receive location updates with updateLocation function
  *      SensorDataObserver: ability to receive sensor updates with updateSensor function
  *      ApiListener: ability to receive snapped location results with handleApiResult function
  *      SocketIoHandler: ability to receive information from other players over the socket
