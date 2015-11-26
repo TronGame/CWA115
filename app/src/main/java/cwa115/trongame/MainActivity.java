@@ -69,6 +69,11 @@ public class MainActivity extends AppCompatActivity {
 
         settings = getPreferences(MODE_PRIVATE);
         showLoginOptions();
+
+        if(!accountRegistered) {
+            Button buttonDelete = (Button) findViewById(R.id.button);
+            buttonDelete.setVisibility(Button.GONE);
+        }
     }
 
     private void showLoginOptions() {
@@ -112,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         accountRegistered = false;
 
-        // TODO: actually remove account from server
+        deleteAccount(GameSettings.getUserId(), GameSettings.getPlayerToken());
 
         SharedPreferences.Editor editor = settings.edit();
         editor.remove(ACCOUNT_NAME_KEY);
@@ -273,17 +278,53 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString(ACCOUNT_TOKEN_KEY, token);
                     editor.commit();
                     accountRegistered = true;
-                    Button button = (Button) findViewById(R.id.start_button);
-                    button.setText(getString(R.string.start));
-                    button.setTextSize(60);
+                    Button buttonStart = (Button) findViewById(R.id.start_button);
+                    buttonStart.setText(getString(R.string.start));
+                    buttonStart.setTextSize(60);
+                    Button buttonDelete = (Button) findViewById(R.id.button);
+                    buttonDelete.setVisibility(Button.VISIBLE);
                     Toast.makeText(
                             getBaseContext(), getString(R.string.account_created),
                             Toast.LENGTH_SHORT
                     ).show();
                     greetUser();
-                } catch(JSONException e) {
+                } catch (JSONException e) {
                     Toast.makeText(
                             getBaseContext(), getString(R.string.register_failed),
+                            Toast.LENGTH_SHORT
+                    ).show();
+                }
+            }
+        });
+    }
+
+    private void deleteAccount(final Integer id, String token) {
+        final String query = "deleteAccount?id=" + id + ";token=" + token;
+        dataServer.sendRequest(query, new HttpConnector.Callback() {
+            @Override
+            public void handleResult(String data) {
+                try {
+                    JSONObject result = new JSONObject(data);
+                    String success = result.getString("success");
+                    Button buttonStart = (Button) findViewById(R.id.start_button);
+                    buttonStart.setText(getString(R.string.register));
+                    Button buttonDelete = (Button) findViewById(R.id.button);
+                    buttonDelete.setVisibility(Button.GONE);
+                    if(success == "true") {
+                        Toast.makeText(
+                                getBaseContext(), getString(R.string.account_deleted),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                    else {
+                        Toast.makeText(
+                                getBaseContext(), getString(R.string.delete_failed),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+                } catch (JSONException e) {
+                    Toast.makeText(
+                            getBaseContext(), getString(R.string.delete_failed),
                             Toast.LENGTH_SHORT
                     ).show();
                 }

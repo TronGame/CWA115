@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -14,6 +15,7 @@ import android.widget.TextView;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,8 +26,10 @@ import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Lists.RoomCustomAdapter;
 import cwa115.trongame.Lists.RoomListItem;
 import cwa115.trongame.Network.HttpConnector;
+import cwa115.trongame.PopUp.PopUp;
 
-public class RoomActivity extends AppCompatActivity {
+public class RoomActivity extends AppCompatActivity
+        implements PopUp.NoticeDialogListener{
 
     final static int ROOM_LIST_REFRESH_TIME = 1000;
 
@@ -116,6 +120,31 @@ public class RoomActivity extends AppCompatActivity {
         }
         return colorList;
     }
+    public void showNoticeDialog(View view) {
+        // Create an instance of the dialog fragment and show it
+        DialogFragment dialog = new PopUp();
+        Bundle bundle = new Bundle();
+        bundle.putString(PopUp.BUNDLE_MESSAGE_KEY, "test");
+        dialog.setArguments(bundle);
+        dialog.show(getSupportFragmentManager(), "NoticeDialogFragment");
+    }
+
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the NoticeDialogFragment.NoticeDialogListener interface
+    @Override
+    public void onDialogPositiveClick(DialogFragment dialog) {
+        // User touched the dialog's positive button
+        TextView temp = (TextView) findViewById(R.id.roomname);
+        temp.setTextColor(64);
+    }
+
+    @Override
+    public void onDialogNegativeClick(DialogFragment dialog) {
+        TextView temp = (TextView) findViewById(R.id.roomname);
+        temp.setTextColor(0);
+    }
+
     public void gameReady(View view) {
 
         String query = "showGame?gameId=" + GameSettings.getGameId();
