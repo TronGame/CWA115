@@ -83,7 +83,7 @@ public class KingOfHillEvent implements GameEvent {
 
         for (JSONObject result: results) {
             try {
-                if (result.getString(EventUpdateHandler.Protocol.EVENT_TYPE) == EVENT_TYPE) {
+                if (result.getString(EventUpdateHandler.Protocol.EVENT_TYPE).equals(EVENT_TYPE)) {
                     double height = result.getDouble(HEIGHT);
                     for (int i=0; i<winners.size(); i++) {
                         if (winners.get(i) == null || height > winners.get(i)) {

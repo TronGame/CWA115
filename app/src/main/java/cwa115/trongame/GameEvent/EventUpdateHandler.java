@@ -156,6 +156,6 @@ public class EventUpdateHandler implements SocketIoHandler {
         } catch(JSONException e) {
             // end of the world
         };
-        socket.sendMessage(scoreMessage, Protocol.EVENT_RESULT_MESSAGE);
+        socket.sendMessage(scoreMessage, Protocol.EVENT_SCORE_MESSAGE);
     }
 }

@@ -18,6 +18,8 @@
     <string name="distance_count_text">Travelled Distance</string>
 
     <string name="king_of_hill_text">Get to the highest spot in %time minutes!</string>
+    <string name="show_off_text">Do as many tricks as possible in the next %time minutes!</string>
+
     <string name="event_won_text">You have won a price in the last event.</string>
     <string name="score_received_text">Added %score points</string>
 

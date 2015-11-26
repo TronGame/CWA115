@@ -369,6 +369,9 @@ public class GameActivity extends AppCompatActivity implements
 
     public void addScore(int score) {
         travelledDistance += score;
+
+        TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
+        distanceView.setText(String.valueOf(LatLngConversion.latLngDistanceToMeter(travelledDistance)));
     }
 
     public void onDeath(String killerId, String killerName) {
