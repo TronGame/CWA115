@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -21,7 +23,7 @@ public class HttpConnector {
         void handleResult(String data);
     }
 
-    private String serverUrl;
+    private URI serverUri;
     private static final String RESULT_DATA_KEY = "result";
 
     private class HTTPRequestTask extends AsyncTask<URL, Void, String> {
@@ -74,12 +76,18 @@ public class HttpConnector {
     }
 
     public HttpConnector(String serverUrl) {
-        this.serverUrl = serverUrl;
+        try {
+            this.serverUri = new URI(serverUrl);
+        }catch(URISyntaxException e){
+            e.printStackTrace();
+        }
     }
 
-    public void sendRequest(String parameters, final Callback callback) {
+    public void sendRequest(ServerCommand command, String query, final Callback callback) {
         try {
-            URL requestUrl = new URL(serverUrl + parameters);
+            //URL requestUrl = new URL(serverUrl + parameters);
+            //URI ensures a valid url is given and encodes the url properly
+            URL requestUrl = new URI(serverUri.getScheme(),serverUri.getAuthority(),command.getValue(),query,null).toURL();
             new HTTPRequestTask(new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
@@ -88,8 +96,8 @@ public class HttpConnector {
                     );
                 }
             }).execute(requestUrl);
-        } catch(MalformedURLException e) {
-
+        } catch(URISyntaxException | MalformedURLException e) {
+            e.printStackTrace();
         }
     }
 

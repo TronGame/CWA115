@@ -31,6 +31,7 @@ import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Lists.RoomCustomAdapter;
 import cwa115.trongame.Lists.RoomListItem;
 import cwa115.trongame.Network.HttpConnector;
+import cwa115.trongame.Network.ServerCommand;
 import cwa115.trongame.PopUp.PopUp;
 
 public class RoomActivity extends AppCompatActivity
@@ -81,9 +82,9 @@ public class RoomActivity extends AppCompatActivity
 
     public void listPlayers(){
 
-        String query = "showGame?gameId=" + GameSettings.getGameId();
+        String query = "gameId=" + GameSettings.getGameId();
 
-        dataServer.sendRequest(query, new HttpConnector.Callback() {
+        dataServer.sendRequest(ServerCommand.SHOW_GAME, query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 final List<RoomListItem> listOfPlayerNames = new ArrayList<>();
@@ -150,9 +151,9 @@ public class RoomActivity extends AppCompatActivity
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         // User touched the dialog's positive button
-        String query = "kickPlayer?playerId=" + Integer.toString(selectedPlayerId) + "&gameId="+ GameSettings.getGameId() +"&token=" + GameSettings.getGameToken() ;
+        String query = "playerId=" + Integer.toString(selectedPlayerId) + "&gameId="+ GameSettings.getGameId() +"&token=" + GameSettings.getGameToken() ;
 
-        dataServer.sendRequest(query, new HttpConnector.Callback() {
+        dataServer.sendRequest(ServerCommand.KICK_PLAYER, query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 try {
@@ -175,9 +176,9 @@ public class RoomActivity extends AppCompatActivity
 
     public void gameReady(View view) {
 
-        String query = "showGame?gameId=" + GameSettings.getGameId();
+        String query = "gameId=" + GameSettings.getGameId();
 
-        dataServer.sendRequest(query, new HttpConnector.Callback() {
+        dataServer.sendRequest(ServerCommand.SHOW_GAME, query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 try {
@@ -203,10 +204,10 @@ public class RoomActivity extends AppCompatActivity
     }
 
     private void startGame() {
-        String query = "startGame?token=" + GameSettings.getGameToken();
+        String query = "token=" + GameSettings.getGameToken();
         roomUpdater.cancel();
 
-        dataServer.sendRequest(query, new HttpConnector.Callback() {
+        dataServer.sendRequest(ServerCommand.START_GAME, query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 // TODO check for errors

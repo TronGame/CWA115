@@ -96,16 +96,16 @@
                 android:layout_weight="1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/start"
+                android:text="@string/register"
                 android:textColor="@color/basicWhite"
                 android:textStyle="bold"
                 android:id="@+id/main_button"
-                android:textSize="60sp"
+                android:textSize="40sp"
                 android:paddingLeft="40dp"
                 android:paddingRight="40dp"
                 android:paddingBottom="40dp"
                 android:paddingTop="40dp"
-                android:onClick="showLobbyActivity"
+                android:onClick="mainButtonPressed"
                 android:background="@drawable/rounded_button_blue"
                 android:layout_gravity="center"
                 android:layout_alignParentBottom="true"
@@ -125,7 +125,8 @@
             android:onClick="resetAccountSettings"
             android:id="@+id/delete_button"
             android:padding="2sp"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone" />
 
 
     </LinearLayout>

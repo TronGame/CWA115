@@ -27,6 +27,7 @@ import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Lists.LobbyCustomAdapter;
 import cwa115.trongame.Lists.LobbyListItem;
 import cwa115.trongame.Network.HttpConnector;
+import cwa115.trongame.Network.ServerCommand;
 
 public class LobbyActivity extends AppCompatActivity {
 
@@ -62,7 +63,7 @@ public class LobbyActivity extends AppCompatActivity {
 
     private void listGames() {
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
-        dataServer.sendRequest("listGames", new HttpConnector.Callback() {
+        dataServer.sendRequest(ServerCommand.LIST_GAMES, "", new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 try {
@@ -83,13 +84,13 @@ public class LobbyActivity extends AppCompatActivity {
                         GameSettings.setCanBreakWall(clickedItem.getCanBreakWall());
                         showToast("Joining " + gameName);
 
-                        final String query = "joinGame?"+
+                        final String query =
                                 "gameId="+roomIds.get(gameName) +
                                 "&id="+GameSettings.getPlayerId()+
                                 "&token="+GameSettings.getPlayerToken();
 
                         GameSettings.setMaxPlayers(clickedItem.getPlayersAsInteger());
-                        dataServer.sendRequest(query, new HttpConnector.Callback() {
+                        dataServer.sendRequest(ServerCommand.JOIN_GAME, query, new HttpConnector.Callback() {
                             @Override
                             public void handleResult(String data) {
                                 try {
@@ -109,10 +110,12 @@ public class LobbyActivity extends AppCompatActivity {
     }
 
     public void showHostingActivity(View view) {
+        gameListUpdater.cancel();
         startActivity(new Intent(this, HostingActivity.class));
     }
 
     private void showRoomActivity() {
+        gameListUpdater.cancel();
         startActivity(new Intent(this, RoomActivity.class));
     }
 

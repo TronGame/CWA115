@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Network.HttpConnector;
+import cwa115.trongame.Network.ServerCommand;
 
 public class HostingActivity extends AppCompatActivity {
 
@@ -33,13 +34,13 @@ public class HostingActivity extends AppCompatActivity {
         CheckBox breakWallBox = (CheckBox) findViewById(R.id.checkBoxWallBreaker);
         final boolean canBreakWalls = breakWallBox.isChecked();
         final String query =
-                "insertGame?owner="
+                "owner="
                 + Integer.toString(GameSettings.getUserId())
                 + "&name=" + gameName
                 + "&token=" + GameSettings.getPlayerToken()
                 + "&maxPlayers=" + Integer.toString(maxPlayers)
                 + "&canBreakWall="+ (canBreakWalls ? "1" : "0");
-        dataServer.sendRequest(query, new HttpConnector.Callback() {
+        dataServer.sendRequest(ServerCommand.INSERT_GAME, query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 try {
@@ -62,10 +63,10 @@ public class HostingActivity extends AppCompatActivity {
     }
 
     private void joinOwnGame(){
-        String dataToSend = "joinGame?gameId=" + Integer.toString(GameSettings.getGameId())
+        String dataToSend = "gameId=" + Integer.toString(GameSettings.getGameId())
                 +"&id="+ Integer.toString(GameSettings.getUserId())
                 +"&token="+GameSettings.getPlayerToken();
-        dataServer.sendRequest(dataToSend, new HttpConnector.Callback() {
+        dataServer.sendRequest(ServerCommand.JOIN_GAME, dataToSend, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 startActivity(new Intent(HostingActivity.this, RoomActivity.class));
