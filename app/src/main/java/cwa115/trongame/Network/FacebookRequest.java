@@ -12,18 +12,20 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import cwa115.trongame.Profile;
+
 /**
  * Created by Bram on 27-11-2015.
  */
 public class FacebookRequest {
 
     public interface Callback{
-        void handleResult(String name, String profilePictureUrl, Long[] friends);
+        void handleResult(Profile profile);
     }
 
     private FacebookRequest(){}
 
-    public static void sendRequest(AccessToken facebookToken, final Callback callback){
+    public static void sendRequest(final AccessToken facebookToken, final Callback callback){
         /* make the API call */
         Bundle params = new Bundle();
         params.putString("fields", "name,picture,friends");
@@ -52,7 +54,9 @@ public class FacebookRequest {
                                 facebookIds[i] = friends.getJSONObject(i).getLong("id");
                             }
                             // Give retrieved data to callback
-                            callback.handleResult(name, profilePictureUrl, facebookIds);
+                            Profile facebookProfile = new Profile(name, profilePictureUrl, facebookIds);
+                            facebookProfile.setFacebookId(Long.parseLong(facebookToken.getUserId()));
+                            callback.handleResult(facebookProfile);
                         }catch(JSONException e){
                             Log.e("FACEBOOK_REQUEST", "An exception occurred while trying to retrieve the user's data.");
                             e.printStackTrace();

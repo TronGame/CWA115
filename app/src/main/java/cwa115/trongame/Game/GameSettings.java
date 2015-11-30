@@ -1,7 +1,11 @@
 package cwa115.trongame.Game;
 
+import org.json.JSONArray;
+
 import java.util.List;
 import java.util.UUID;
+
+import cwa115.trongame.Profile;
 
 /**
  * Singleton to manage the settings of the current game.
@@ -9,11 +13,9 @@ import java.util.UUID;
  */
 public final class GameSettings {
 
-    private static String playerName;
+    private static Profile profile = Profile.PROFILE_EMPTY;
     private static int playerMarkerImage;
     private static int wallColor;
-    private static String playerToken;
-    private static int userId;
     private static int ownerId;
     private static int gameId;
     private static String gameToken;
@@ -22,21 +24,31 @@ public final class GameSettings {
     private static boolean canBreakWall;
     private static int timelimit;
     private static List<Integer> playersInGame;
-    private static int[] friends;
-    
+
+    /**
+     * Sets the profile of the player.
+     * @param p the profile of the player
+     */
+    public static void setProfile(Profile p){ profile = p; }
+
+    /**
+     * @return the player's profile
+     */
+    public static Profile getProfile(){ return profile; }
+
     /**
      * Sets the name of the local player.
      * @param name the name of the player
      */
     public static void setPlayerName(String name) {
-        playerName = name;
+        profile.setName(name);
     }
 
     /**
      * @return the name of the (local) player
      */
     public static String getPlayerName() {
-        return playerName;
+        return profile.getName();
     }
 
     /**
@@ -87,14 +99,14 @@ public final class GameSettings {
     }
     
     public static void setPlayerToken(String token) {
-        playerToken = token;
+        profile.setToken(token);
     }
 
-    public static void setUserId(int id) { userId = id; }
+    public static void setUserId(int id) { profile.setId(id); }
 
-    public static int getUserId() {return userId; }
+    public static int getUserId() {return profile.getId(); }
 
-    public static String getPlayerId() {return String.valueOf(userId);}
+    public static String getPlayerId() {return String.valueOf(getUserId());}
 
     public static void setGameId(int gameId) {
         GameSettings.gameId = gameId;
@@ -117,14 +129,14 @@ public final class GameSettings {
     }
 
     public static String getPlayerToken() {
-        return playerToken;
+        return profile.getToken();
     }
 
     /**
      * @return Is this player the owner?
      */
     public static boolean isOwner() {
-        return (ownerId==userId) && gameToken != null;
+        return (ownerId==getUserId()) && gameToken != null;
     }
 
     public static void setOwnerId(int id) {
@@ -151,9 +163,9 @@ public final class GameSettings {
         playersInGame.add(playerId);
     }
 
-    public static void setFriends(int[] playerFriends){ friends = playerFriends; }
+    public static void setFriends(JSONArray playerFriends){ profile.setFriends(playerFriends); }
 
-    public static int[] getFriends(){ return friends; }
+    public static JSONArray getFriends(){ return profile.getFriends(); }
 
     public static void setCanBreakWall(boolean bool){
         canBreakWall=bool;
