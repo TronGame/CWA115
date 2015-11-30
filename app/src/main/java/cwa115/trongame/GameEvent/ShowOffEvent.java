@@ -16,7 +16,7 @@ import cwa115.trongame.R;
  */
 public class ShowOffEvent implements GameEvent {
 
-    private static final int TIME = 5 * 60;
+    private static final int TIME = 30;
     public static final double[] PRICES = {300, 200, 100};
     private static final String ACCELERATION_FIELD = "acceleration";
     public static final String EVENT_TYPE = "show_off_event";
@@ -57,7 +57,7 @@ public class ShowOffEvent implements GameEvent {
 
         for (JSONObject result: results) {
             try {
-                if (result.get(EventUpdateHandler.Protocol.EVENT_TYPE) == EVENT_TYPE) {
+                if (result.getString(EventUpdateHandler.Protocol.EVENT_TYPE).equals(EVENT_TYPE)) {
                     double acceleration = result.getDouble(ACCELERATION_FIELD);
                     for (int i=0; i< winners.size(); i++) {
                         if((winners.get(i) == null) || (acceleration > winners.get(i))) {

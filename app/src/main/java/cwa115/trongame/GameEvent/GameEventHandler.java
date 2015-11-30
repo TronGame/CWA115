@@ -50,7 +50,7 @@ public class GameEventHandler {
         timerHandler = new Handler() {
             @Override
             public void handleMessage(Message message) {
-                addPendingEvent(new KingOfHillEvent());
+                addPendingEvent(new ShowOffEvent());
             }
         };
         Runnable task = new Runnable() {

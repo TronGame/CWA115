@@ -26,7 +26,7 @@ public enum SensorFlag{// Easy way to refer to 1 or more sensors (using EnumSet)
                 return PROXIMITY;
             case Sensor.TYPE_GYROSCOPE:
                 return GYROSCOPE;
-            case Sensor.TYPE_LINEAR_ACCELERATION:
+            case Sensor.TYPE_ACCELEROMETER:
                 return ACCELEROMETER;
             default:
                 return NONE;

@@ -135,6 +135,7 @@ public class GameActivity extends AppCompatActivity implements
                 // Check whether it was the proximity sensor that detected something
                 if (observable != sensorDataObservable)
                     return;
+
                 if(data instanceof HorizontalAccelerationDataHolder) {
                     HorizontalAccelerationDataHolder holder = (HorizontalAccelerationDataHolder) data;
                     acceleration += holder.getAccelerationMagnitude();
@@ -143,7 +144,7 @@ public class GameActivity extends AppCompatActivity implements
 
             @Override
             public int getCountLimit() {
-                return 0;
+                return -1;
             }
         });
 
@@ -235,10 +236,10 @@ public class GameActivity extends AppCompatActivity implements
                     // This checks if there has been a previous location update
                     distance = LatLngConversion.getDistancePoints(snappedGpsLoc, newSnappedGpsLoc);
                 }
-                travelledDistance += distance;
+                travelledDistance += LatLngConversion.latLngDistanceToMeter(distance);
 
                 TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
-                distanceView.setText(String.valueOf(LatLngConversion.latLngDistanceToMeter(travelledDistance)));
+                distanceView.setText(String.valueOf(travelledDistance));
 
                 // Wall functionality
                 ArrayList<Wall> walls = map.getWalls();
@@ -371,7 +372,7 @@ public class GameActivity extends AppCompatActivity implements
         travelledDistance += score;
 
         TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
-        distanceView.setText(String.valueOf(LatLngConversion.latLngDistanceToMeter(travelledDistance)));
+        distanceView.setText(String.valueOf(travelledDistance));
     }
 
     public void onDeath(String killerId, String killerName) {

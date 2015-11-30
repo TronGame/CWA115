@@ -43,7 +43,7 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
         sensors = new HashMap<>();
         sensors.put(SensorFlag.PROXIMITY, sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY));
         sensors.put(SensorFlag.GYROSCOPE, sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE));
-        sensors.put(SensorFlag.ACCELEROMETER, sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION));
+        sensors.put(SensorFlag.ACCELEROMETER, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
 
         // Initialize sensorData and SensorDataHolders
         sensorData = new HashMap<>();
