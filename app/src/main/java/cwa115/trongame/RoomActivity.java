@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.games.Game;
 import com.google.android.gms.games.Games;
+import com.google.common.collect.ImmutableMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,6 +25,7 @@ import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -82,40 +84,41 @@ public class RoomActivity extends AppCompatActivity
 
     public void listPlayers(){
 
-        String query = "gameId=" + GameSettings.getGameId();
+        dataServer.sendRequest(
+                ServerCommand.SHOW_GAME,
+                ImmutableMap.of("gameId", String.valueOf(GameSettings.getGameId())),
+                new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    final List<RoomListItem> listOfPlayerNames = new ArrayList<>();
+                    try {
+                        JSONObject result = new JSONObject(data);
+                        if (result.getBoolean("hasStarted")) {
+                            roomUpdater.cancel();
+                            gameReady(null);
+                            return;
+                        }
+                        JSONArray players = result.getJSONArray("players");
+                        for (int i = 0; i < players.length(); i++) {
+                            JSONObject player = players.getJSONObject(i);
+                            listOfPlayerNames.add(new RoomListItem(player.getString("name"), listOfColors.get(i), player.getInt("id")));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    ListView lobbyList = (ListView) findViewById(R.id.room_list);
+                    RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
+                    lobbyList.setAdapter(adapter);
 
-        dataServer.sendRequest(ServerCommand.SHOW_GAME, query, new HttpConnector.Callback() {
-            @Override
-            public void handleResult(String data) {
-                final List<RoomListItem> listOfPlayerNames = new ArrayList<>();
-                try {
-                    JSONObject result = new JSONObject(data);
-                    if(result.getBoolean("hasStarted")) {
-                        roomUpdater.cancel();
-                        gameReady(null);
-                        return;
-                    }
-                    JSONArray players = result.getJSONArray("players");
-                    for (int i = 0; i < players.length(); i++) {
-                        JSONObject player = players.getJSONObject(i);
-                        listOfPlayerNames.add(new RoomListItem(player.getString("name"), listOfColors.get(i), player.getInt("id") ));
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
+                            RoomListItem clickedItem = listOfPlayerNames.get(position);
+                            selectedPlayerName = clickedItem.getPlayerName();
+                            selectedPlayerId = clickedItem.getPlayerId();
+                            showNoticeDialog();
+                        }
+                    });
                 }
-                ListView lobbyList = (ListView) findViewById(R.id.room_list);
-                RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
-                lobbyList.setAdapter(adapter);
-
-                lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
-                        RoomListItem clickedItem = listOfPlayerNames.get(position);
-                        selectedPlayerName= clickedItem.getPlayerName();
-                        selectedPlayerId=clickedItem.getPlayerId();
-                        showNoticeDialog();
-                    }
-                });
-            }
         });
 
     }
@@ -151,7 +154,10 @@ public class RoomActivity extends AppCompatActivity
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         // User touched the dialog's positive button
-        String query = "playerId=" + Integer.toString(selectedPlayerId) + "&gameId="+ GameSettings.getGameId() +"&token=" + GameSettings.getGameToken() ;
+        Map<String, String> query = ImmutableMap.of(
+                "playerId", Integer.toString(selectedPlayerId),
+                "gameId", String.valueOf(GameSettings.getGameId()),
+                "token", GameSettings.getGameToken());
 
         dataServer.sendRequest(ServerCommand.KICK_PLAYER, query, new HttpConnector.Callback() {
             @Override
@@ -176,43 +182,46 @@ public class RoomActivity extends AppCompatActivity
 
     public void gameReady(View view) {
 
-        String query = "gameId=" + GameSettings.getGameId();
+        dataServer.sendRequest(
+                ServerCommand.SHOW_GAME,
+                ImmutableMap.of("gameId", String.valueOf(GameSettings.getGameId())),
+                new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    try {
+                        JSONObject result = new JSONObject(data);
+                        JSONArray players = result.getJSONArray("players");
+                        List<Integer> listOfPlayerIds = new ArrayList<>();
+                        for (int i = 0; i < players.length(); i++) {
+                            JSONObject player = players.getJSONObject(i);
+                            listOfPlayerIds.add(player.getInt("id"));
+                            // TODO make sure that this happens more reliably (the server might have to store player color as well?)
+                            if (player.getInt("id") == GameSettings.getUserId())
+                                GameSettings.setWallColor(listOfColors.get(i));
+                        }
+                        GameSettings.setPlayersInGame(listOfPlayerIds);
+                        startGame();
+                        showGameActivity();
 
-        dataServer.sendRequest(ServerCommand.SHOW_GAME, query, new HttpConnector.Callback() {
-            @Override
-            public void handleResult(String data) {
-                try {
-                    JSONObject result = new JSONObject(data);
-                    JSONArray players = result.getJSONArray("players");
-                    List<Integer> listOfPlayerIds = new ArrayList<>();
-                    for (int i = 0; i < players.length(); i++) {
-                        JSONObject player = players.getJSONObject(i);
-                        listOfPlayerIds.add(player.getInt("id"));
-                        // TODO make sure that this happens more reliably (the server might have to store player color as well?)
-                        if (player.getInt("id") == GameSettings.getUserId())
-                            GameSettings.setWallColor(listOfColors.get(i));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                    GameSettings.setPlayersInGame(listOfPlayerIds);
-                    startGame();
-                    showGameActivity();
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 }
-            }
         });
     }
 
     private void startGame() {
-        String query = "token=" + GameSettings.getGameToken();
         roomUpdater.cancel();
 
-        dataServer.sendRequest(ServerCommand.START_GAME, query, new HttpConnector.Callback() {
-            @Override
-            public void handleResult(String data) {
-                // TODO check for errors
-                showGameActivity();
-            }
+        dataServer.sendRequest(
+                ServerCommand.START_GAME,
+                ImmutableMap.of("token", GameSettings.getGameToken()),
+                new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    // TODO check for errors
+                    showGameActivity();
+                }
         });
     }
 

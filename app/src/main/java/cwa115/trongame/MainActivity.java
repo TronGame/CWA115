@@ -25,6 +25,7 @@ import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.google.common.collect.ImmutableMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,6 +34,8 @@ import org.json.JSONObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Network.FacebookRequest;
@@ -111,13 +114,13 @@ public class MainActivity extends AppCompatActivity {
         String accountToken = settings.getString(ACCOUNT_TOKEN_KEY, null);
 
         // Update current userdata if requested
-        /*if(updateUserData){
+        if(updateUserData){
             if(isFacebookUser())
                 updateFacebookUserData(accountId, accountToken);// updateFacebookUserData will automatically call updateServerUserData
             else
                 updateServerUserData(accountId, accountToken);
             return;
-        }*/
+        }
 
         // Update UI
         loginViewFlipper.setDisplayedChild(LOGIN_WELCOME);// Show welcome screen
@@ -267,29 +270,53 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void handleResult(String name, String profilePictureUrl, Long[] friends) {
                 Log.d("FACEBOOK_UPDATE", "Userdata available! Name: " + name + " ; profilePicUrl: " + profilePictureUrl + " ; friends: " + friends.toString());
-                String query = "id=" + userId + "&token=" + userToken;
+                final Map<String, String> query = new HashMap<String, String>();
+                query.put("id", String.valueOf(userId));
+                query.put("token", userToken);
                 String oldName=settings.getString(ACCOUNT_NAME_KEY,null);
                 String oldPictureUrl=settings.getString(ACCOUNT_PICTURE_URL,null);
                 String oldFriends=settings.getString(ACCOUNT_FRIENDS,null);
                 String newFriends=new JSONArray(Arrays.asList(friends)).toString();
-                if(!name.equals(oldName)) query += "&name=" + name;
-                if(!profilePictureUrl.equals(oldPictureUrl)) query += "&pictureUrl=" + profilePictureUrl;
-                if(!newFriends.equals(oldFriends)) query += "&friends=" + newFriends;
+                if(!name.equals(oldName)) query.put("name", name);
+                if(!profilePictureUrl.equals(oldPictureUrl)) query.put("pictureUrl", profilePictureUrl);
+                /*if(!newFriends.equals(oldFriends)) {
+                    // Get corresponding friend ids
+                    dataServer.sendRequest(
+                            ServerCommand.GET_FRIEND_IDS,
+                            ImmutableMap.of("facebookIds", newFriends),
+                            new HttpConnector.Callback() {
+                                @Override
+                                public void handleResult(String data) {
+                                    try {
+                                        JSONObject result = new JSONObject(data);
+                                        query.put("friends", result.getJSONArray("friends").toString());
+                                        pushUpdatedDataToServer(userId, userToken, query);
+                                    }catch(JSONException e){
+                                        showToast(R.string.update_failed);
+                                    }
+                                }
+                            });
+                }else{*/
 
-                dataServer.sendRequest(ServerCommand.UPDATE_ACCOUNT, query, new HttpConnector.Callback() {
-                    @Override
-                    public void handleResult(String data) {
-                        try {
-                            JSONObject result = new JSONObject(data);
-                            if (result.getBoolean("success"))
-                                updateServerUserData(userId, userToken);
-                            else
-                                showToast(R.string.update_failed);
-                        } catch (JSONException e) {
-                            showToast(R.string.update_failed);
-                        }
-                    }
-                });
+                pushUpdatedDataToServer(userId, userToken, query);
+                //}
+            }
+        });
+    }
+
+    private void pushUpdatedDataToServer(final int userId, final String userToken, Map<String, String> query){
+        dataServer.sendRequest(ServerCommand.UPDATE_ACCOUNT, query, new HttpConnector.Callback() {
+            @Override
+            public void handleResult(String data) {
+                try {
+                    JSONObject result = new JSONObject(data);
+                    if (result.getBoolean("success"))
+                        updateServerUserData(userId, userToken);
+                    else
+                        showToast(R.string.update_failed);
+                } catch (JSONException e) {
+                    showToast(R.string.update_failed);
+                }
             }
         });
     }
@@ -301,31 +328,33 @@ public class MainActivity extends AppCompatActivity {
      * @param userToken Token of the user whose data will be downloaded
      */
     private void updateServerUserData(int userId, String userToken){
-        String query = "id=" + userId + "&token=" + userToken;
-        dataServer.sendRequest(ServerCommand.SHOW_ACCOUNT, query, new HttpConnector.Callback() {
-            @Override
-            public void handleResult(String data) {
-                try{
-                    JSONObject result = new JSONObject(data);
-                    if(!result.has("error")) {
-                        String name = result.getString("name");
-                        String pictureUrl = result.getString("pictureUrl");
-                        JSONArray friends = result.getJSONArray("friends");
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString(ACCOUNT_NAME_KEY, name);
-                        editor.putString(ACCOUNT_PICTURE_URL, pictureUrl);
-                        editor.putString(ACCOUNT_FRIENDS, friends.toString());
-                        editor.apply();
-                        showWelcomeView(false);// Update UI
-                    }else{
-                        // User was not found on server
-                        showToast("Profile not found");
-                        // TODO: delete local account so a new one can be created?
+        dataServer.sendRequest(
+                ServerCommand.SHOW_ACCOUNT,
+                ImmutableMap.of("id", String.valueOf(userId), "token", userToken),
+                new HttpConnector.Callback() {
+                    @Override
+                    public void handleResult(String data) {
+                        try {
+                            JSONObject result = new JSONObject(data);
+                            if (!result.has("error")) {
+                                String name = result.getString("name");
+                                String pictureUrl = result.getString("pictureUrl");
+                                JSONArray friends = result.getJSONArray("friends");
+                                SharedPreferences.Editor editor = settings.edit();
+                                editor.putString(ACCOUNT_NAME_KEY, name);
+                                editor.putString(ACCOUNT_PICTURE_URL, pictureUrl);
+                                editor.putString(ACCOUNT_FRIENDS, friends.toString());
+                                editor.apply();
+                                showWelcomeView(false);// Update UI
+                            } else {
+                                // User was not found on server
+                                showToast("Profile not found");
+                                // TODO: delete local account so a new one can be created?
+                            }
+                        } catch (JSONException e) {
+                            showToast(R.string.update_failed);
+                        }
                     }
-                }catch(JSONException e){
-                    showToast(R.string.update_failed);
-                }
-            }
         });
     }
 
@@ -341,16 +370,18 @@ public class MainActivity extends AppCompatActivity {
      */
     private void registerFacebookAccount(final String name, final String pictureUrl, final Long[] friends){
         // First receive userIds of friends based on their facebookIds:
-        final String query = "facebookIds=" + new JSONArray(Arrays.asList(friends));
-        dataServer.sendRequest(ServerCommand.GET_FRIEND_IDS, query, new HttpConnector.Callback() {
+        dataServer.sendRequest(
+                ServerCommand.GET_FRIEND_IDS,
+                ImmutableMap.of("facebookIds", new JSONArray(Arrays.asList(friends)).toString()),
+                new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
-                try {
-                    JSONObject result = new JSONObject(data);
-                    registerAccount(name, pictureUrl, new JSONArray(result.getString("friends")), Long.parseLong(facebookToken.getUserId()));
-                } catch (JSONException e) {
-                    showToast(R.string.register_failed);
-                }
+                    try {
+                        JSONObject result = new JSONObject(data);
+                        registerAccount(name, pictureUrl, new JSONArray(result.getString("friends")), Long.parseLong(facebookToken.getUserId()));
+                    } catch (JSONException e) {
+                        showToast(R.string.register_failed);
+                    }
             }
         });
     }
@@ -364,10 +395,11 @@ public class MainActivity extends AppCompatActivity {
      * @param facebookId The user's facebookId (null if local)
      */
     private void registerAccount(final String name, final String pictureUrl, final JSONArray friends, final Long facebookId) {
-        String query = "name=" + name;
-        if(pictureUrl!=null && !pictureUrl.isEmpty()) query += "&pictureUrl=" + pictureUrl;
-        if(friends!=null && friends.length()!=0) query += "&friends=" + friends;
-        if(facebookId!=null) query += "&facebookId=" + facebookId;
+        Map<String, String> query = new HashMap<>();
+        query.put("name", name);
+        if(pictureUrl!=null && !pictureUrl.isEmpty()) query.put("pictureUrl",pictureUrl);
+        if(friends!=null && friends.length()!=0) query.put("friends",friends.toString());
+        if(facebookId!=null) query.put("facebookId",String.valueOf(facebookId));
         dataServer.sendRequest(ServerCommand.INSERT_ACCOUNT, query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
@@ -390,24 +422,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteAccount(final Integer id, String token) {
-        final String query = "id=" + id + ";token=" + token;
-        dataServer.sendRequest(ServerCommand.DELETE_ACCOUNT, query, new HttpConnector.Callback() {
-            @Override
-            public void handleResult(String data) {
-                try {
-                    JSONObject result = new JSONObject(data);
-                    String success = result.getString("success");
-                    if(success.equals("true")) {
-                        showToast(R.string.account_deleted);
-                        showLoginView();
-                    }
-                    else
-                        showToast(R.string.delete_failed);
+        dataServer.sendRequest(
+                ServerCommand.DELETE_ACCOUNT,
+                ImmutableMap.of("id", String.valueOf(id), "token", token),
+                new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    try {
+                        JSONObject result = new JSONObject(data);
+                        String success = result.getString("success");
+                        if (success.equals("true")) {
+                            showToast(R.string.account_deleted);
+                            showLoginView();
+                        } else
+                            showToast(R.string.delete_failed);
 
-                } catch (JSONException e) {
-                    showToast(R.string.delete_failed);
+                    } catch (JSONException e) {
+                        showToast(R.string.delete_failed);
+                    }
                 }
-            }
         });
     }
 
@@ -437,20 +470,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void showToast(@StringRes int resId){
         showToast(getString(resId));
-    }
-
-    private String encodeServerCommand(String action, String query){
-        try {
-            // encode query (replace space by %20 and encode other special characters)
-            URI uri = new URI(null,null,action,query,null);
-            return uri.toString();
-        }catch(URISyntaxException e){
-            Log.e("URI_ENCODING","Wrong parameters URI specified. Action: " + action + " ; Query: " + query);
-            // if encoding fails, make sure query contains at least the right command
-            // this way a valid request can be made, although it will presumably fail because
-            // it's not encoded right.
-            return action + "?" + query;
-        }
     }
 
     /***

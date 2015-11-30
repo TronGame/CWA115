@@ -12,6 +12,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.android.gms.games.Game;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableMap;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,6 +22,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -63,7 +66,7 @@ public class LobbyActivity extends AppCompatActivity {
 
     private void listGames() {
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
-        dataServer.sendRequest(ServerCommand.LIST_GAMES, "", new HttpConnector.Callback() {
+        dataServer.sendRequest(ServerCommand.LIST_GAMES, null, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 try {
@@ -84,10 +87,10 @@ public class LobbyActivity extends AppCompatActivity {
                         GameSettings.setCanBreakWall(clickedItem.getCanBreakWall());
                         showToast("Joining " + gameName);
 
-                        final String query =
-                                "gameId="+roomIds.get(gameName) +
-                                "&id="+GameSettings.getPlayerId()+
-                                "&token="+GameSettings.getPlayerToken();
+                        Map<String, String> query = ImmutableMap.of(
+                                "gameId", String.valueOf(roomIds.get(gameName)),
+                                "id", String.valueOf(GameSettings.getPlayerId()),
+                                "token", GameSettings.getPlayerToken());
 
                         GameSettings.setMaxPlayers(clickedItem.getPlayersAsInteger());
                         dataServer.sendRequest(ServerCommand.JOIN_GAME, query, new HttpConnector.Callback() {

@@ -12,9 +12,12 @@ android {
         versionName "1.0"
         multiDexEnabled true
     }
+    dexOptions{
+        javaMaxHeapSize "2g"
+    }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -38,4 +41,5 @@ dependencies {
     compile 'io.socket:socket.io-client:0.6.2'
     compile 'com.android.support:multidex:1.0.0'
     androidTestCompile 'junit:junit:4.12'
+    compile 'com.google.guava:guava:19.0-rc2'
 }

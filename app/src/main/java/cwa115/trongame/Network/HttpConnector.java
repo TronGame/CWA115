@@ -1,10 +1,18 @@
 package cwa115.trongame.Network;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -13,6 +21,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Allows asynchronous HTTP requests which return application/json data.
@@ -23,7 +33,7 @@ public class HttpConnector {
         void handleResult(String data);
     }
 
-    private URI serverUri;
+    private String serverUrl;
     private static final String RESULT_DATA_KEY = "result";
 
     private class HTTPRequestTask extends AsyncTask<URL, Void, String> {
@@ -76,18 +86,22 @@ public class HttpConnector {
     }
 
     public HttpConnector(String serverUrl) {
-        try {
-            this.serverUri = new URI(serverUrl);
-        }catch(URISyntaxException e){
-            e.printStackTrace();
-        }
+        this.serverUrl = serverUrl;
     }
 
-    public void sendRequest(ServerCommand command, String query, final Callback callback) {
+    public void sendRequest(ServerCommand command, Map<String, String> queryParams, final Callback callback) {
         try {
-            //URL requestUrl = new URL(serverUrl + parameters);
-            //URI ensures a valid url is given and encodes the url properly
-            URL requestUrl = new URI(serverUri.getScheme(),serverUri.getAuthority(),command.getValue(),query,null).toURL();
+            String query = "";
+            if(queryParams!=null && queryParams.size()>0) {
+                Map<String, String> encodedQueryParams = Maps.transformValues(queryParams, new Function<String, String>() {
+                    @Override
+                    public String apply(String input) {
+                        return Uri.encode(input);
+                    }
+                });
+                query = "?" + Joiner.on("&").withKeyValueSeparator("=").join(encodedQueryParams);
+            }
+            URL requestUrl = new URL(serverUrl + command.getValue() + query);
             new HTTPRequestTask(new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
@@ -96,7 +110,7 @@ public class HttpConnector {
                     );
                 }
             }).execute(requestUrl);
-        } catch(URISyntaxException | MalformedURLException e) {
+        } catch(MalformedURLException e) {
             e.printStackTrace();
         }
     }
