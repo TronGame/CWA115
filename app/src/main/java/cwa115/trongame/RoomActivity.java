@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -45,6 +46,7 @@ public class RoomActivity extends AppCompatActivity
     private boolean hasStarted;
     private int selectedPlayerId;
     private String selectedPlayerName;
+    private TimerTask timerTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,13 +72,38 @@ public class RoomActivity extends AppCompatActivity
                 listPlayers();
             }
         };
-        roomUpdater.scheduleAtFixedRate(new TimerTask() {
+        timerTask=new TimerTask() {
             public void run() {
                 roomHandler.sendMessage(new Message());
             }
-        }, 0, ROOM_LIST_REFRESH_TIME);
-
+        };
+        roomUpdater.scheduleAtFixedRate(timerTask, 0, ROOM_LIST_REFRESH_TIME);
         hasStarted = false;
+    }
+
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        roomUpdater.scheduleAtFixedRate(timerTask, 0, ROOM_LIST_REFRESH_TIME);
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        roomUpdater.cancel();
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            GameSettings.setPlayerName(null);
+            GameSettings.setPlayerToken(null);
+            GameSettings.setUserId(0);
+            finish();
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
     }
 
     public void listPlayers(){

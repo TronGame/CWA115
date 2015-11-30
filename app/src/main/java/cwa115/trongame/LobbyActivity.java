@@ -48,6 +48,18 @@ public class LobbyActivity extends AppCompatActivity {
         ListView lobbyList = (ListView) findViewById(R.id.mainList);
         lobbyList.setClickable(true);
         listGames();
+        timerTask = new TimerTask() {
+            public void run() {
+                gameListHandler.sendMessage(new Message());
+            }
+        };
+
+    }
+
+
+    @Override
+    protected void onResume(){
+        super.onResume();
         gameListUpdater = new Timer();
         gameListHandler = new Handler() {
             @Override
@@ -55,17 +67,6 @@ public class LobbyActivity extends AppCompatActivity {
                 listGames();
             }
         };
-        timerTask = new TimerTask() {
-            public void run() {
-                gameListHandler.sendMessage(new Message());
-            }
-        };
-    }
-
-
-    @Override
-    protected void onResume(){
-        super.onResume();
         gameListUpdater.scheduleAtFixedRate(timerTask, 0, GAME_LIST_REFRESH_TIME);
     }
 
@@ -78,7 +79,6 @@ public class LobbyActivity extends AppCompatActivity {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            super.onStop();
             GameSettings.setPlayerName(null);
             GameSettings.setPlayerToken(null);
             GameSettings.setUserId(0);
@@ -87,6 +87,7 @@ public class LobbyActivity extends AppCompatActivity {
         }
         return super.onKeyUp(keyCode, event);
     }
+
     private void listGames() {
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
         dataServer.sendRequest("listGames", new HttpConnector.Callback() {
