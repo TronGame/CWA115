@@ -15,8 +15,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.games.Game;
-import com.google.android.gms.games.Games;
 import com.google.common.collect.ImmutableMap;
 
 import org.json.JSONArray;

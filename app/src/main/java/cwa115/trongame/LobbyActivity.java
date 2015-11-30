@@ -12,8 +12,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.android.gms.games.Game;
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 
 import org.json.JSONArray;
@@ -189,5 +187,11 @@ public class LobbyActivity extends AppCompatActivity {
                 getBaseContext(), text,
                 Toast.LENGTH_SHORT
         ).show();
+    }
+
+
+
+    public void showScoreBoard(View view) {
+        startActivity(new Intent(this, ScoreBoardActivity.class));
     }
 }

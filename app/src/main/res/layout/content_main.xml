@@ -128,7 +128,6 @@
             android:layout_gravity="center_horizontal"
             android:visibility="gone" />
 
-
     </LinearLayout>
 
 

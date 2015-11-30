@@ -38,8 +38,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -362,14 +360,15 @@ public class MainActivity extends AppCompatActivity {
                                 showWelcomeView(false);// Update UI
                             } else {
                                 // User was not found on server
-                                showToast("Profile not found");
-                                // TODO: delete local account so a new one can be created?
+                                showToast("Profile not found.");
+                                // Completely remove the account and settings
+                                resetAccountSettings(null);
                             }
                         } catch (JSONException e) {
                             showToast(R.string.update_failed);
                         }
                     }
-        });
+                });
     }
 
     /**
@@ -388,16 +387,16 @@ public class MainActivity extends AppCompatActivity {
                 ServerCommand.GET_FRIEND_IDS,
                 ImmutableMap.of("facebookIds", new JSONArray(Arrays.asList(friends)).toString()),
                 new HttpConnector.Callback() {
-            @Override
-            public void handleResult(String data) {
-                try {
-                    JSONObject result = new JSONObject(data);
-                        registerAccount(name, pictureUrl, new JSONArray(result.getString("friends")), Long.parseLong(facebookToken.getUserId()));
-                    } catch (JSONException e) {
-                        showToast(R.string.register_failed);
+                    @Override
+                    public void handleResult(String data) {
+                        try {
+                            JSONObject result = new JSONObject(data);
+                            registerAccount(name, pictureUrl, new JSONArray(result.getString("friends")), Long.parseLong(facebookToken.getUserId()));
+                        } catch (JSONException e) {
+                            showToast(R.string.register_failed);
+                        }
                     }
-            }
-        });
+                });
     }
 
     /***
