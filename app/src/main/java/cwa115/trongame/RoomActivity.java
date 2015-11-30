@@ -93,9 +93,12 @@ public class RoomActivity extends AppCompatActivity
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            GameSettings.setPlayerName(null);
-            GameSettings.setPlayerToken(null);
-            GameSettings.setUserId(0);
+            GameSettings.setGameId(0);
+            GameSettings.setGameName(null);
+            GameSettings.setGameToken(null);
+            GameSettings.setOwnerId(0);
+            GameSettings.setCanBreakWall(false);
+            GameSettings.setTimelimit(-1);
             finish();
             return true;
         }
