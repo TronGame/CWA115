@@ -46,7 +46,6 @@ public class RoomActivity extends AppCompatActivity
     private boolean hasStarted;
     private int selectedPlayerId;
     private String selectedPlayerName;
-    private TimerTask timerTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,18 +65,6 @@ public class RoomActivity extends AppCompatActivity
 
         listOfColors = colorListMaker();
         roomUpdater = new Timer();
-
-        roomHandler = new Handler() {
-            public void handleMessage(Message msg) {
-                listPlayers();
-            }
-        };
-        timerTask=new TimerTask() {
-            public void run() {
-                roomHandler.sendMessage(new Message());
-            }
-        };
-        roomUpdater.scheduleAtFixedRate(timerTask, 0, ROOM_LIST_REFRESH_TIME);
         hasStarted = false;
     }
 
@@ -85,7 +72,16 @@ public class RoomActivity extends AppCompatActivity
     @Override
     protected void onResume(){
         super.onResume();
-        roomUpdater.scheduleAtFixedRate(timerTask, 0, ROOM_LIST_REFRESH_TIME);
+        roomHandler = new Handler() {
+            public void handleMessage(Message msg) {
+                listPlayers();
+            }
+        };
+        roomUpdater.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                roomHandler.sendMessage(new Message());
+            }
+        }, 0, ROOM_LIST_REFRESH_TIME);
     }
 
     @Override

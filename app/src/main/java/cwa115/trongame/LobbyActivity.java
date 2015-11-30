@@ -39,7 +39,6 @@ public class LobbyActivity extends AppCompatActivity {
     private Timer gameListUpdater;
     private Handler gameListHandler;
     private List<LobbyListItem> listOfRooms;
-    private TimerTask timerTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,12 +47,6 @@ public class LobbyActivity extends AppCompatActivity {
         ListView lobbyList = (ListView) findViewById(R.id.mainList);
         lobbyList.setClickable(true);
         listGames();
-        timerTask = new TimerTask() {
-            public void run() {
-                gameListHandler.sendMessage(new Message());
-            }
-        };
-
     }
 
 
@@ -67,7 +60,11 @@ public class LobbyActivity extends AppCompatActivity {
                 listGames();
             }
         };
-        gameListUpdater.scheduleAtFixedRate(timerTask, 0, GAME_LIST_REFRESH_TIME);
+        gameListUpdater.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                gameListHandler.sendMessage(new Message());
+            }
+        }, 0, GAME_LIST_REFRESH_TIME);
     }
 
     @Override
