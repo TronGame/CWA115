@@ -97,5 +97,6 @@
         android:layout_alignTop="@+id/time_limit"
         android:layout_alignRight="@+id/checkBoxWallBreaker"
         android:layout_alignEnd="@+id/checkBoxWallBreaker"
-        android:inputType="number" />
+        android:inputType="number"
+        android:id="@+id/editTimeLimit"/>
 </RelativeLayout>

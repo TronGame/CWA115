@@ -83,7 +83,7 @@ public class HostingActivity extends AppCompatActivity {
 
     }
     private int getTimeLimit(){
-        EditText editTimeLimit = (EditText) findViewById(R.id.time_limit);
+        EditText editTimeLimit = (EditText) findViewById(R.id.editTimeLimit);
         String timeLimit = editTimeLimit.getText().toString();
         if (timeLimit.length() == 0)
             return -1;
