@@ -1,9 +1,16 @@
 package cwa115.trongame;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.StringRes;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -94,7 +101,13 @@ public class MainActivity extends AppCompatActivity {
         deleteButton = (Button)findViewById(R.id.delete_button);
         loginWelcomeTextView = (TextView)findViewById(R.id.login_welcome_textview);
 
-        // TODO: check if user is connected to the internet and if GPS is turned on before proceeding
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        if(activeNetworkInfo == null || !activeNetworkInfo.isConnected()){
+            // No internet connection
+            buildAlertMessageNoInternet();
+        }
 
         // If a user is signed in, show welcome view, otherwise show login view
         if(settings.contains(ACCOUNT_ID_KEY) && settings.contains(ACCOUNT_TOKEN_KEY))
@@ -273,12 +286,13 @@ public class MainActivity extends AppCompatActivity {
                 final Map<String, String> query = new HashMap<String, String>();
                 query.put("id", String.valueOf(userId));
                 query.put("token", userToken);
-                String oldName=settings.getString(ACCOUNT_NAME_KEY,null);
-                String oldPictureUrl=settings.getString(ACCOUNT_PICTURE_URL,null);
-                String oldFriends=settings.getString(ACCOUNT_FRIENDS,null);
-                String newFriends=new JSONArray(Arrays.asList(friends)).toString();
-                if(!name.equals(oldName)) query.put("name", name);
-                if(!profilePictureUrl.equals(oldPictureUrl)) query.put("pictureUrl", profilePictureUrl);
+                String oldName = settings.getString(ACCOUNT_NAME_KEY, null);
+                String oldPictureUrl = settings.getString(ACCOUNT_PICTURE_URL, null);
+                String oldFriends = settings.getString(ACCOUNT_FRIENDS, null);
+                String newFriends = new JSONArray(Arrays.asList(friends)).toString();
+                if (!name.equals(oldName)) query.put("name", name);
+                if (!profilePictureUrl.equals(oldPictureUrl))
+                    query.put("pictureUrl", profilePictureUrl);
                 /*if(!newFriends.equals(oldFriends)) {
                     // Get corresponding friend ids
                     dataServer.sendRequest(
@@ -304,7 +318,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void pushUpdatedDataToServer(final int userId, final String userToken, Map<String, String> query){
+    private void pushUpdatedDataToServer(final int userId, final String userToken, Map<String, String> query) {
         dataServer.sendRequest(ServerCommand.UPDATE_ACCOUNT, query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
@@ -376,8 +390,8 @@ public class MainActivity extends AppCompatActivity {
                 new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
-                    try {
-                        JSONObject result = new JSONObject(data);
+                try {
+                    JSONObject result = new JSONObject(data);
                         registerAccount(name, pictureUrl, new JSONArray(result.getString("friends")), Long.parseLong(facebookToken.getUserId()));
                     } catch (JSONException e) {
                         showToast(R.string.register_failed);
@@ -478,10 +492,52 @@ public class MainActivity extends AppCompatActivity {
      */
     public void mainButtonPressed(View view) {
         EditText nameBox = (EditText) findViewById(R.id.name_entry);
-        if(accountRegistered)
-            startActivity(new Intent(this, LobbyActivity.class));// Account registered => start is pressed => Show lobby
-        else
+        if(!accountRegistered)
             registerAccount(nameBox.getText().toString(), "", null, null);// Account not registered => register is pressed => Register
+        else{
+            // Check if gps is enabled
+            LocationManager manager = (LocationManager) getSystemService( Context.LOCATION_SERVICE );
+
+            if ( !manager.isProviderEnabled( LocationManager.GPS_PROVIDER ) ) {
+                buildAlertMessageNoGps();
+            }
+            startActivity(new Intent(this, LobbyActivity.class));// Account registered => start is pressed => Show lobby
+        }
     }
 
+    // Source from http://stackoverflow.com/questions/843675/how-do-i-find-out-if-the-gps-of-an-android-device-is-enabled
+    private void buildAlertMessageNoGps() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Your GPS seems to be disabled, do you want to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
+    private void buildAlertMessageNoInternet() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("You doesn't seem to be connected to the internet, do you want to connect?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(@SuppressWarnings("unused") final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
+    }
 }

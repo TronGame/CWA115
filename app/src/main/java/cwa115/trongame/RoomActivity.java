@@ -96,8 +96,8 @@ public class RoomActivity extends AppCompatActivity
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
             if (GameSettings.getUserId() == GameSettings.getOwner()){
-                String query = "deleteGame?token=" + GameSettings.getGameToken() + "&id="+ GameSettings.getGameId();
-                dataServer.sendRequest(query, new HttpConnector.Callback() {
+                Map<String, String> query = ImmutableMap.of("token", GameSettings.getGameToken(), "id", String.valueOf(GameSettings.getGameId()));
+                dataServer.sendRequest(ServerCommand.DELETE_GAME, query, new HttpConnector.Callback() {
                     @Override
                     public void handleResult(String data) {}
                 });
@@ -125,44 +125,34 @@ public class RoomActivity extends AppCompatActivity
                             return;
                         }
                         JSONArray players = result.getJSONArray("players");
+                        boolean containsSelf = false;
                         for (int i = 0; i < players.length(); i++) {
                             JSONObject player = players.getJSONObject(i);
-                            listOfPlayerNames.add(new RoomListItem(player.getString("name"), listOfColors.get(i), player.getInt("id")));
+                            int playerId = player.getInt("id");
+                            listOfPlayerNames.add(new RoomListItem(
+                                    player.getString("name"), listOfColors.get(i), playerId
+                            ));
+                            containsSelf = containsSelf || (playerId == GameSettings.getUserId());
                         }
+                        if (!containsSelf) {
+                            safeExit();
+                        }
+                        ListView lobbyList = (ListView) findViewById(R.id.room_list);
+                        RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
+                        lobbyList.setAdapter(adapter);
+                        lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
+                                RoomListItem clickedItem = listOfPlayerNames.get(position);
+                                selectedPlayerName = clickedItem.getPlayerName();
+                                selectedPlayerId = clickedItem.getPlayerId();
+                                showNoticeDialog();
+                            }
+                        });
                     } catch (JSONException e) {
                         e.printStackTrace();
+                        safeExit(); // Probably game was deleted
                     }
-                    JSONArray players = result.getJSONArray("players");
-                    boolean containsSelf = false;
-                    for (int i = 0; i < players.length(); i++) {
-                        JSONObject player = players.getJSONObject(i);
-                        int playerId = player.getInt("id");
-                        listOfPlayerNames.add(new RoomListItem(
-                                player.getString("name"), listOfColors.get(i), playerId
-                        ));
-                        containsSelf = containsSelf || (playerId == GameSettings.getUserId());
-                    }
-                    if(!containsSelf) {
-                        safeExit();
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    safeExit(); // Probably game was deleted
                 }
-                ListView lobbyList = (ListView) findViewById(R.id.room_list);
-                RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
-                lobbyList.setAdapter(adapter);
-
-                lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
-                        RoomListItem clickedItem = listOfPlayerNames.get(position);
-                        selectedPlayerName= clickedItem.getPlayerName();
-                        selectedPlayerId=clickedItem.getPlayerId();
-                        showNoticeDialog();
-                    }
-                });
-            }
         });
 
     }
