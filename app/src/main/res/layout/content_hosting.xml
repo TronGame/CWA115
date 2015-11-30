@@ -41,15 +41,12 @@
         android:textColor="@color/basicBlack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="50dp"
-        android:layout_marginEnd="50dp"
         android:hint="1"
         android:textSize="25sp"
+        android:id="@+id/maxPlayers"
         android:layout_alignTop="@+id/textView"
         android:layout_alignRight="@+id/game_name"
-        android:layout_alignEnd="@+id/game_name"
-        android:id="@+id/maxPlayers"
-        />
+        android:layout_alignEnd="@+id/game_name" />
 
     <TextView
         android:textColor="@color/basicBlack"
@@ -58,7 +55,8 @@
         android:text="@string/item_wall_breaker"
         android:textSize="25sp"
         android:id="@+id/textView5"
-        android:layout_below="@+id/maxPlayers"
+        android:layout_below="@+id/textView"
+        android:layout_marginTop="10dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
     <CheckBox
@@ -78,6 +76,26 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:background="@drawable/rounded_button_blue"
-        android:padding="5dp"/>
+        android:padding="5dp"
+        android:id="@+id/button2" />
 
+     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/timeLimit"
+        android:textSize="25sp"
+        android:textColor="@color/basicBlack"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/textView5"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/time_limit"/>
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="@string/unlimited"
+        android:layout_alignTop="@+id/time_limit"
+        android:layout_alignRight="@+id/checkBoxWallBreaker"
+        android:layout_alignEnd="@+id/checkBoxWallBreaker"
+        android:inputType="number" />
 </RelativeLayout>

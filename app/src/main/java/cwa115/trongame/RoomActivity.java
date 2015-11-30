@@ -139,7 +139,7 @@ public class RoomActivity extends AppCompatActivity
         // Create an instance of the dialog fragment and show it
         DialogFragment dialog = new PopUp();
         Bundle bundle = new Bundle();
-        bundle.putString(PopUp.BUNDLE_MESSAGE_KEY, "Do you want to kick"+ selectedPlayerName);
+        bundle.putString(PopUp.BUNDLE_MESSAGE_KEY, getString(R.string.kickRequest) + selectedPlayerName + "?");
         dialog.setArguments(bundle);
         dialog.show(getSupportFragmentManager(), "NoticeDialogFragment");
     }
@@ -157,7 +157,7 @@ public class RoomActivity extends AppCompatActivity
             public void handleResult(String data) {
                 try {
                     JSONObject result = new JSONObject(data);
-                    if (result.getBoolean("succes")) {
+                    if (result.getBoolean("success")) {
                         Toast.makeText(getBaseContext(), getString(R.string.playerKickSucceed), Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(getBaseContext(), getString(R.string.playerKickFail), Toast.LENGTH_SHORT).show();

@@ -49,6 +49,7 @@ public class HostingActivity extends AppCompatActivity {
                     GameSettings.setGameName(gameName);
                     GameSettings.setOwnerId(GameSettings.getUserId());
                     GameSettings.setCanBreakWall(canBreakWalls);
+                    GameSettings.setTimelimit(getTimeLimit());
                     joinOwnGame();
                 } catch(JSONException e) {
                     Toast.makeText(
@@ -80,5 +81,13 @@ public class HostingActivity extends AppCompatActivity {
         else
             return Integer.parseInt(maxPlayers);
 
+    }
+    private int getTimeLimit(){
+        EditText editTimeLimit = (EditText) findViewById(R.id.time_limit);
+        String timeLimit = editTimeLimit.getText().toString();
+        if (timeLimit.length() == 0)
+            return -1;
+        else
+            return Integer.parseInt(timeLimit);
     }
 }

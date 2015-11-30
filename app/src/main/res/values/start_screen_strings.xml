@@ -29,4 +29,7 @@
     <string name="playerKickSucceed">The player was successfully kicked</string>
     <string name="playerKickFail">The player could not be kicked</string>
     <string name="leave_game">Leave</string>
+    <string name="timeLimit">Time limit (min.)</string>
+    <string name="kickRequest">Do you want to kick </string>
+    <string name="unlimited">unlimited</string>
 </resources>

@@ -20,7 +20,7 @@ public final class GameSettings {
     private static String gameName;
     private static int maxPlayers;
     private static boolean canBreakWall;
-
+    private static int timelimit;
     private static List<Integer> playersInGame;
     private static int[] friends;
     
@@ -161,4 +161,12 @@ public final class GameSettings {
     public static boolean getCanBreakWall(){
         return canBreakWall;
     }
+
+    public static void setTimelimit(int minutes){
+        timelimit=minutes;
+    }
+    public static int getTimelimit(){
+        return timelimit;
+    }
 }
+
