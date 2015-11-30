@@ -35,7 +35,6 @@ public class LobbyActivity extends AppCompatActivity {
 
     final static int GAME_LIST_REFRESH_TIME = 1000;
 
-    private String dataToPut;
     private HttpConnector dataServer;
     private HashMap<String,Integer> roomIds;
     private Timer gameListUpdater;
