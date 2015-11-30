@@ -13,7 +13,7 @@ import cwa115.trongame.Profile;
  */
 public final class GameSettings {
 
-    private static Profile profile = Profile.PROFILE_EMPTY;
+    private static Profile profile;
     private static int playerMarkerImage;
     private static int wallColor;
     private static int ownerId;

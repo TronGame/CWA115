@@ -32,8 +32,6 @@ public class Profile {
     public final static String SERVER_FRIENDS_PARAM = "friends";
     public final static String SERVER_FACEBOOK_ID_PARAM = "facebookId";
 
-    public final static Profile PROFILE_EMPTY = new Profile();
-
     private Integer Id;
     private Long FacebookId;
     private String Token, Name, PictureUrl;
