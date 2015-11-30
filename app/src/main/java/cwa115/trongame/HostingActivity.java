@@ -8,11 +8,16 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Map;
+
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Network.HttpConnector;
+import cwa115.trongame.Network.ServerCommand;
 
 public class HostingActivity extends AppCompatActivity {
 
@@ -32,41 +37,43 @@ public class HostingActivity extends AppCompatActivity {
         GameSettings.setMaxPlayers(maxPlayers);
         CheckBox breakWallBox = (CheckBox) findViewById(R.id.checkBoxWallBreaker);
         final boolean canBreakWalls = breakWallBox.isChecked();
-        final String query =
-                "insertGame?owner="
-                + Integer.toString(GameSettings.getUserId())
-                + "&name=" + gameName
-                + "&token=" + GameSettings.getPlayerToken()
-                + "&maxPlayers=" + Integer.toString(maxPlayers)
-                + "&canBreakWall="+ (canBreakWalls ? "1" : "0");
-        dataServer.sendRequest(query, new HttpConnector.Callback() {
-            @Override
-            public void handleResult(String data) {
-                try {
-                    JSONObject result = new JSONObject(data);
-                    GameSettings.setGameToken(result.getString("token"));
-                    GameSettings.setGameId(result.getInt("id"));
-                    GameSettings.setGameName(gameName);
-                    GameSettings.setOwnerId(GameSettings.getUserId());
-                    GameSettings.setCanBreakWall(canBreakWalls);
-                    GameSettings.setTimelimit(getTimeLimit());
-                    joinOwnGame();
-                } catch(JSONException e) {
-                    Toast.makeText(
-                            getBaseContext(), getString(R.string.hosting_failed),
-                            Toast.LENGTH_SHORT
-                    ).show();
+        Map<String, String> query = ImmutableMap.of(
+                "owner", Integer.toString(GameSettings.getUserId()),
+                "name", gameName,
+                "token", GameSettings.getPlayerToken(),
+                "maxPlayers", Integer.toString(maxPlayers),
+                "canBreakWall", (canBreakWalls ? "1" : "0"));
+        dataServer.sendRequest(
+                ServerCommand.INSERT_GAME,
+                query,
+                new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    try {
+                        JSONObject result = new JSONObject(data);
+                        GameSettings.setGameToken(result.getString("token"));
+                        GameSettings.setGameId(result.getInt("id"));
+                        GameSettings.setGameName(gameName);
+                        GameSettings.setOwnerId(GameSettings.getUserId());
+                        GameSettings.setCanBreakWall(canBreakWalls);
+                        joinOwnGame();
+                    } catch (JSONException e) {
+                        Toast.makeText(
+                                getBaseContext(), getString(R.string.hosting_failed),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
                 }
-            }
         });
 
     }
 
     private void joinOwnGame(){
-        String dataToSend = "joinGame?gameId=" + Integer.toString(GameSettings.getGameId())
-                +"&id="+ Integer.toString(GameSettings.getUserId())
-                +"&token="+GameSettings.getPlayerToken();
-        dataServer.sendRequest(dataToSend, new HttpConnector.Callback() {
+        Map<String, String> dataToSend = ImmutableMap.of(
+                "gameId", Integer.toString(GameSettings.getGameId()),
+                "id", Integer.toString(GameSettings.getUserId()),
+                "token", GameSettings.getPlayerToken());
+        dataServer.sendRequest(ServerCommand.JOIN_GAME, dataToSend, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 startActivity(new Intent(HostingActivity.this, RoomActivity.class));

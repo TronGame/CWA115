@@ -1,16 +1,28 @@
 package cwa115.trongame.Network;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Allows asynchronous HTTP requests which return application/json data.
@@ -77,9 +89,19 @@ public class HttpConnector {
         this.serverUrl = serverUrl;
     }
 
-    public void sendRequest(String parameters, final Callback callback) {
+    public void sendRequest(ServerCommand command, Map<String, String> queryParams, final Callback callback) {
         try {
-            URL requestUrl = new URL(serverUrl + parameters);
+            String query = "";
+            if(queryParams!=null && queryParams.size()>0) {
+                Map<String, String> encodedQueryParams = Maps.transformValues(queryParams, new Function<String, String>() {
+                    @Override
+                    public String apply(String input) {
+                        return Uri.encode(input);
+                    }
+                });
+                query = "?" + Joiner.on("&").withKeyValueSeparator("=").join(encodedQueryParams);
+            }
+            URL requestUrl = new URL(serverUrl + command.getValue() + query);
             new HTTPRequestTask(new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
@@ -89,7 +111,7 @@ public class HttpConnector {
                 }
             }).execute(requestUrl);
         } catch(MalformedURLException e) {
-
+            e.printStackTrace();
         }
     }
 

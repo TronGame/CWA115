@@ -21,6 +21,7 @@
     <string name="account_deleted">Account deleted.</string>
     <string name="delete_failed">"Could not delete account.</string>
     <string name="hosting_failed">Could not create new game.</string>
+    <string name="update_failed">Could not update userdata.</string>
     <string name="welcome_message">Welcome back %1$s!</string>
     <string name="delete_account">Delete account</string>
     <string name="or">OR</string>

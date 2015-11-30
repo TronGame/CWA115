@@ -15,12 +15,17 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.games.Game;
+import com.google.android.gms.games.Games;
+import com.google.common.collect.ImmutableMap;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -28,6 +33,7 @@ import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Lists.RoomCustomAdapter;
 import cwa115.trongame.Lists.RoomListItem;
 import cwa115.trongame.Network.HttpConnector;
+import cwa115.trongame.Network.ServerCommand;
 import cwa115.trongame.PopUp.PopUp;
 
 public class RoomActivity extends AppCompatActivity
@@ -110,18 +116,27 @@ public class RoomActivity extends AppCompatActivity
 
     public void listPlayers(){
 
-        String query = "showGame?gameId=" + GameSettings.getGameId();
-
-        dataServer.sendRequest(query, new HttpConnector.Callback() {
-            @Override
-            public void handleResult(String data) {
-                final List<RoomListItem> listOfPlayerNames = new ArrayList<>();
-                try {
-                    JSONObject result = new JSONObject(data);
-                    if(result.getBoolean("hasStarted")) {
-                        roomUpdater.cancel();
-                        gameReady(null);
-                        return;
+        dataServer.sendRequest(
+                ServerCommand.SHOW_GAME,
+                ImmutableMap.of("gameId", String.valueOf(GameSettings.getGameId())),
+                new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    final List<RoomListItem> listOfPlayerNames = new ArrayList<>();
+                    try {
+                        JSONObject result = new JSONObject(data);
+                        if (result.getBoolean("hasStarted")) {
+                            roomUpdater.cancel();
+                            gameReady(null);
+                            return;
+                        }
+                        JSONArray players = result.getJSONArray("players");
+                        for (int i = 0; i < players.length(); i++) {
+                            JSONObject player = players.getJSONObject(i);
+                            listOfPlayerNames.add(new RoomListItem(player.getString("name"), listOfColors.get(i), player.getInt("id")));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                     JSONArray players = result.getJSONArray("players");
                     boolean containsSelf = false;
@@ -188,9 +203,12 @@ public class RoomActivity extends AppCompatActivity
     @Override
     public void onDialogPositiveClick(DialogFragment dialog) {
         // User touched the dialog's positive button
-        String query = "kickPlayer?playerId=" + Integer.toString(selectedPlayerId) + "&gameId="+ GameSettings.getGameId() +"&token=" + GameSettings.getGameToken() ;
+        Map<String, String> query = ImmutableMap.of(
+                "playerId", Integer.toString(selectedPlayerId),
+                "gameId", String.valueOf(GameSettings.getGameId()),
+                "token", GameSettings.getGameToken());
 
-        dataServer.sendRequest(query, new HttpConnector.Callback() {
+        dataServer.sendRequest(ServerCommand.KICK_PLAYER, query, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 try {
@@ -213,43 +231,46 @@ public class RoomActivity extends AppCompatActivity
 
     public void gameReady(View view) {
 
-        String query = "showGame?gameId=" + GameSettings.getGameId();
+        dataServer.sendRequest(
+                ServerCommand.SHOW_GAME,
+                ImmutableMap.of("gameId", String.valueOf(GameSettings.getGameId())),
+                new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    try {
+                        JSONObject result = new JSONObject(data);
+                        JSONArray players = result.getJSONArray("players");
+                        List<Integer> listOfPlayerIds = new ArrayList<>();
+                        for (int i = 0; i < players.length(); i++) {
+                            JSONObject player = players.getJSONObject(i);
+                            listOfPlayerIds.add(player.getInt("id"));
+                            // TODO make sure that this happens more reliably (the server might have to store player color as well?)
+                            if (player.getInt("id") == GameSettings.getUserId())
+                                GameSettings.setWallColor(listOfColors.get(i));
+                        }
+                        GameSettings.setPlayersInGame(listOfPlayerIds);
+                        startGame();
+                        showGameActivity();
 
-        dataServer.sendRequest(query, new HttpConnector.Callback() {
-            @Override
-            public void handleResult(String data) {
-                try {
-                    JSONObject result = new JSONObject(data);
-                    JSONArray players = result.getJSONArray("players");
-                    List<Integer> listOfPlayerIds = new ArrayList<>();
-                    for (int i = 0; i < players.length(); i++) {
-                        JSONObject player = players.getJSONObject(i);
-                        listOfPlayerIds.add(player.getInt("id"));
-                        // TODO make sure that this happens more reliably (the server might have to store player color as well?)
-                        if (player.getInt("id") == GameSettings.getUserId())
-                            GameSettings.setWallColor(listOfColors.get(i));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
-                    GameSettings.setPlayersInGame(listOfPlayerIds);
-                    startGame();
-                    showGameActivity();
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 }
-            }
         });
     }
 
     private void startGame() {
-        String query = "startGame?token=" + GameSettings.getGameToken();
         roomUpdater.cancel();
 
-        dataServer.sendRequest(query, new HttpConnector.Callback() {
-            @Override
-            public void handleResult(String data) {
-                // TODO check for errors
-                showGameActivity();
-            }
+        dataServer.sendRequest(
+                ServerCommand.START_GAME,
+                ImmutableMap.of("token", GameSettings.getGameToken()),
+                new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    // TODO check for errors
+                    showGameActivity();
+                }
         });
     }
 
