@@ -102,13 +102,7 @@ public class RoomActivity extends AppCompatActivity
                     public void handleResult(String data) {}
                 });
             }
-            GameSettings.setGameId(0);
-            GameSettings.setGameName(null);
-            GameSettings.setGameToken(null);
-            GameSettings.setOwnerId(0);
-            GameSettings.setCanBreakWall(false);
-            GameSettings.setTimelimit(-1);
-            finish();
+            safeExit();
             return true;
         }
         return super.onKeyUp(keyCode, event);
@@ -149,11 +143,12 @@ public class RoomActivity extends AppCompatActivity
                         containsSelf = containsSelf || (playerId == GameSettings.getUserId());
                     }
                     if(!containsSelf) {
-                        finish();
+                        safeExit();
                     }
 
                 } catch (JSONException e) {
                     e.printStackTrace();
+                    safeExit(); // Probably game was deleted
                 }
                 ListView lobbyList = (ListView) findViewById(R.id.room_list);
                 RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
@@ -170,6 +165,16 @@ public class RoomActivity extends AppCompatActivity
             }
         });
 
+    }
+
+    public void safeExit() {
+        GameSettings.setGameId(0);
+        GameSettings.setGameName(null);
+        GameSettings.setGameToken(null);
+        GameSettings.setOwnerId(0);
+        GameSettings.setCanBreakWall(false);
+        GameSettings.setTimelimit(-1);
+        finish();
     }
 
     public List<Integer> colorListMaker() {
