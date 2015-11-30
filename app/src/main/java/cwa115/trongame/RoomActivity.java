@@ -15,13 +15,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.games.Game;
-import com.google.android.gms.games.Games;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,10 +117,19 @@ public class RoomActivity extends AppCompatActivity
                         return;
                     }
                     JSONArray players = result.getJSONArray("players");
+                    boolean containsSelf = false;
                     for (int i = 0; i < players.length(); i++) {
                         JSONObject player = players.getJSONObject(i);
-                        listOfPlayerNames.add(new RoomListItem(player.getString("name"), listOfColors.get(i), player.getInt("id") ));
+                        int playerId = player.getInt("id");
+                        listOfPlayerNames.add(new RoomListItem(
+                                player.getString("name"), listOfColors.get(i), playerId
+                        ));
+                        containsSelf = containsSelf || (playerId == GameSettings.getUserId());
                     }
+                    if(!containsSelf) {
+                        finish();
+                    }
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
