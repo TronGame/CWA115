@@ -65,7 +65,7 @@ public class LobbyActivity extends AppCompatActivity {
 
     @Override
     protected void onResume(){
-        super.onStart();
+        super.onResume();
         gameListUpdater.scheduleAtFixedRate(timerTask, 0, GAME_LIST_REFRESH_TIME);
     }
 
