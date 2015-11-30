@@ -47,7 +47,9 @@ public enum ServerCommand {
 
     LIST_GAMES("listGames"),
 
-    KICK_PLAYER("kickPlayer");
+    KICK_PLAYER("kickPlayer"),
+
+    SCOREBOARD("scoreboard");
 
     private final String command;
     ServerCommand(String command) { this.command = command; }

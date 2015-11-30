@@ -33,4 +33,6 @@
     <string name="timeLimit">Time limit (min.)</string>
     <string name="kickRequest">Do you want to kick </string>
     <string name="unlimited">unlimited</string>
+    <string name="title_activity_score_board_actyvity">ScoreBoardActvity</string>
+    <string name="showScoreboard">Scoreboard</string>
 </resources>
