@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -38,6 +39,7 @@ public class LobbyActivity extends AppCompatActivity {
     private Timer gameListUpdater;
     private Handler gameListHandler;
     private List<LobbyListItem> listOfRooms;
+    private TimerTask timerTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +47,7 @@ public class LobbyActivity extends AppCompatActivity {
         setContentView(R.layout.activity_lobby);
         ListView lobbyList = (ListView) findViewById(R.id.mainList);
         lobbyList.setClickable(true);
+        listGames();
         gameListUpdater = new Timer();
         gameListHandler = new Handler() {
             @Override
@@ -52,14 +55,38 @@ public class LobbyActivity extends AppCompatActivity {
                 listGames();
             }
         };
-        gameListUpdater.scheduleAtFixedRate(new TimerTask() {
+        timerTask = new TimerTask() {
             public void run() {
                 gameListHandler.sendMessage(new Message());
             }
-        }, 0, GAME_LIST_REFRESH_TIME);
-        listGames();
+        };
     }
 
+
+    @Override
+    protected void onResume(){
+        super.onStart();
+        gameListUpdater.scheduleAtFixedRate(timerTask, 0, GAME_LIST_REFRESH_TIME);
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        gameListUpdater.cancel();
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            super.onStop();
+            GameSettings.setPlayerName(null);
+            GameSettings.setPlayerToken(null);
+            GameSettings.setUserId(0);
+            finish();
+            return true;
+        }
+        return super.onKeyUp(keyCode, event);
+    }
     private void listGames() {
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
         dataServer.sendRequest("listGames", new HttpConnector.Callback() {
