@@ -89,6 +89,13 @@ public class RoomActivity extends AppCompatActivity
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (GameSettings.getUserId() == GameSettings.getOwner()){
+                String query = "deleteGame?token=" + GameSettings.getGameToken() + "&idd="+ GameSettings.getGameId();
+                dataServer.sendRequest(query, new HttpConnector.Callback() {
+                    @Override
+                    public void handleResult(String data) {}
+                });
+            }
             GameSettings.setGameId(0);
             GameSettings.setGameName(null);
             GameSettings.setGameToken(null);
