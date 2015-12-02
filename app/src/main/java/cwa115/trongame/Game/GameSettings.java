@@ -5,7 +5,9 @@ import org.json.JSONArray;
 import java.util.List;
 import java.util.UUID;
 
+import cwa115.trongame.FriendList;
 import cwa115.trongame.Profile;
+import cwa115.trongame.Utils.DrawableManager;
 
 /**
  * Singleton to manage the settings of the current game.
@@ -24,6 +26,7 @@ public final class GameSettings {
     private static boolean canBreakWall;
     private static int timelimit;
     private static List<Integer> playersInGame;
+    public static DrawableManager drawableCache;
 
     /**
      * Sets the profile of the player.
@@ -163,9 +166,9 @@ public final class GameSettings {
         playersInGame.add(playerId);
     }
 
-    public static void setFriends(JSONArray playerFriends){ profile.setFriends(playerFriends); }
+    public static void setFriends(FriendList playerFriends){ profile.setFriends(playerFriends); }
 
-    public static JSONArray getFriends(){ return profile.getFriends(); }
+    public static FriendList getFriends(){ return profile.getFriends(); }
 
     public static void setCanBreakWall(boolean bool){
         canBreakWall=bool;

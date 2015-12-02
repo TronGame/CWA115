@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -45,11 +46,13 @@ import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Network.FacebookRequest;
 import cwa115.trongame.Network.HttpConnector;
 import cwa115.trongame.Network.ServerCommand;
+import cwa115.trongame.Utils.DrawableManager;
 
 public class MainActivity extends AppCompatActivity {
 
     private final static int LOGIN_HOME = 0;
     private final static int LOGIN_WELCOME = 1;
+    private final static int PROFILE_REQUEST_CODE = 1;
 
     private CallbackManager callbackManager;
     private AccessToken facebookToken;
@@ -59,7 +62,8 @@ public class MainActivity extends AppCompatActivity {
     private boolean accountRegistered;
 
     private ViewFlipper loginViewFlipper;
-    private Button mainButton, deleteButton;
+    private LinearLayout profileControlFooter;
+    private Button mainButton;
     private TextView loginWelcomeTextView;
 
     private ConnectivityManager connectivityManager;
@@ -93,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         // Create reference to important UI-elements
         loginViewFlipper = (ViewFlipper)findViewById(R.id.login_view_flipper);
         mainButton = (Button)findViewById(R.id.main_button);
-        deleteButton = (Button)findViewById(R.id.delete_button);
+        profileControlFooter = (LinearLayout)findViewById(R.id.profileControlFooter);
         loginWelcomeTextView = (TextView)findViewById(R.id.login_welcome_textview);
 
         // Load managers
@@ -123,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             // If a user is signed in, show welcome view, otherwise show login view
             Profile localProfile = Profile.Load(settings);
             if (localProfile.getId()!=null && localProfile.getToken()!=null)
-                showWelcomeView(true);
+                showWelcomeView(true, true);
             else
                 showLoginView();
         }
@@ -156,12 +160,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        callbackManager.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==PROFILE_REQUEST_CODE){
+            if(resultCode==RESULT_OK){
+                // Do something with returned data
+            }
+        }else
+            callbackManager.onActivityResult(requestCode, resultCode, data);
     }
     //endregion
 
     //region UI-control
-    private void showWelcomeView(boolean updateUserData) {
+    private void showWelcomeView(boolean updateUserData, boolean updateFacebookData) {
         // User is already registered
         accountRegistered = true;
         facebookToken = AccessToken.getCurrentAccessToken();
@@ -173,11 +182,20 @@ public class MainActivity extends AppCompatActivity {
         GameSettings.setProfile(localProfile);
 
         // Update current userdata if requested
-        if(updateUserData){
+        if(updateUserData && updateFacebookData){
             if(isFacebookUser())
-                updateFacebookUserData(localProfile);// updateFacebookUserData will automatically call updateServerUserData
+                updateServerUserData(localProfile, true);
             else
-                updateServerUserData(localProfile);
+                updateServerUserData(localProfile, false);
+            Log.d("UPDATE_PROFILE","GetServerData1");
+            return;
+        }else if(updateFacebookData){
+            updateFacebookUserData(localProfile);// updateFacebookUserData will automatically call updateServerUserData
+            Log.d("UPDATE_PROFILE","GetFacebookData");
+            return;
+        }else if(updateUserData){
+            updateServerUserData(localProfile, false);
+            Log.d("UPDATE_PROFILE","GetServerData2");
             return;
         }
 
@@ -186,7 +204,12 @@ public class MainActivity extends AppCompatActivity {
         loginWelcomeTextView.setText(String.format(getString(R.string.welcome_message), localProfile.getName()));
         mainButton.setText(getString(R.string.start));
         mainButton.setTextSize(60);
-        deleteButton.setVisibility(View.VISIBLE);
+        profileControlFooter.setVisibility(View.VISIBLE);
+
+        // TODO: check the correctness of the token
+
+        // Store userdata in GameSettings
+        GameSettings.drawableCache = new DrawableManager(5);
     }
 
     private void showLoginView() {
@@ -196,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
         // Update UI
         mainButton.setText(getString(R.string.register));
         mainButton.setTextSize(40);
-        deleteButton.setVisibility(View.GONE);
+        profileControlFooter.setVisibility(View.GONE);
         loginViewFlipper.setDisplayedChild(LOGIN_HOME);
 
         // Enable facebook login
@@ -253,45 +276,68 @@ public class MainActivity extends AppCompatActivity {
         FacebookRequest.sendRequest(facebookToken, new FacebookRequest.Callback() {
             @Override
             public void handleResult(final Profile newProfile) {
-                localProfile.Update(newProfile);
-                // localProfile is now updated, BUT contains FACEBOOK-userids instead of SERVER-userids:
-                if (newProfile.getFriends().length() > 0) {
+                // newProfile contains FACEBOOK-userids instead of SERVER-userids:
+                if(newProfile.getFriends().size()>0){
                     // Get corresponding friend ids
                     dataServer.sendRequest(
                             ServerCommand.GET_FRIEND_IDS,
-                            ImmutableMap.of("facebookIds", newProfile.getFriends().toString()),
+                            ImmutableMap.of("facebookIds", new JSONArray(newProfile.getFriends().ToIdList()).toString()),
                             new HttpConnector.Callback() {
                                 @Override
                                 public void handleResult(String data) {
                                     try {
                                         JSONObject result = new JSONObject(data);
-                                        localProfile.setFriends(new JSONArray(result.getString("friends")));
-                                        pushUpdatedDataToServer(localProfile, localProfile.GetQuery());
-                                    } catch (JSONException e) {
+                                        newProfile.setFriends(new FriendList(result.getString("friends")));
+                                        Profile dataToUpdate = Profile.GetUpdatedData(localProfile, newProfile);
+                                        pushUpdatedDataToServer(localProfile, dataToUpdate);
+                                    }catch(JSONException e){
                                         showToast(R.string.update_failed);
                                     }
                                 }
                             });
-                } else
-                    pushUpdatedDataToServer(localProfile, localProfile.GetQuery());
+                }else {
+                    Profile dataToUpdate = Profile.GetUpdatedData(localProfile, newProfile);
+                    pushUpdatedDataToServer(localProfile, dataToUpdate);
+                }
             }
         });
     }
 
-    private void pushUpdatedDataToServer(final Profile localProfile, Map<String, String> query) {
-        dataServer.sendRequest(ServerCommand.UPDATE_ACCOUNT, query, new HttpConnector.Callback() {
-            @Override
-            public void handleResult(String data) {
-                try {
-                    JSONObject result = new JSONObject(data);
-                    if (result.getBoolean("success"))
-                        updateServerUserData(localProfile);
-                    else
+    private void pushUpdatedDataToServer(final Profile localProfile, final Profile dataToUpdate) {
+        // The Id and token can't change, so put them in dataToUpdate so a proper query can be created
+        dataToUpdate.setId(localProfile.getId());
+        dataToUpdate.setToken(localProfile.getToken());
+        dataServer.sendRequest(
+                ServerCommand.UPDATE_ACCOUNT,
+                dataToUpdate.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM, Profile.SERVER_NAME_PARAM, Profile.SERVER_PICTURE_URL_PARAM),
+                new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    try {
+                        JSONObject result = new JSONObject(data);
+                        if (result.getBoolean("success")) {
+                            if(dataToUpdate.getFriends()!=null) {
+                                // Also add new friends:
+                                Map<String, String> query = dataToUpdate.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM, Profile.SERVER_FRIENDS_PARAM);
+                                query.put("accepted", "1");
+                                dataServer.sendRequest(
+                                        ServerCommand.ADD_FRIENDS,
+                                        query,
+                                        new HttpConnector.Callback() {
+                                            @Override
+                                            public void handleResult(String data) {
+                                                updateServerUserData(localProfile, false);
+                                            }
+                                        }
+                                );
+                            }else
+                                updateServerUserData(localProfile, false);
+                        }else
+                            showToast(R.string.update_failed);
+                    } catch (JSONException e) {
                         showToast(R.string.update_failed);
-                } catch (JSONException e) {
-                    showToast(R.string.update_failed);
+                    }
                 }
-            }
         });
     }
 
@@ -300,7 +346,7 @@ public class MainActivity extends AppCompatActivity {
      * is collected, it'll show the welcome view to the user.
      * @param localProfile Profile of the user whose data will be downloaded
      */
-    private void updateServerUserData(Profile localProfile){
+    private void updateServerUserData(Profile localProfile, final boolean updateFacebookAfterwards){
         dataServer.sendRequest(
                 ServerCommand.SHOW_ACCOUNT,
                 localProfile.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM),
@@ -315,7 +361,7 @@ public class MainActivity extends AppCompatActivity {
                                         result.getString("pictureUrl"),
                                         result.getJSONArray("friends")
                                 ).Store(settings);
-                                showWelcomeView(false);// Update UI
+                                showWelcomeView(false, updateFacebookAfterwards);// Update UI
                             } else {
                                 // User was not found on server
                                 showToast("Profile not found.");
@@ -343,13 +389,13 @@ public class MainActivity extends AppCompatActivity {
         // First receive userIds of friends based on their facebookIds:
         dataServer.sendRequest(
                 ServerCommand.GET_FRIEND_IDS,
-                ImmutableMap.of("facebookIds", facebookProfile.getFriends().toString()),
+                ImmutableMap.of("facebookIds", new JSONArray(facebookProfile.getFriends().ToIdList()).toString()),
                 new HttpConnector.Callback() {
                 @Override
                 public void handleResult(String data) {
                     try {
                         JSONObject result = new JSONObject(data);
-                        facebookProfile.setFriends(new JSONArray(result.getString("friends")));
+                        facebookProfile.setFriends(new FriendList(result.getString("friends")));
                         registerAccount(facebookProfile);
                     } catch (JSONException e) {
                         showToast(R.string.register_failed);
@@ -378,7 +424,7 @@ public class MainActivity extends AppCompatActivity {
                         profile.setToken(result.getString("token"));
                         profile.Store(settings);
                         showToast(R.string.account_created);
-                        showWelcomeView(false);
+                        showWelcomeView(false, false);
                     }
                 } catch(JSONException e) {
                     showToast(R.string.register_failed);
@@ -426,6 +472,16 @@ public class MainActivity extends AppCompatActivity {
             else
                 startActivity(new Intent(this, LobbyActivity.class));// Account registered => start is pressed => Show lobby
         }
+    }
+
+    public void showProfile(View view){
+        Bundle data = new Bundle();
+        data.putParcelable(ProfileActivity.PROFILE_EXTRA, GameSettings.getProfile());
+
+        Intent intent = new Intent(this, ProfileActivity.class);
+        intent.putExtra(ProfileActivity.DATA_EXTRA, data);
+
+        startActivityForResult(intent, PROFILE_REQUEST_CODE);
     }
 
     public void resetAccountSettings(View view) {

@@ -49,9 +49,31 @@ public enum ServerCommand {
 
     KICK_PLAYER("kickPlayer"),
 
-    END_GAME("endGame"),
+    SCOREBOARD("scoreboard"),
 
-    SCOREBOARD("scoreboard");
+    INCREASE_WINS("increaseWins"),
+
+    INCREASE_LOSSES("increaseLosses"),
+
+    INCREASE_COMMON_PLAYS("increaseCommonPlays"),
+
+    SET_HIGHSCORE("setHighscore"),
+
+    SET_PLAYTIME("setPlaytime"),
+
+    ADD_FRIENDS("addFriends"),
+
+    DELETE_FRIEND("deleteFriend"),
+
+    ACCEPT_FRIEND("acceptFriend"),
+
+    ADD_INVITE("addInvite"),
+
+    DELETE_INVITE("deleteInvite"),
+
+    SHOW_INVITES("showInvites"),
+
+    END_GAME("endGame");
 
     private final String command;
     ServerCommand(String command) { this.command = command; }
