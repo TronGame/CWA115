@@ -4,6 +4,8 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -38,6 +40,7 @@ import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
 import cwa115.trongame.Network.SocketIoConnection;
+import cwa115.trongame.Sensor.FrequencyListener;
 import cwa115.trongame.Sensor.HorizontalAccelerationDataHolder;
 import cwa115.trongame.Sensor.SensorDataObservable;
 import cwa115.trongame.Sensor.SensorDataObserver;
@@ -74,6 +77,7 @@ public class GameActivity extends AppCompatActivity implements
     private Map map;                                    // Controls the map view
     private CustomLocationListener locationListener;    // Controls the location tracking
     private SensorDataObservable sensorDataObservable;  // Controls sensor data
+    private FrequencyListener frequencyListener;        // Controls sound detection
 
     // Location snapping
     private SnappedPointHandler snappedPointHandler;    // Controls location snapping
@@ -84,7 +88,10 @@ public class GameActivity extends AppCompatActivity implements
     private LatLng snappedGpsLoc;                       // Snapped location of player
     private double travelledDistance;                   // Distance travelled from the start
     private double height;                              // The last recorded height of the player
+
+    // Sensor data
     private double acceleration;                        // Cumulative acceleration
+    private boolean isBellRinging;                      // Indicates the state of the bell
 
     // Wall data
     private double holeSize = LatLngConversion.meterToLatLngDistance(50);
@@ -148,6 +155,18 @@ public class GameActivity extends AppCompatActivity implements
                 return -1;
             }
         });
+
+        // Sound (bell) detection
+        // -----------------------------------------------------------------------------------------
+        // Initialize frequencyListener
+        frequencyListener = new FrequencyListener(new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message msg) {
+                handleBellDetected();
+                return false;
+            }
+        }), 5500, 1500, 2500, 4096);
+        isBellRinging = false;
 
         // Location tracking
         // -----------------------------------------------------------------------------------------
@@ -485,6 +504,7 @@ public class GameActivity extends AppCompatActivity implements
         super.onPause();
         sensorDataObservable.Pause();           // Pauses the sensor observer
         locationListener.stopLocationUpdate();  // Pauses the lcoation listener
+        frequencyListener.pause();
     }
 
     /**
@@ -494,11 +514,12 @@ public class GameActivity extends AppCompatActivity implements
         super.onResume();
         sensorDataObservable.Resume();          // Resume the sensor observer
         locationListener.startLocationUpdate(); // Start the location listener again
+        frequencyListener.run();
     }
 
     // endregion    
 
-    // region Sensors and Gps tracking
+    // region Sensors (including sound) and Gps tracking
     // ---------------------------------------------------------------------------------------------
 
     /**
@@ -559,6 +580,26 @@ public class GameActivity extends AppCompatActivity implements
     @Override
     public int getCountLimit() {
         return 1;
+    }
+
+    public void handleBellDetected() {
+        // TODO: avoid calling this when the map is not yet ready
+
+        if(isBellRinging)
+            return; // Wait for the bell to stop ringing
+        isBellRinging = true;
+        Player me = (Player)map.getItemById(GameSettings.getPlayerId());
+        me.setCustomMarker(R.mipmap.bell_marker);
+
+        // After 3 seconds, disable the bell.
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Player me = (Player)map.getItemById(GameSettings.getPlayerId());
+                me.resetMarker();
+                isBellRinging = false;
+            }
+        }, 3000);
     }
 
     // endregion

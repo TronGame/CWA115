@@ -60,4 +60,20 @@ public class Player implements DrawableMapItem {
     public String getName() {
         return name;
     }
+
+    /**
+     * Change the player marker image to the resource with the given id.
+     */
+    public void setCustomMarker(int resourceId) {
+        if(marker != null)
+            marker.setIcon(BitmapDescriptorFactory.fromResource(resourceId));
+    }
+
+    /**
+     * Change the player marker to the default marker.
+     */
+    public void resetMarker() {
+        if(marker != null)
+            marker.setIcon(BitmapDescriptorFactory.fromResource(GameSettings.getPlayerMarkerImage()));
+    }
 }
