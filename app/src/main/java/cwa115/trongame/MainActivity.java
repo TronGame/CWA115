@@ -168,6 +168,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Load local stored user settings
         Profile localProfile = Profile.Load(settings);
+        // Store userdata in GameSettings
+        // Might be overridden if the local data turns out be incorrect
+        GameSettings.setProfile(localProfile);
 
         // Update current userdata if requested
         if(updateUserData){
@@ -184,11 +187,6 @@ public class MainActivity extends AppCompatActivity {
         mainButton.setText(getString(R.string.start));
         mainButton.setTextSize(60);
         deleteButton.setVisibility(View.VISIBLE);
-
-        // TODO: check the correctness of the token
-
-        // Store userdata in GameSettings
-        GameSettings.setProfile(localProfile);
     }
 
     private void showLoginView() {
