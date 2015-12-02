@@ -138,14 +138,16 @@ public class RoomActivity extends AppCompatActivity
                         ListView lobbyList = (ListView) findViewById(R.id.room_list);
                         RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
                         lobbyList.setAdapter(adapter);
-                        lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
-                                RoomListItem clickedItem = listOfPlayerNames.get(position);
-                                selectedPlayerName = clickedItem.getPlayerName();
-                                selectedPlayerId = clickedItem.getPlayerId();
-                                showNoticeDialog();
-                            }
-                        });
+                        if(GameSettings.isOwner()) {
+                            lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
+                                    RoomListItem clickedItem = listOfPlayerNames.get(position);
+                                    selectedPlayerName = clickedItem.getPlayerName();
+                                    selectedPlayerId = clickedItem.getPlayerId();
+                                    showNoticeDialog();
+                                }
+                            });
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
                         safeExit(); // Probably game was deleted
@@ -185,7 +187,7 @@ public class RoomActivity extends AppCompatActivity
         // Create an instance of the dialog fragment and show it
         DialogFragment dialog = new PopUp();
         Bundle bundle = new Bundle();
-        bundle.putString(PopUp.BUNDLE_MESSAGE_KEY, getString(R.string.kickRequest) + selectedPlayerName + "?");
+        bundle.putString(PopUp.BUNDLE_MESSAGE_KEY, getString(R.string.kickRequest).format(selectedPlayerName));
         dialog.setArguments(bundle);
         dialog.show(getSupportFragmentManager(), "NoticeDialogFragment");
     }

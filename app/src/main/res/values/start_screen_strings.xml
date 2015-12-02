@@ -31,7 +31,7 @@
     <string name="playerKickFail">The player could not be kicked</string>
     <string name="leave_game">Leave</string>
     <string name="timeLimit">Time limit (min.)</string>
-    <string name="kickRequest">Do you want to kick </string>
+    <string name="kickRequest">Do you want to kick %s ?</string>
     <string name="unlimited">unlimited</string>
     <string name="title_activity_score_board">ScoreBoardActivity</string>
     <string name="showScoreboard">Scoreboard</string>
