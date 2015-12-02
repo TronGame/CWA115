@@ -165,7 +165,7 @@ public class GameActivity extends AppCompatActivity implements
                 handleBellDetected();
                 return false;
             }
-        }), 5500, 1500, 2500, 4096);
+        }), 44100, 1650, 2450, 16384);
         isBellRinging = false;
 
         // Location tracking

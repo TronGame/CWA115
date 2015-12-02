@@ -86,18 +86,22 @@ public class FrequencyListener {
         audio.release();
     }
 
-    private double frequencyToIndex(double frequency, int length) {
-        return frequency *  (1.0 * length) / (1.0 * sampleFrequency);
+    private int frequencyToIndex(double frequency, int length) {
+        return (int)Math.round(frequency *  (1.0 * length) / (1.0 * sampleFrequency));
     }
 
     private double indexToFrequency(int index, int length) {
         return index *  (1.0 * sampleFrequency) / (1.0 * length);
     }
 
-
-    private double getFrequency(double[] spectrum, double frequency) {
-        final double scaleFactor = (1.0 * spectrum.length) / (1.0 * sampleFrequency);
-        return spectrum[(int)(scaleFactor * frequency)];
+    private double getBandSum(double[] spectrum, double low, double high) {
+        // Scan the spectrum from low to high for the maximum value
+        final int min_freq_index = frequencyToIndex(low, spectrum.length);
+        final int max_freq_index = frequencyToIndex(high, spectrum.length);
+        double value = 0;
+        for(int i = min_freq_index; i < max_freq_index; ++i)
+            value += spectrum[i];
+        return value;
     }
 
     private boolean handleAudioData(short[] audioData) {
@@ -108,16 +112,13 @@ public class FrequencyListener {
             audioDataDoubles[j] = (double)audioData[j] / 32768.0;
         }
         double[] dft = FFTBase.fft(audioDataDoubles, new double[nbPoints], true);
-        int max_pos = 0;
-        for(int i = 0; i < dft.length / 2; ++i) {
-            if(dft[max_pos] < dft[i])
-                max_pos = i;
-        }
-        double max_freq = indexToFrequency(max_pos, dft.length);
-        if(max_freq < maxFreq && max_freq > minFreq)
-            resultHandler.sendEmptyMessage(0);
 
-        Log.d("FrequencyListener", "Maximum frequency: " + Double.toString(max_freq));
+        double totalSum = getBandSum(dft, 0, Math.min(sampleFrequency / 2.2, 2 * maxFreq));
+        double bandSum = getBandSum(dft, minFreq, maxFreq);
+        // If the spectrum is concentrated in the band, invoke the handler
+        if(bandSum / totalSum > .25)
+            resultHandler.sendEmptyMessage(0);
+        Log.d("FrequencyListener", "Band ratio: " + Double.toString(bandSum / totalSum));
         return false;
     }
 }
