@@ -49,6 +49,8 @@ public enum ServerCommand {
 
     KICK_PLAYER("kickPlayer"),
 
+    END_GAME("endGame"),
+
     SCOREBOARD("scoreboard");
 
     private final String command;

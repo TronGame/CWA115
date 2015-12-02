@@ -255,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
             public void handleResult(final Profile newProfile) {
                 localProfile.Update(newProfile);
                 // localProfile is now updated, BUT contains FACEBOOK-userids instead of SERVER-userids:
-                if(newProfile.getFriends().length()>0){
+                if (newProfile.getFriends().length() > 0) {
                     // Get corresponding friend ids
                     dataServer.sendRequest(
                             ServerCommand.GET_FRIEND_IDS,
@@ -267,12 +267,12 @@ public class MainActivity extends AppCompatActivity {
                                         JSONObject result = new JSONObject(data);
                                         localProfile.setFriends(new JSONArray(result.getString("friends")));
                                         pushUpdatedDataToServer(localProfile, localProfile.GetQuery());
-                                    }catch(JSONException e){
+                                    } catch (JSONException e) {
                                         showToast(R.string.update_failed);
                                     }
                                 }
                             });
-                }else
+                } else
                     pushUpdatedDataToServer(localProfile, localProfile.GetQuery());
             }
         });
@@ -392,22 +392,22 @@ public class MainActivity extends AppCompatActivity {
                 ServerCommand.DELETE_ACCOUNT,
                 profile.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM),
                 new HttpConnector.Callback() {
-                @Override
-                public void handleResult(String data) {
-                    try {
-                        JSONObject result = new JSONObject(data);
-                        String success = result.getString("success");
-                        if (success.equals("true")) {
-                            showToast(R.string.account_deleted);
-                            showLoginView();
-                        } else
-                            showToast(R.string.delete_failed);
+                    @Override
+                    public void handleResult(String data) {
+                        try {
+                            JSONObject result = new JSONObject(data);
+                            String success = result.getString("success");
+                            if (success.equals("true")) {
+                                showToast(R.string.account_deleted);
+                                showLoginView();
+                            } else
+                                showToast(R.string.delete_failed);
 
-                    } catch (JSONException e) {
-                        showToast(R.string.delete_failed);
+                        } catch (JSONException e) {
+                            showToast(R.string.delete_failed);
+                        }
                     }
-                }
-        });
+                });
     }
 
     //region Button Press Events
@@ -433,8 +433,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         accountRegistered = false;// User isn't registered anymore
 
-        // Delete user's account
-        deleteAccount(GameSettings.getProfile());
+        if (GameSettings.getProfile() != null) {
+            // Delete user's account
+            deleteAccount(GameSettings.getProfile());
+        }
 
         if(isFacebookUser())
             LoginManager.getInstance().logOut();// Logout from facebook

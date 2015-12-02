@@ -1,6 +1,9 @@
 package cwa115.trongame;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -19,15 +22,24 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.games.Game;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.common.collect.ImmutableMap;
 import com.google.maps.GeoApiContext;
 import com.google.maps.PendingResult;
 import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Game.GameUpdateHandler;
@@ -39,6 +51,8 @@ import cwa115.trongame.Location.LocationObserver;
 import cwa115.trongame.Map.Map;
 import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
+import cwa115.trongame.Network.HttpConnector;
+import cwa115.trongame.Network.ServerCommand;
 import cwa115.trongame.Network.SocketIoConnection;
 import cwa115.trongame.Sensor.FrequencyListener;
 import cwa115.trongame.Sensor.HorizontalAccelerationDataHolder;
@@ -63,6 +77,10 @@ public class GameActivity extends AppCompatActivity implements
 
     // region Variables
     // -----------------------------------------------------------------------------------------------------------------
+    private static final int FINAL_SCORE_TIMEOUT = 1;   // in seconds
+    private static final boolean IMMORTAL = true;
+    private boolean hasEvents = false;
+
     // Location thresholds
     private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(10);   // About 10m
     private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(100);    // About 10m
@@ -101,11 +119,20 @@ public class GameActivity extends AppCompatActivity implements
     // Game data
     private boolean isAlive;
     private int playersAliveCount;
+    private HashMap<String, Double> playerScores;
 
     // Networking
     private SocketIoConnection connection;
     private GameUpdateHandler gameUpdateHandler;
     private GameEventHandler gameEventHandler;
+    private HttpConnector dataServer;
+
+    // Used to call methods with a delay
+    private static final ScheduledExecutorService worker =
+            Executors.newSingleThreadScheduledExecutor();
+    private static Handler timerHandler;
+    private static Handler endGameHandler;
+    private String winner;
 
     // region Get Variables
     public double getHeight () {
@@ -113,6 +140,15 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     public double getAcceleration() { return acceleration; }
+
+    public double getScore() {
+        return travelledDistance;
+    }
+
+    public void setWinner(String winner) {
+        this.winner = winner;
+    }
+
     // endregion
 
     // endregion
@@ -211,11 +247,35 @@ public class GameActivity extends AppCompatActivity implements
 
         gameUpdateHandler = new GameUpdateHandler(this, connection, map, context);
         gameEventHandler = new GameEventHandler(connection, this);
-        gameEventHandler.start();
+        if (hasEvents)
+            gameEventHandler.start();
+
+        // Create the data server
+        dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
         // Start the game
         isAlive = true;
         playersAliveCount = GameSettings.getPlayersInGame().size();
+
+        // Activate end game timer
+        if (GameSettings.isOwner() && GameSettings.getTimelimit()>=0) {
+            // End the game in FINAL_SCORE_TIMEOUT seconds
+            endGameHandler = new Handler() {
+                @Override
+                public void handleMessage(Message message) {
+                    endGame();
+                }
+            };
+            Runnable task = new Runnable() {
+                @Override
+                public void run() {
+                    Message message = new Message();
+                    endGameHandler.sendMessage(message);
+                }
+            };
+            // TODO change this to minutes
+            worker.schedule(task, GameSettings.getTimelimit(), TimeUnit.SECONDS);
+        }
     }
 
     // Override the back button so that it doesn't to anything
@@ -277,8 +337,8 @@ public class GameActivity extends AppCompatActivity implements
                     if (wall.hasCrossed(snappedGpsLoc, newSnappedGpsLoc, MIN_WALL_DISTANCE, GameSettings.getPlayerId())) {
                         // Show the "player crossed wall" notification
                         showNotification(getString(R.string.wall_crossed), Toast.LENGTH_LONG);
-                        // String killerName = ((Player)map.getItemById(wall.getOwnerId())).getName(); // TODO this is kind of ugly
-                        // onDeath(wall.getOwnerId(), killerName);
+                        String killerName = ((Player)map.getItemById(wall.getOwnerId())).getName(); // TODO this is kind of ugly/
+                        onDeath(wall.getOwnerId(), killerName);
                     } else {
                         // Check if the player isn't to close to a wall
                         if (wall.getDistanceTo(newSnappedGpsLoc, MIN_WALL_WARNING_DISTANCE, GameSettings.getPlayerId()) < MIN_WALL_WARNING_DISTANCE) {
@@ -308,7 +368,7 @@ public class GameActivity extends AppCompatActivity implements
             gameUpdateHandler.sendMyLocation(gpsLoc);
 
             if (isAlive) {
-                // onDeath("", ""); TODO kill player?
+                // onDeath("", ""); TODO killPlayer?
                 // Show the "player to far from road" notification
                 showNotification(getString(R.string.road_too_far), Toast.LENGTH_LONG);
             }
@@ -405,6 +465,9 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     public void onDeath(String killerId, String killerName) {
+        if (IMMORTAL)
+            return;
+
         // Hide all wall controls
         Button startWallButton = (Button) findViewById(R.id.toggleWallButton);
         startWallButton.setVisibility(View.GONE);
@@ -427,7 +490,9 @@ public class GameActivity extends AppCompatActivity implements
 
     public void playerDied(String playerName, String killerId, String killerName) {
         playersAliveCount -= 1;
-        // TODO check if the game has ended (owner has to send endGame message)
+        if (!IMMORTAL && playersAliveCount <= 1 && GameSettings.isOwner())
+            endGame();
+
         if (killerId.equals("")) {
             showNotification(
                     getString(R.string.player_died_text).replaceAll("%name", playerName),
@@ -448,6 +513,115 @@ public class GameActivity extends AppCompatActivity implements
                 );
             }
         }
+    }
+
+    /**
+     * End the game
+     */
+    public void endGame() {
+        playerScores = new HashMap<>();
+        for (Integer player : GameSettings.getPlayersInGame()) {
+            if (player == GameSettings.getUserId())
+                playerScores.put(String.valueOf(player), travelledDistance);
+            else
+                playerScores.put(String.valueOf(player), -1.0);
+        }
+
+        gameUpdateHandler.sendEndGame();
+        // End the game in FINAL_SCORE_TIMEOUT seconds
+        timerHandler = new Handler() {
+            @Override
+            public void handleMessage(Message message) {
+                winner = processFinalScores();
+                notifyEndGame(winner);
+            }
+        };
+        Runnable task = new Runnable() {
+            @Override
+            public void run() {
+                Message message = new Message();
+                timerHandler.sendMessage(message);
+            }
+        };
+        worker.schedule(task, FINAL_SCORE_TIMEOUT, TimeUnit.SECONDS);
+    }
+
+    public void sendScore() {
+        double score = getScore();
+        gameUpdateHandler.sendScore(score);
+    }
+
+    public void showWinner() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.game_over_text));
+        builder.setMessage(
+                getString(R.string.game_winner_text).replaceAll(
+                        "%winner",
+                        ((Player) map.getItemById(winner)).getName())
+        );
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                quitGame();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    public void notifyEndGame(String winner) {
+        gameUpdateHandler.sendWinner(winner);
+
+        ImmutableMap query = ImmutableMap.of(
+                "gameId", String.valueOf(GameSettings.getGameId()),
+                "token", GameSettings.getGameToken(),
+                "winnerId", winner);
+
+        dataServer.sendRequest(ServerCommand.END_GAME, query, new HttpConnector.Callback() {
+            @Override
+            public void handleResult(String data) {
+                try {
+                    JSONObject result = new JSONObject(data);
+                    // TODO check for errors
+                    showWinner();
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+    }
+
+    public void storePlayerScore(String playerId, double score) {
+        playerScores.put(playerId, score);
+    }
+
+    public String processFinalScores() {
+        double maxScore = -1;
+        String winningPlayer = "";
+        for (String playerId : playerScores.keySet()) {
+            if (playerScores.get(playerId) > maxScore) {
+                maxScore = playerScores.get(playerId);
+                winningPlayer = playerId;
+            }
+        }
+        return winningPlayer;
+    }
+
+    public void quitGame() {
+        // Clear data from GameSettings
+        GameSettings.setGameId(-1);
+        GameSettings.setGameName(null);
+        GameSettings.setGameToken(null);
+        GameSettings.setCanBreakWall(false);
+        GameSettings.setTimelimit(-1);
+
+        // Start Lobby activity while destroying RoomActivity and HostActivity
+        Intent intent = new Intent(this, LobbyActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 
     // endregion
@@ -504,7 +678,8 @@ public class GameActivity extends AppCompatActivity implements
         super.onPause();
         sensorDataObservable.Pause();           // Pauses the sensor observer
         locationListener.stopLocationUpdate();  // Pauses the lcoation listener
-        frequencyListener.pause();
+        // TODO sampleRate can't be 5500 on all devices
+        // frequencyListener.pause();
     }
 
     /**
@@ -514,7 +689,7 @@ public class GameActivity extends AppCompatActivity implements
         super.onResume();
         sensorDataObservable.Resume();          // Resume the sensor observer
         locationListener.startLocationUpdate(); // Start the location listener again
-        frequencyListener.run();
+        // frequencyListener.run();
     }
 
     // endregion    

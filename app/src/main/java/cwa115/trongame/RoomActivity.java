@@ -77,6 +77,7 @@ public class RoomActivity extends AppCompatActivity
                 listPlayers();
             }
         };
+        roomUpdater = new Timer();
         roomUpdater.scheduleAtFixedRate(new TimerTask() {
             public void run() {
                 roomHandler.sendMessage(new Message());
@@ -93,7 +94,8 @@ public class RoomActivity extends AppCompatActivity
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (GameSettings.getUserId() == GameSettings.getOwner()){
+            // Check if this device has the game token
+            if (GameSettings.getGameToken() != null){
                 Map<String, String> query = ImmutableMap.of("token", GameSettings.getGameToken(), "id", String.valueOf(GameSettings.getGameId()));
                 dataServer.sendRequest(ServerCommand.DELETE_GAME, query, new HttpConnector.Callback() {
                     @Override

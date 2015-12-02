@@ -36,5 +36,5 @@
     <string name="title_activity_score_board">ScoreBoardActivity</string>
     <string name="showScoreboard">Scoreboard</string>
     <string name="gps_disabled_message">Your GPS seems to be disabled, do you want to enable it?</string>
-    <string name="internet_unavailable_message">You doesn\'t seem to be connected to the internet, do you want to connect?</string>
+    <string name="internet_unavailable_message">You don\'t seem to be connected to the internet, do you want to connect?</string>
 </resources>
