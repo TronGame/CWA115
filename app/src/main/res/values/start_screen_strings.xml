@@ -41,4 +41,5 @@
     <string name="scoreboardTitle">Scoreboard</string>
     <string name="name">Name</string>
     <string name="gamesWon">Games Won</string>
+    <string name="spectator">Spectator</string>
 </resources>

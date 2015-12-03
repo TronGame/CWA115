@@ -26,7 +26,9 @@ public final class GameSettings {
     private static boolean canBreakWall;
     private static int timelimit = -1;
     private static List<Integer> playersInGame;
+    private static boolean spectate;
     public static DrawableManager drawableCache;
+
 
     /**
      * Sets the profile of the player.
@@ -182,6 +184,13 @@ public final class GameSettings {
     }
     public static int getTimelimit(){
         return timelimit;
+    }
+
+    public static void setSpectate(boolean bool){
+        spectate=bool;
+    }
+    public static boolean getSpectate(){
+        return spectate;
     }
 }
 
