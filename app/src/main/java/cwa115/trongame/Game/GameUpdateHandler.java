@@ -276,7 +276,7 @@ public class GameUpdateHandler implements SocketIoHandler {
     }
 
     public void onBellSound(final String playerId) {
-        Player remotePlayer = (Player)map.getItemById(GameSettings.getPlayerId());
+        Player remotePlayer = (Player)map.getItemById(playerId);
         remotePlayer.setCustomMarker(R.mipmap.bell_marker);
 
         // After 3 seconds, disable the bell.
