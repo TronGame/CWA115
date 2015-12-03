@@ -90,8 +90,8 @@ public class HostingActivity extends AppCompatActivity {
     private int getMaxPlayers(){
         EditText editMaxPlayers = (EditText)findViewById(R.id.maxPlayers);
         String maxPlayers = editMaxPlayers.getText().toString();
-        if (maxPlayers.length() == 0)
-            return 1;
+        if (maxPlayers.length() == 0)  //TODO: change "== 0" in "<=1"
+            return 1; //TODO: change 1 in 2 so that it isn't possible to play alone
         else
             return Integer.parseInt(maxPlayers);
 

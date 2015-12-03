@@ -28,12 +28,20 @@ public class FriendList implements List<Friend> {
     public FriendList(){
         this.list = new ArrayList<>();
     }
-    public FriendList(JSONArray friendsJSON) {
+    public FriendList(JSONArray friendsJSON){
+        this(friendsJSON, false);
+    }
+    public FriendList(JSONArray friendsJSON, boolean idsOnly) {
         this();
         try {
             for (int i = 0; i < friendsJSON.length(); i++) {
-                JSONObject friendData = new JSONObject(friendsJSON.getString(i));
-                this.list.add(new Friend(friendData));
+                if(idsOnly){
+                    Long friendId = friendsJSON.getLong(i);
+                    this.list.add(new Friend(friendId));
+                }else {
+                    JSONObject friendData = new JSONObject(friendsJSON.getString(i));
+                    this.list.add(new Friend(friendData));
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -45,7 +53,10 @@ public class FriendList implements List<Friend> {
             this.list.add(new Friend(id));
     }
     public FriendList(String friendsJSONString) throws JSONException{
-        this(new JSONArray(friendsJSONString));
+        this(new JSONArray(friendsJSONString), false);
+    }
+    public FriendList(String friendsJSONString, boolean idsOnly) throws JSONException{
+        this(new JSONArray(friendsJSONString), idsOnly);
     }
 
     public JSONArray ToJSONArray(){

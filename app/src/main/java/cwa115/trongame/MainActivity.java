@@ -189,9 +189,9 @@ public class MainActivity extends AppCompatActivity {
         if(updateUserData && updateFacebookData){
             //progressDialog = ProgressDialog.show(this, "Updating userdata","Please wait...",true,false);
             if(isFacebookUser())
-                updateServerUserData(localProfile, true);
+                updateServerUserData(localProfile, false, true);// Update facebook data after first server update
             else
-                updateServerUserData(localProfile, false);
+                updateServerUserData(localProfile, false, false);// No facebook data to update => just update server data
             Log.d("UPDATE_PROFILE","GetServerData1");
             return;
         }else if(updateFacebookData){
@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d("UPDATE_PROFILE","GetFacebookData");
             return;
         }else if(updateUserData){
-            updateServerUserData(localProfile, false);
+            updateServerUserData(localProfile, false, false);// Update local data with newly pushed facebook data on server
             Log.d("UPDATE_PROFILE","GetServerData2");
             return;
         }
@@ -213,10 +213,6 @@ public class MainActivity extends AppCompatActivity {
         // Update UI
         loginViewFlipper.setDisplayedChild(LOGIN_WELCOME);// Show welcome screen
         loginWelcomeTextView.setText(String.format(getString(R.string.welcome_message), localProfile.getName()));
-        if(localProfile.getPictureUrl()==null)
-            profilePicture.setImageResource(R.mipmap.default_profile_picture);
-        else
-            GameSettings.drawableCache.fetchDrawableAsync(localProfile.getPictureUrl(), profilePicture);
 
         mainButton.setText(getString(R.string.start));
         mainButton.setTextSize(60);
@@ -303,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
                                 public void handleResult(String data) {
                                     try {
                                         JSONObject result = new JSONObject(data);
-                                        newProfile.setFriends(new FriendList(result.getString("friends")));
+                                        newProfile.setFriends(new FriendList(result.getString("friends"), true));
                                         Profile dataToUpdate = Profile.GetUpdatedData(localProfile, newProfile);
                                         pushUpdatedDataToServer(localProfile, dataToUpdate);
                                     } catch (JSONException e) {
@@ -342,12 +338,12 @@ public class MainActivity extends AppCompatActivity {
                                             new HttpConnector.Callback() {
                                                 @Override
                                                 public void handleResult(String data) {
-                                                    updateServerUserData(localProfile, false);
+                                                    updateServerUserData(localProfile, true, false);
                                                 }
                                             }
                                     );
                                 } else
-                                    updateServerUserData(localProfile, false);
+                                    updateServerUserData(localProfile, true, false);
                             } else
                                 showToast(R.string.update_failed);
                         } catch (JSONException e) {
@@ -362,7 +358,7 @@ public class MainActivity extends AppCompatActivity {
      * is collected, it'll show the welcome view to the user.
      * @param localProfile Profile of the user whose data will be downloaded
      */
-    private void updateServerUserData(Profile localProfile, final boolean updateFacebookAfterwards){
+    private void updateServerUserData(Profile localProfile, final boolean updateServerAfterwards, final boolean updateFacebookAfterwards){
         dataServer.sendRequest(
                 ServerCommand.SHOW_ACCOUNT,
                 localProfile.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM),
@@ -377,7 +373,7 @@ public class MainActivity extends AppCompatActivity {
                                         result.getString("pictureUrl"),
                                         result.getJSONArray("friends")
                                 ).Store(settings);
-                                showWelcomeView(false, updateFacebookAfterwards);// Update UI
+                                showWelcomeView(updateServerAfterwards, updateFacebookAfterwards);// Update UI
                             } else {
                                 // User was not found on server
                                 showToast("Profile not found.");

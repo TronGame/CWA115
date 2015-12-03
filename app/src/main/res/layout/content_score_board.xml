@@ -24,8 +24,8 @@
         android:id="@+id/score_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/transparentWhite"
+        android:background="@drawable/rounded_list"
         android:layout_weight="0.95"
         android:layout_marginTop="10dp"
-        android:clickable="true"/>
+        android:clickable="true" />
 </LinearLayout>
