@@ -30,21 +30,24 @@
             android:layout_width="match_parent"
             android:layout_height="30pt"
             android:text="@string/wall_button_on_text"
-            android:onClick="createWall"/>
+            android:onClick="createWall"
+            android:background="@drawable/rounded_button_blue"/>
 
         <Button xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/clearWallButton"
             android:layout_width="match_parent"
             android:layout_height="30pt"
             android:text="@string/wall_button_clear_text"
-            android:onClick="clearWall"/>
+            android:onClick="clearWall"
+            android:background="@drawable/rounded_button_blue"/>
 
         <Button xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/breakWallButton"
             android:layout_width="match_parent"
             android:layout_height="30pt"
             android:text="@string/wall_button_break_text"
-            android:onClick="breakWall"/>
+            android:onClick="breakWall"
+            android:background="@drawable/rounded_button_blue"/>
 
         <TextView
             android:layout_width="match_parent"
