@@ -145,8 +145,13 @@ public class LobbyActivity extends AppCompatActivity {
     }
 
     public void showHostingActivity(View view) {
-        gameListUpdater.cancel();
-        startActivity(new Intent(this, HostingActivity.class));
+        if (!checkBoxView.isChecked()) {
+            gameListUpdater.cancel();
+            startActivity(new Intent(this, HostingActivity.class));
+        }
+        else {
+            showToast(getString(R.string.hostingError));
+        }
     }
 
     private void showRoomActivity() {

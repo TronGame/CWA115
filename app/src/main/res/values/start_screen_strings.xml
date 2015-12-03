@@ -43,4 +43,5 @@
     <string name="gamesWon">Games Won</string>
     <string name="spectator">Spectator</string>
     <string name="invite_friends">Invite friends</string>
+    <string name="hostingError">You can't host a game in spectator mode</string>
 </resources>
