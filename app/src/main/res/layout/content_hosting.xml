@@ -21,7 +21,7 @@
         android:id="@+id/game_name"
         android:textSize="30sp"
         android:gravity="center"
-        android:textColor="@color/basicBlack"
+        android:textColor="@color/deadBaby"
         android:background="@drawable/rounded_textview"/>
 
     <TextView

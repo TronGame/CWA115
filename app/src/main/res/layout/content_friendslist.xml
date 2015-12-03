@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:text="@string/friends_list_title"
             android:textSize="35sp"
-            android:textColor="@color/basicBlack"
+            android:textColor="@color/deadBaby"
             android:id="@+id/friends_list_title"/>
         <ListView
             android:id="@+id/mainList"
