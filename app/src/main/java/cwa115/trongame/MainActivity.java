@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout profileControlFooter;
     private Button mainButton;
     private TextView loginWelcomeTextView;
+    private ProgressDialog progressDialog;
 
     private ConnectivityManager connectivityManager;
     private LocationManager locationManager;
@@ -183,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Update current userdata if requested
         if(updateUserData && updateFacebookData){
+            //progressDialog = ProgressDialog.show(this, "Updating userdata","Please wait...",true,false);
             if(isFacebookUser())
                 updateServerUserData(localProfile, true);
             else
@@ -198,6 +200,9 @@ public class MainActivity extends AppCompatActivity {
             Log.d("UPDATE_PROFILE","GetServerData2");
             return;
         }
+
+        // Dismiss progressDialog
+        //progressDialog.dismiss();
 
         // Update UI
         loginViewFlipper.setDisplayedChild(LOGIN_WELCOME);// Show welcome screen
@@ -215,6 +220,9 @@ public class MainActivity extends AppCompatActivity {
     private void showLoginView() {
         // User is not registered
         accountRegistered = false;
+
+        // Dismiss progressDialog
+        //progressDialog.dismiss();
 
         // Update UI
         mainButton.setText(getString(R.string.register));
@@ -255,13 +263,12 @@ public class MainActivity extends AppCompatActivity {
      * to create an account on our server by calling registerFacebookAccount.
      */
     private void loadFacebookUserData() {
-        final ProgressDialog progressDialog = ProgressDialog.show(this, "Loading userdata", "Please wait...", true, false);
+        //progressDialog = ProgressDialog.show(this, "Loading userdata", "Please wait...", true, false);
         FacebookRequest.sendRequest(facebookToken, new FacebookRequest.Callback() {
             @Override
             public void handleResult(Profile facebookProfile) {
                 // Then we register the user on our server
                 registerFacebookAccount(facebookProfile);
-                progressDialog.dismiss();
             }
         });
     }
