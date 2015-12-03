@@ -22,7 +22,7 @@ public final class GameSettings {
     private static String gameName;
     private static int maxPlayers;
     private static boolean canBreakWall;
-    private static int timelimit;
+    private static int timelimit = -1;
     private static List<Integer> playersInGame;
 
     /**

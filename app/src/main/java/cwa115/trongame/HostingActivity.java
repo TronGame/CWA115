@@ -43,6 +43,7 @@ public class HostingActivity extends AppCompatActivity {
                 "token", GameSettings.getPlayerToken(),
                 "maxPlayers", Integer.toString(maxPlayers),
                 "canBreakWall", (canBreakWalls ? "1" : "0"));
+        query.put("timeLimit", Integer.toString(getTimeLimit()));
         dataServer.sendRequest(
                 ServerCommand.INSERT_GAME,
                 query,
@@ -56,6 +57,7 @@ public class HostingActivity extends AppCompatActivity {
                         GameSettings.setGameName(gameName);
                         GameSettings.setOwnerId(GameSettings.getUserId());
                         GameSettings.setCanBreakWall(canBreakWalls);
+                        GameSettings.setTimelimit(getTimeLimit());
                         joinOwnGame();
                     } catch (JSONException e) {
                         Toast.makeText(

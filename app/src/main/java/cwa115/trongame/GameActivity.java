@@ -22,7 +22,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.games.Game;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -79,7 +78,7 @@ public class GameActivity extends AppCompatActivity implements
     // -----------------------------------------------------------------------------------------------------------------
     private static final int FINAL_SCORE_TIMEOUT = 1;   // in seconds
     private static final boolean IMMORTAL = true;
-    private boolean hasEvents = false;
+    private static final boolean HAS_EVENTS = true;
 
     // Location thresholds
     private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(10);   // About 10m
@@ -247,7 +246,7 @@ public class GameActivity extends AppCompatActivity implements
 
         gameUpdateHandler = new GameUpdateHandler(this, connection, map, context);
         gameEventHandler = new GameEventHandler(connection, this);
-        if (hasEvents)
+        if (HAS_EVENTS)
             gameEventHandler.start();
 
         // Create the data server
@@ -679,7 +678,7 @@ public class GameActivity extends AppCompatActivity implements
         sensorDataObservable.Pause();           // Pauses the sensor observer
         locationListener.stopLocationUpdate();  // Pauses the lcoation listener
         // TODO sampleRate can't be 5500 on all devices
-        // frequencyListener.pause();
+        frequencyListener.pause();
     }
 
     /**
@@ -689,7 +688,7 @@ public class GameActivity extends AppCompatActivity implements
         super.onResume();
         sensorDataObservable.Resume();          // Resume the sensor observer
         locationListener.startLocationUpdate(); // Start the location listener again
-        // frequencyListener.run();
+        frequencyListener.run();
     }
 
     // endregion    

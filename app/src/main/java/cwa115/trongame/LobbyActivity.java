@@ -107,6 +107,7 @@ public class LobbyActivity extends AppCompatActivity {
                         GameSettings.setGameId(roomIds.get(gameName));
                         GameSettings.setOwnerId(clickedItem.getHostId());
                         GameSettings.setCanBreakWall(clickedItem.getCanBreakWall());
+                        GameSettings.setTimelimit(clickedItem.getTimeLimit());
                         showToast("Joining " + gameName);
 
                         Map<String, String> query = ImmutableMap.of(
@@ -157,7 +158,8 @@ public class LobbyActivity extends AppCompatActivity {
                         newRoom.getString("ownerName"),
                         newRoom.getInt("owner"),
                         newRoom.getInt("maxPlayers"),
-                        (newRoom.getInt("canBreakWall") == 1)
+                        (newRoom.getInt("canBreakWall") == 1),
+                        newRoom.getInt("timeLimit")
                 ));
                 roomIds.put(newRoom.getString("name"),newRoom.getInt("id"));
             }

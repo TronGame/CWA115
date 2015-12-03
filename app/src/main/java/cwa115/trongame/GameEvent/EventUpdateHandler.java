@@ -23,6 +23,7 @@ public class EventUpdateHandler implements SocketIoHandler {
         public static final String END_EVENT_MESSAGE = "endEvent";
         public static final String EVENT_RESULT_MESSAGE = "sendResult";
         public static final String EVENT_SCORE_MESSAGE = "scoreMessage";
+
         public static final String PLAYER_ID = "playerId";
         public static final String OWNER_ID = "ownerId";
         public static final String EVENT_TYPE = "eventType";
