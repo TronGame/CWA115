@@ -70,7 +70,8 @@ public class ScoreBoardActivity extends AppCompatActivity {
                     for(int i = 0; i < result.length(); ++i) {
                         JSONObject playerRecord = result.getJSONObject(i);
                         scoreList.add(new ScoreListItem(
-                                playerRecord.getInt("id"), playerRecord.getInt("gamesWon")
+                                playerRecord.getInt("id"), playerRecord.getInt("gamesWon"),
+                                playerRecord.getString("name"), playerRecord.getString("pictureUrl")
                         ));
                     }
                 } catch(JSONException e) {
