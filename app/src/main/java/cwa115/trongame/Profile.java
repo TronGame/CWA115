@@ -116,7 +116,7 @@ public class Profile implements Parcelable{
         if(this.PictureUrl!=null && params.contains(SERVER_PICTURE_URL_PARAM))
             query.put(SERVER_PICTURE_URL_PARAM, this.PictureUrl);
         if (this.Friends != null && params.contains(SERVER_FRIENDS_PARAM))
-            query.put(SERVER_FRIENDS_PARAM, this.Friends.toString());
+            query.put(SERVER_FRIENDS_PARAM, new JSONArray(this.Friends.ToIdList()).toString());
         if (this.FacebookId != null && params.contains(SERVER_FACEBOOK_ID_PARAM))
             query.put(SERVER_FACEBOOK_ID_PARAM, String.valueOf(this.FacebookId));
         if (this.Friends != null && this.Friends.size() > 0 && params.contains(SERVER_FRIEND_PARAM))
@@ -201,7 +201,7 @@ public class Profile implements Parcelable{
         if(newProfile.Friends!=null && !newProfile.Friends.equals(oldProfile.Friends)) {
             List<Long> oldFriendIds = oldProfile.Friends.ToIdList();
             List<Long> newFriendIds = newProfile.Friends.ToIdList();
-            newFriendIds.retainAll(oldFriendIds);
+            newFriendIds.removeAll(oldFriendIds);
             updatedData.Friends = new FriendList(newFriendIds);
         }
         if(newProfile.Wins!=null && newProfile.Wins.equals(oldProfile.Wins))
