@@ -50,13 +50,5 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/leave_game"
-        android:textColor="@color/basicBlack"
-        android:background="@drawable/rounded_button_blue_light"
-        android:layout_marginLeft="5dp"
-    />
 </LinearLayout>
 </LinearLayout>
