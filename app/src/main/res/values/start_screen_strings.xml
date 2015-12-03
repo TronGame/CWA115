@@ -42,4 +42,5 @@
     <string name="name">Name</string>
     <string name="gamesWon">Games Won</string>
     <string name="spectator">Spectator</string>
+    <string name="invite_friends">Invite friends</string>
 </resources>

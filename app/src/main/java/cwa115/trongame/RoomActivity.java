@@ -23,6 +23,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -38,7 +39,8 @@ import cwa115.trongame.PopUp.PopUp;
 public class RoomActivity extends AppCompatActivity
         implements PopUp.NoticeDialogListener{
 
-    final static int ROOM_LIST_REFRESH_TIME = 1000;
+    private final static int ROOM_LIST_REFRESH_TIME = 1000;
+    private final static int FRIEND_LIST_REQUEST_CODE = 1;
 
     private HttpConnector dataServer;
     private Timer roomUpdater;
@@ -58,9 +60,9 @@ public class RoomActivity extends AppCompatActivity
         roomname.setText(GameSettings.getGameName());
 
         // Only the owner can start the game
-        final Button startButton = (Button)findViewById(R.id.readyButton);
+        Button startButton = (Button)findViewById(R.id.readyButton);
         if (!GameSettings.isOwner())
-            startButton.setVisibility(View.GONE);
+            startButton.setVisibility(View.INVISIBLE);
 
 
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
@@ -91,6 +93,36 @@ public class RoomActivity extends AppCompatActivity
     protected void onPause(){
         super.onPause();
         roomUpdater.cancel();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode==FRIEND_LIST_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+                long[] selectedIds = data.getLongArrayExtra(FriendsListActivity.SELECTED_IDS_EXTRA);
+                dataServer.sendRequest(
+                        ServerCommand.ADD_INVITE,
+                        ImmutableMap.of(
+                                "id", String.valueOf(GameSettings.getUserId()),
+                                "token", GameSettings.getPlayerToken(),
+                                "friends", new JSONArray(Arrays.asList(selectedIds)).toString(),
+                                "gameId", String.valueOf(GameSettings.getGameId())),
+                        new HttpConnector.Callback() {
+                            @Override
+                            public void handleResult(String data) {
+                                try{
+                                    JSONObject result = new JSONObject(data);
+                                    if(result.getBoolean("success"))
+                                        showToast("Friends invited.");
+                                }catch (JSONException e){
+                                    e.printStackTrace();
+                                    showToast("Could not invite friends.");
+                                }
+                            }
+                        });
+            }
+        }
     }
 
     @Override
@@ -259,6 +291,18 @@ public class RoomActivity extends AppCompatActivity
                 });
     }
 
+    public void inviteFriends(View v){
+        Bundle data = new Bundle();
+        data.putString(FriendsListActivity.TITLE_EXTRA,"Select friends to invite:");
+        data.putBoolean(FriendsListActivity.SELECTABLE_EXTRA, true);
+        data.putParcelable(FriendsListActivity.PROFILE_EXTRA, GameSettings.getProfile());
+
+        Intent intent = new Intent(this, FriendsListActivity.class);
+        intent.putExtra(FriendsListActivity.DATA_EXTRA, data);
+
+        startActivityForResult(intent, FRIEND_LIST_REQUEST_CODE);
+    }
+
     private void startGame() {
         roomUpdater.cancel();
 
@@ -284,6 +328,10 @@ public class RoomActivity extends AppCompatActivity
             return;
         hasStarted = true;
         startActivity(new Intent(this, GameActivity.class));
+    }
+
+    private void showToast(String message){
+        Toast.makeText(this,message,Toast.LENGTH_SHORT).show();
     }
 
 }
