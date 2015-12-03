@@ -31,6 +31,7 @@ import com.google.maps.PendingResult;
 import com.google.maps.RoadsApi;
 import com.google.maps.model.SnappedPoint;
 
+import org.joda.time.DateTime;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.w3c.dom.Text;
@@ -134,6 +135,9 @@ public class GameActivity extends AppCompatActivity implements
     private static Handler timerHandler;
     private static Handler endGameHandler;
     private String winner;
+
+    // Timing
+    private long startTime;
 
     // region Get Variables
     public double getHeight () {
@@ -293,6 +297,9 @@ public class GameActivity extends AppCompatActivity implements
             // TODO change this to minutes
             worker.schedule(task, GameSettings.getTimelimit()*60, TimeUnit.SECONDS);
         }
+
+        // Set start time (in order to measure total playtime)
+        startTime = System.currentTimeMillis();
     }
 
     // Override the back button so that it doesn't to anything
@@ -621,6 +628,29 @@ public class GameActivity extends AppCompatActivity implements
             }
         });
 
+        // Update player stats
+        ServerCommand command = (winner.equals(GameSettings.getPlayerId())) ? ServerCommand.INCREASE_WINS : ServerCommand.INCREASE_LOSSES;
+        dataServer.sendRequest(
+                command,
+                ImmutableMap.of("id", GameSettings.getPlayerId(), "token", GameSettings.getPlayerToken()),
+                new HttpConnector.Callback() {
+                    @Override
+                    public void handleResult(String data) { }
+                }
+        );
+        if(playerScores.get(GameSettings.getPlayerId())>GameSettings.getProfile().getHighscore()){
+            dataServer.sendRequest(
+                    ServerCommand.SET_HIGHSCORE,
+                    ImmutableMap.of(
+                            "id", GameSettings.getPlayerId(),
+                            "token", GameSettings.getPlayerToken(),
+                            "highscore", String.valueOf(Math.round(playerScores.get(GameSettings.getPlayerId())))),
+                    new HttpConnector.Callback() {
+                        @Override
+                        public void handleResult(String data) { }
+                    }
+            );
+        }
     }
 
     public void storePlayerScore(String playerId, double score) {
@@ -646,6 +676,7 @@ public class GameActivity extends AppCompatActivity implements
         GameSettings.setGameToken(null);
         GameSettings.setCanBreakWall(false);
         GameSettings.setTimelimit(-1);
+        GameSettings.setLastPlayTime((System.currentTimeMillis()-startTime)/1000);
 
         // Start Lobby activity while destroying RoomActivity and HostActivity
         Intent intent = new Intent(this, LobbyActivity.class);

@@ -375,9 +375,16 @@ public class MainActivity extends AppCompatActivity {
                             JSONObject result = new JSONObject(data);
                             if (!result.has("error")) {
                                 new Profile(
+                                        null,
+                                        null,
+                                        null,
                                         result.getString("name"),
                                         result.getString("pictureUrl"),
-                                        result.getJSONArray("friends")
+                                        result.getInt("wins"),
+                                        result.getInt("losses"),
+                                        result.getInt("highscore"),
+                                        result.getInt("playtime"),
+                                        new FriendList(result.getJSONArray("friends"))
                                 ).Store(settings);
                                 showWelcomeView(updateServerAfterwards, updateFacebookAfterwards);// Update UI
                             } else {

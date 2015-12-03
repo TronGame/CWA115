@@ -276,10 +276,23 @@ public class RoomActivity extends AppCompatActivity
                             List<Integer> listOfPlayerIds = new ArrayList<>();
                             for (int i = 0; i < players.length(); i++) {
                                 JSONObject player = players.getJSONObject(i);
-                                listOfPlayerIds.add(player.getInt("id"));
+                                int playerId = player.getInt("id");
+                                listOfPlayerIds.add(playerId);
                                 // TODO make sure that this happens more reliably (the server might have to store player color as well?)
                                 if (player.getInt("id") == GameSettings.getUserId())
                                     GameSettings.setWallColor(listOfColors.get(i));
+                                // If player is friend of current user, increase commonPlays
+                                dataServer.sendRequest(
+                                        ServerCommand.INCREASE_COMMON_PLAYS,
+                                        ImmutableMap.of(
+                                                "id", GameSettings.getPlayerId(),
+                                                "token", GameSettings.getPlayerToken(),
+                                                "friendId", String.valueOf(playerId)
+                                        ),
+                                        new HttpConnector.Callback() {
+                                            @Override
+                                            public void handleResult(String data) { }
+                                        });
                             }
                             GameSettings.setPlayersInGame(listOfPlayerIds);
                             startGame();

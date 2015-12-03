@@ -48,10 +48,27 @@ public class LobbyActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
+
+        dataServer = new HttpConnector(getString(R.string.dataserver_url));
+
         ListView lobbyList = (ListView) findViewById(R.id.mainList);
         checkBoxView = (CheckBox)findViewById(R.id.spectatorCheckboxView);
         lobbyList.setClickable(true);
         listGames();
+
+        if(GameSettings.getLastPlayTime()!=-1){// A game has been played, push new playtime to server
+            dataServer.sendRequest(
+                    ServerCommand.SET_PLAYTIME,
+                    ImmutableMap.of(
+                            "id", String.valueOf(GameSettings.getUserId()),
+                            "token", GameSettings.getPlayerToken(),
+                            "playtime", String.valueOf(GameSettings.getProfile().getPlaytime()+GameSettings.getLastPlayTime())),
+                    new HttpConnector.Callback() {
+                        @Override
+                        public void handleResult(String data) {}
+                    });
+            GameSettings.resetLastPlaytime();
+        }
     }
 
 
@@ -91,7 +108,6 @@ public class LobbyActivity extends AppCompatActivity {
     }
 
     private void listGames() {
-        dataServer = new HttpConnector(getString(R.string.dataserver_url));
         dataServer.sendRequest(ServerCommand.LIST_GAMES, null, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {

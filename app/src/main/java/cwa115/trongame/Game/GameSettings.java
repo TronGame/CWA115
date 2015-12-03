@@ -27,6 +27,7 @@ public final class GameSettings {
     private static int timelimit = -1;
     private static List<Integer> playersInGame;
     private static boolean spectate = false;
+    private static long lastPlayTime = -1;
 
 
     /**
@@ -191,5 +192,9 @@ public final class GameSettings {
     public static boolean getSpectate(){
         return spectate;
     }
+
+    public static void resetLastPlaytime(){ lastPlayTime = -1; }
+    public static void setLastPlayTime(long playTime){ lastPlayTime = playTime; }
+    public static long getLastPlayTime(){ return lastPlayTime; }
 }
 
