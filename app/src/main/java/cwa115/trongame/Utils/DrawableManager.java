@@ -34,68 +34,78 @@ import java.util.Map;
 public final class DrawableManager {
     private final static int DEFAULT_CACHE_SIZE = 15;
 
-    private final Map<String, Drawable> drawableMap;
-    private int cacheSize;
+    public static DrawableCache cache;
 
-    public DrawableManager() {
-        this(DEFAULT_CACHE_SIZE);
+    private DrawableManager(){ }
+
+    public static void InitializeCache(int cacheSize){
+        cache = new DrawableCache(cacheSize);
     }
-    public DrawableManager(int cacheSize){
-        this.cacheSize = cacheSize;
-        drawableMap = new HashMap<>();
+    public static void InitializeCache(){
+        InitializeCache(DEFAULT_CACHE_SIZE);
     }
 
-    public Drawable fetchDrawable(String urlString) {
-        if (drawableMap.containsKey(urlString)) {
-            return drawableMap.get(urlString);
-        }
-        if (drawableMap.size()>=cacheSize){
-            Log.e("DRAWABLE_MANAGER","Cache limit reached. Raise cache limit or release some drawables from the cache.");
-            return null;
+    public final static class DrawableCache {
+        private final Map<String, Drawable> drawableMap;
+        private int cacheSize;
+
+        public DrawableCache(int cacheSize) {
+            this.cacheSize = cacheSize;
+            drawableMap = new HashMap<>();
         }
 
-        try {
-            InputStream is = (InputStream)new URL(urlString).getContent();
-            Drawable drawable = Drawable.createFromStream(is, "src");
-
-            if (drawable != null) {
-                drawableMap.put(urlString, drawable);
-            } else {
-                Log.e("DRAWABLE_MANAGER", "could not get thumbnail");
+        public Drawable fetchDrawable(String urlString) {
+            if (drawableMap.containsKey(urlString)) {
+                return drawableMap.get(urlString);
+            }
+            if (drawableMap.size() >= cacheSize) {
+                Log.e("DRAWABLE_MANAGER", "Cache limit reached. Raise cache limit or release some drawables from the cache.");
+                return null;
             }
 
-            return drawable;
-        } catch (IOException e) {
-            Log.e("DRAWABLE_MANAGER","fetchDrawable failed");
-            return null;
-        } catch (OutOfMemoryError e){
-            Log.e("DRAWABLE_MANAGER","Too much drawables cached");
-            drawableMap.get(drawableMap.keySet().iterator().next());// Remove first element from cache
-            return null;
-        }
-    }
+            try {
+                InputStream is = (InputStream) new URL(urlString).getContent();
+                Drawable drawable = Drawable.createFromStream(is, "src");
 
-    public void fetchDrawableAsync(final String urlString, final ImageView imageView) {
-        if (drawableMap.containsKey(urlString)) {
-            imageView.setImageDrawable(drawableMap.get(urlString));
-        }else{
-            new AsyncTask<String, Void, Drawable>(){
-                @Override
-                protected Drawable doInBackground(String... params) {
-                    return fetchDrawable(params[0]);
+                if (drawable != null) {
+                    drawableMap.put(urlString, drawable);
+                } else {
+                    Log.e("DRAWABLE_MANAGER", "could not get thumbnail");
                 }
 
-                @Override
-                protected void onPostExecute(Drawable drawable) {
-                    if(drawable!=null)
-                        imageView.setImageDrawable(drawable);
-                }
-            }.execute(urlString);
+                return drawable;
+            } catch (IOException e) {
+                Log.e("DRAWABLE_MANAGER", "fetchDrawable failed");
+                return null;
+            } catch (OutOfMemoryError e) {
+                Log.e("DRAWABLE_MANAGER", "Too much drawables cached");
+                drawableMap.get(drawableMap.keySet().iterator().next());// Remove first element from cache
+                return null;
+            }
         }
-    }
 
-    public void releaseDrawable(String urlString){
-        if(drawableMap.containsKey(urlString))
-            drawableMap.remove(urlString);
+        public void fetchDrawableAsync(final String urlString, final ImageView imageView) {
+            if (drawableMap.containsKey(urlString)) {
+                imageView.setImageDrawable(drawableMap.get(urlString));
+            } else {
+                new AsyncTask<String, Void, Drawable>() {
+                    @Override
+                    protected Drawable doInBackground(String... params) {
+                        return fetchDrawable(params[0]);
+                    }
+
+                    @Override
+                    protected void onPostExecute(Drawable drawable) {
+                        if (drawable != null)
+                            imageView.setImageDrawable(drawable);
+                    }
+                }.execute(urlString);
+            }
+        }
+
+        public void releaseDrawable(String urlString) {
+            if (drawableMap.containsKey(urlString))
+                drawableMap.remove(urlString);
+        }
     }
 }

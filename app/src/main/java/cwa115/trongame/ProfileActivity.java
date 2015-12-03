@@ -118,7 +118,7 @@ public class ProfileActivity extends AppCompatActivity {
         if(profile.getPictureUrl()==null)
             profileImageView.setImageResource(R.mipmap.default_profile_picture);
         else
-            GameSettings.drawableCache.fetchDrawableAsync(profile.getPictureUrl(), profileImageView);
+            DrawableManager.cache.fetchDrawableAsync(profile.getPictureUrl(), profileImageView);
 
         if(profile.getFacebookId()==null)
             facebookFlag.setVisibility(View.GONE);
