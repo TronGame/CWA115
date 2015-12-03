@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/default_roomname"
-        android:textColor="@color/basicBlack"
+        android:textColor="@color/deadBaby"
         android:id="@+id/roomname"
         android:textSize="35sp"
         android:layout_alignParentTop="true"

@@ -35,7 +35,7 @@
             android:layout_height="wrap_content"
             android:text="@string/user_name"
             android:textSize="35sp"
-            android:textColor="@color/basicBlack"
+            android:textColor="@color/deadBaby"
             android:id="@+id/userNameTextView"
             android:layout_weight="0.9"/>
 

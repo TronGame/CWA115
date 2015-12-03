@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:text="@string/scoreboardTitle"
         android:textSize="35sp"
-        android:textColor="@color/basicBlack"
+        android:textColor="@color/deadBaby"
         android:textStyle="bold"
         android:layout_weight="0.05"/>
     <ListView

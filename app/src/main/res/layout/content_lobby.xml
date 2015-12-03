@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:text="@string/games_available"
             android:textSize="35dp"
-            android:textColor="@color/basicBlack"
+            android:textColor="@color/deadBaby"
             android:layout_weight="0.025"/>
         <ListView
             android:id="@+id/mainList"
