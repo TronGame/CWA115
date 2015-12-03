@@ -189,7 +189,7 @@ public class RoomActivity extends AppCompatActivity
         // Create an instance of the dialog fragment and show it
         DialogFragment dialog = new PopUp();
         Bundle bundle = new Bundle();
-        bundle.putString(PopUp.BUNDLE_MESSAGE_KEY, getString(R.string.kickRequest).format(selectedPlayerName));
+        bundle.putString(PopUp.BUNDLE_MESSAGE_KEY, String.format(getString(R.string.kickRequest), selectedPlayerName));
         dialog.setArguments(bundle);
         dialog.show(getSupportFragmentManager(), "NoticeDialogFragment");
     }
