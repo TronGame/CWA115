@@ -17,9 +17,9 @@ public class ScoreListItem {
     private HttpConnector dataServer;
 
 
-    public ScoreListItem(String id, int wins) {
+    public ScoreListItem(int id, int wins) {
         gamesWon = wins;
-        dataServer.sendRequest(ServerCommand.SHOW_ACCOUNT, ImmutableMap.of("id",id), new HttpConnector.Callback() {
+        dataServer.sendRequest(ServerCommand.SHOW_ACCOUNT, ImmutableMap.of("id",String.valueOf(id)), new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
                 try {
