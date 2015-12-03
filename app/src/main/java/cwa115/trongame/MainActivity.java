@@ -207,6 +207,9 @@ public class MainActivity extends AppCompatActivity {
         // Dismiss progressDialog
         //progressDialog.dismiss();
 
+        // Store userdata in GameSettings
+        GameSettings.drawableCache = new DrawableManager(5);
+
         // Update UI
         loginViewFlipper.setDisplayedChild(LOGIN_WELCOME);// Show welcome screen
         loginWelcomeTextView.setText(String.format(getString(R.string.welcome_message), localProfile.getName()));
@@ -221,8 +224,6 @@ public class MainActivity extends AppCompatActivity {
 
         // TODO: check the correctness of the token
 
-        // Store userdata in GameSettings
-        GameSettings.drawableCache = new DrawableManager(5);
     }
 
     private void showLoginView() {
