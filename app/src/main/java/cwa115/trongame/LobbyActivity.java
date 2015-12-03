@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -40,12 +41,15 @@ public class LobbyActivity extends AppCompatActivity {
     private Timer gameListUpdater;
     private Handler gameListHandler;
     private List<LobbyListItem> listOfRooms;
+    private CheckBox checkBoxView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
         ListView lobbyList = (ListView) findViewById(R.id.mainList);
+        checkBoxView = (CheckBox)findViewById(R.id.spectatorCheckboxView);
         lobbyList.setClickable(true);
         listGames();
     }
@@ -108,6 +112,7 @@ public class LobbyActivity extends AppCompatActivity {
                         GameSettings.setOwnerId(clickedItem.getHostId());
                         GameSettings.setCanBreakWall(clickedItem.getCanBreakWall());
                         GameSettings.setTimelimit(clickedItem.getTimeLimit());
+                        GameSettings.setSpectate(checkBoxView.isChecked());
                         showToast("Joining " + gameName);
 
                         Map<String, String> query = ImmutableMap.of(

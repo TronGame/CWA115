@@ -47,8 +47,6 @@ public class RoomActivity extends AppCompatActivity
     private boolean hasStarted;
     private int selectedPlayerId;
     private String selectedPlayerName;
-    private TextView spectatorView;
-    private CheckBox checkBoxView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,14 +59,8 @@ public class RoomActivity extends AppCompatActivity
 
         // Only the owner can start the game
         final Button startButton = (Button)findViewById(R.id.readyButton);
-        final TextView spectatorView = (TextView)findViewById(R.id.spectatorView);
-        final CheckBox checkBoxView = (CheckBox)findViewById(R.id.spectatorCheckboxView);
         if (!GameSettings.isOwner())
             startButton.setVisibility(View.GONE);
-        else{
-            spectatorView.setVisibility(View.GONE);
-            checkBoxView.setVisibility(View.GONE);
-        }
 
 
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
@@ -256,7 +248,6 @@ public class RoomActivity extends AppCompatActivity
                                     GameSettings.setWallColor(listOfColors.get(i));
                             }
                             GameSettings.setPlayersInGame(listOfPlayerIds);
-                            GameSettings.setSpectate(checkBoxView.isChecked());
                             startGame();
 
                         } catch (JSONException e) {

@@ -50,23 +50,6 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="15sp"
-        android:gravity="center">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/spectator"
-            android:textColor="@color/deadBaby"
-            android:id="@+id/spectatorView"
-            />
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/spectatorCheckboxView"
-            />
-    </LinearLayout>
+
 </LinearLayout>
 </LinearLayout>
