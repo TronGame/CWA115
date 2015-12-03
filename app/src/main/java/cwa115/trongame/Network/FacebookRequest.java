@@ -28,7 +28,7 @@ public class FacebookRequest {
     public static void sendRequest(final AccessToken facebookToken, final Callback callback){
         /* make the API call */
         Bundle params = new Bundle();
-        params.putString("fields", "name,picture,friends");
+        params.putString("fields", "name,picture.type(large),friends");
         new GraphRequest(
                 facebookToken,
                 "/" + facebookToken.getUserId(),

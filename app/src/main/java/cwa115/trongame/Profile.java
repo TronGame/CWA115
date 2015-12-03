@@ -29,41 +29,55 @@ public class Profile implements Parcelable{
     private final static String ACCOUNT_PICTURE_URL_KEY = "accountPictureUrl";
     private final static String ACCOUNT_FRIENDS_KEY = "accountFriends";
     private final static String ACCOUNT_FACEBOOK_ID_KEY = "accountFacebookId";
+    private final static String ACCOUNT_WINS_KEY = "accountWins";
+    private final static String ACCOUNT_LOSSES_KEY = "accountLosses";
+    private final static String ACCOUNT_HIGHSCORE_KEY = "accountHighscore";
+    private final static String ACCOUNT_PLAYTIME_KEY = "accountPlaytime";
     // Server parameter names
     public final static String SERVER_ID_PARAM = "id";
     public final static String SERVER_TOKEN_PARAM = "token";
     public final static String SERVER_NAME_PARAM = "name";
     public final static String SERVER_PICTURE_URL_PARAM = "pictureUrl";
     public final static String SERVER_FRIENDS_PARAM = "friends";
+    public final static String SERVER_FRIEND_PARAM = "friendId";
     public final static String SERVER_FACEBOOK_ID_PARAM = "facebookId";
+    //public final static String SERVER_WINS_PARAM = "wins";
+    //public final static String SERVER_LOSSES_PARAM = "losses";
+    public final static String SERVER_HIGHSCORE_PARAM = "highscore";
+    public final static String SERVER_PLAYTIME_PARAM = "playtime";
 
-    private Integer Id;//, Wins, Losses, Highscore, Playtime;
+    private Integer Id, Wins, Losses, Highscore, Playtime;
     private Long FacebookId;
     private String Token, Name, PictureUrl;
     private FriendList Friends;
 
     public Profile(){
-        this(null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null, null, null);
     }
     public Profile(String Name){
-        this(null, null, null, Name, null, null);
+        this(null, null, null, Name, null, null, null, null, null, null);
     }
     public Profile(String Name, String PictureUrl, JSONArray Friends){
-        this(null, null, null, Name, PictureUrl, new FriendList(Friends));
+        this(null, null, null, Name, PictureUrl, null, null, null, null, new FriendList(Friends));
     }
     public Profile(String Name, String PictureUrl, Long[] Friends){
-        this(null, null, null, Name, PictureUrl, new FriendList(Arrays.asList(Friends)));
+        this(null, null, null, Name, PictureUrl, null, null, null, null, new FriendList(Arrays.asList(Friends)));
     }
     public Profile(Integer Id, String Token, String Name, String PictureUrl, JSONArray Friends){
-        this(Id, Token, null, Name, PictureUrl, new FriendList(Friends));
+        this(Id, Token, null, Name, PictureUrl, null, null, null, null, new FriendList(Friends));
     }
-    public Profile(Integer Id, String Token, Long FacebookId, String Name, String PictureUrl, FriendList Friends){
+    public Profile(Integer Id, String Token, Long FacebookId, String Name, String PictureUrl,
+                   Integer Wins, Integer Losses, Integer Highscore, Integer Playtime, FriendList Friends){
         this.Id = Id;
         this.Token = Token;
         this.Name = Name;
         this.PictureUrl = PictureUrl;
         this.Friends = Friends;
         this.FacebookId = FacebookId;
+        this.Wins = Wins;
+        this.Losses = Losses;
+        this.Highscore = Highscore;
+        this.Playtime = Playtime;
     }
 
     public void Store(SharedPreferences settings){
@@ -80,6 +94,14 @@ public class Profile implements Parcelable{
             editor.putString(ACCOUNT_FRIENDS_KEY, this.Friends.toString());
         if(this.FacebookId!=null)
             editor.putLong(ACCOUNT_FACEBOOK_ID_KEY, this.FacebookId);
+        if(this.Wins!=null)
+            editor.putInt(ACCOUNT_WINS_KEY, this.Wins);
+        if(this.Losses!=null)
+            editor.putInt(ACCOUNT_LOSSES_KEY, this.Losses);
+        if(this.Highscore!=null)
+            editor.putInt(ACCOUNT_HIGHSCORE_KEY, this.Highscore);
+        if(this.Playtime!=null)
+            editor.putInt(ACCOUNT_PLAYTIME_KEY, this.Playtime);
         editor.apply();
     }
 
@@ -97,6 +119,12 @@ public class Profile implements Parcelable{
             query.put(SERVER_FRIENDS_PARAM, this.Friends.toString());
         if (this.FacebookId != null && params.contains(SERVER_FACEBOOK_ID_PARAM))
             query.put(SERVER_FACEBOOK_ID_PARAM, String.valueOf(this.FacebookId));
+        if (this.Friends != null && this.Friends.size() > 0 && params.contains(SERVER_FRIEND_PARAM))
+            query.put(SERVER_FRIEND_PARAM, this.Friends.ToIdList().get(0).toString());
+        if (this.Highscore != null && params.contains(SERVER_HIGHSCORE_PARAM))
+            query.put(SERVER_HIGHSCORE_PARAM, String.valueOf(this.Highscore));
+        if (this.Playtime != null && params.contains(SERVER_PLAYTIME_PARAM))
+            query.put(SERVER_PLAYTIME_PARAM, String.valueOf(this.Playtime));
         return query;
     }
     public Map<String, String> GetQuery(String... params){
@@ -109,7 +137,10 @@ public class Profile implements Parcelable{
                 SERVER_FACEBOOK_ID_PARAM,
                 SERVER_NAME_PARAM,
                 SERVER_PICTURE_URL_PARAM,
-                SERVER_FRIENDS_PARAM
+                SERVER_FRIENDS_PARAM,
+                SERVER_FRIEND_PARAM,
+                SERVER_HIGHSCORE_PARAM,
+                SERVER_PLAYTIME_PARAM
         ));
     }
 
@@ -129,7 +160,15 @@ public class Profile implements Parcelable{
         }
         long facebookId = settings.getLong(ACCOUNT_FACEBOOK_ID_KEY, -1);
         Long FacebookId = (facebookId==-1) ? null : facebookId;
-        return new Profile(Id, Token, FacebookId, Name, PictureUrl, Friends);
+        int wins = settings.getInt(ACCOUNT_WINS_KEY, -1);
+        int losses = settings.getInt(ACCOUNT_LOSSES_KEY, -1);
+        int highscore = settings.getInt(ACCOUNT_HIGHSCORE_KEY, -1);
+        int playtime = settings.getInt(ACCOUNT_PLAYTIME_KEY, -1);
+        Integer Wins = (wins==-1) ? null : wins;
+        Integer Losses = (losses==-1) ? null : losses;
+        Integer Highscore = (highscore==-1) ? null : highscore;
+        Integer Playtime = (playtime==-1) ? null : playtime;
+        return new Profile(Id, Token, FacebookId, Name, PictureUrl, Wins, Losses, Highscore, Playtime, Friends);
     }
 
     public static void Delete(SharedPreferences settings){
@@ -140,6 +179,10 @@ public class Profile implements Parcelable{
         editor.remove(ACCOUNT_NAME_KEY);
         editor.remove(ACCOUNT_PICTURE_URL_KEY);
         editor.remove(ACCOUNT_FRIENDS_KEY);
+        editor.remove(ACCOUNT_WINS_KEY);
+        editor.remove(ACCOUNT_LOSSES_KEY);
+        editor.remove(ACCOUNT_HIGHSCORE_KEY);
+        editor.remove(ACCOUNT_PLAYTIME_KEY);
         editor.apply();
     }
 
@@ -161,6 +204,14 @@ public class Profile implements Parcelable{
             newFriendIds.retainAll(oldFriendIds);
             updatedData.Friends = new FriendList(newFriendIds);
         }
+        if(newProfile.Wins!=null && newProfile.Wins.equals(oldProfile.Wins))
+            updatedData.Wins = newProfile.Wins;
+        if(newProfile.Losses!=null && newProfile.Losses.equals(oldProfile.Losses))
+            updatedData.Losses = newProfile.Losses;
+        if(newProfile.Highscore!=null && newProfile.Highscore.equals(oldProfile.Highscore))
+            updatedData.Highscore = newProfile.Highscore;
+        if(newProfile.Playtime!=null && newProfile.Playtime.equals(oldProfile.Playtime))
+            updatedData.Playtime = newProfile.Playtime;
         return updatedData;
     }
     //endregion
@@ -172,6 +223,10 @@ public class Profile implements Parcelable{
     public void setName(String Name){ this.Name = Name; }
     public void setPictureUrl(String PictureUrl){ this.PictureUrl = PictureUrl; }
     public void setFriends(FriendList Friends){ this.Friends = Friends; }
+    public void setWins(Integer Wins){ this.Wins = Wins; }
+    public void setLosses(Integer Losses){ this.Losses = Losses; }
+    public void setHighscore(Integer Highscore){ this.Highscore = Highscore; }
+    public void setPlaytime(Integer Playtime){ this.Playtime = Playtime; }
     //endregion
 
     //region Getters
@@ -181,17 +236,22 @@ public class Profile implements Parcelable{
     public String getName(){ return this.Name; }
     public String getPictureUrl(){ return this.PictureUrl; }
     public FriendList getFriends(){ return this.Friends; }
+    public Integer getWins(){ return this.Wins; }
+    public Integer getLosses(){ return this.Losses; }
+    public Integer getHighscore(){ return this.Highscore; }
+    public Integer getPlaytime(){ return this.Playtime; }
     //endregion
 
     //region Parcelling part
     public Profile(Parcel in){
         String[] strings = new String[4];
-        int id = in.readInt();
+        int[] ints = new int[5];
+        in.readIntArray(ints);
         long facebookId = in.readLong();
         in.readStringArray(strings);
 
-        this.Id = (id==-1) ? null : id;
-        this.FacebookId = (facebookId==-1) ? null : facebookId;
+        this.Id = fromInt(ints[0]);
+        this.FacebookId = fromLong(facebookId);
         this.Token = strings[0];
         this.Name = strings[1];
         this.PictureUrl = strings[2];
@@ -201,6 +261,10 @@ public class Profile implements Parcelable{
             e.printStackTrace();
             this.Friends = null;
         }
+        this.Wins = fromInt(ints[1]);
+        this.Losses = fromInt(ints[2]);
+        this.Highscore = fromInt(ints[3]);
+        this.Playtime = fromInt(ints[4]);
     }
 
     public int describeContents(){
@@ -209,8 +273,14 @@ public class Profile implements Parcelable{
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(this.Id);
-        dest.writeLong(this.FacebookId);
+        dest.writeIntArray(new int[]{
+                toInt(this.Id),
+                toInt(this.Wins),
+                toInt(this.Losses),
+                toInt(this.Highscore),
+                toInt(this.Playtime)
+        });
+        dest.writeLong(toLong(this.FacebookId));
         String f = this.Friends.toString();
         dest.writeStringArray(new String[]{
                 this.Token,
@@ -228,5 +298,20 @@ public class Profile implements Parcelable{
             return new Profile[size];
         }
     };
+    //endregion
+
+    //region Utilities
+    private int toInt(Integer i){
+        return i==null ? -1 : i;
+    }
+    private Integer fromInt(int i){
+        return i==-1 ? null : i;
+    }
+    private long toLong(Long l){
+        return l==null ? -1 : l;
+    }
+    private Long fromLong(long l){
+        return l==-1 ? null : l;
+    }
     //endregion
 }
