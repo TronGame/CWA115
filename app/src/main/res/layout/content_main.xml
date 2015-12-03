@@ -80,8 +80,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/welcome_message"
-                    android:id="@+id/login_welcome_textview"/>
-
+                    android:id="@+id/login_welcome_textview"
+                    android:textSize="20dp"
+                    android:textColor="@color/basicBlack"
+                    android:gravity="center_horizontal"
+                    android:layout_marginBottom="5sp"/>
+                <ImageView
+                    android:layout_width="150dp"
+                    android:layout_height="150dp"
+                    android:id="@+id/mainActivityProfilePicture"
+                    android:src="@mipmap/default_profile_picture"
+                    android:layout_gravity="center_horizontal"/>
+c
             </LinearLayout>
 
         </ViewFlipper>
