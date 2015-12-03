@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="@drawable/basic_background"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:showIn="@layout/activity_profile"
+    tools:context="cwa115.trongame.ProfileActivity"
+    android:weightSum="1">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/profileImageView"
+        android:layout_gravity="center_horizontal"
+        android:contentDescription="@string/profile_picture"
+        android:src="@mipmap/default_profile_picture"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:textStyle="bold"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/user_name"
+            android:textSize="35sp"
+            android:textColor="@color/basicBlack"
+            android:id="@+id/userNameTextView"
+            android:layout_weight="0.9"/>
+
+        <ImageView
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:id="@+id/facebookFlag"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/facebook_logo"
+            android:src="@mipmap/fb_icon"/>
+
+    </LinearLayout>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:id="@+id/statsListView">
+
+    </ListView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/friendFooter">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/friends_message"
+            android:textSize="20sp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginRight="10dp"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_friend"
+            android:textSize="15sp"
+            android:padding="10dp"
+            android:background="@drawable/rounded_button_blue"/>
+
+    </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/show_friend_list"
+        android:textSize="15sp"
+        android:padding="10dp"
+        android:background="@drawable/rounded_button_blue"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/friendListButton"
+        android:onClick="showFriendList"/>
+
+</LinearLayout>

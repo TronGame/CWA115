@@ -65,6 +65,8 @@
                     android:textAlignment="center"
                     android:layout_gravity="center_horizontal"
                     android:hint="@string/enter_name"
+                    android:singleLine="true"
+                    android:padding="5sp"
                     android:background="@drawable/rounded_textview"/>
 
             </LinearLayout>
@@ -108,25 +110,41 @@
                 android:onClick="mainButtonPressed"
                 android:background="@drawable/rounded_button_blue"
                 android:layout_gravity="center"
-                android:layout_alignParentBottom="true"
-                android:layout_centerHorizontal="true"
                 android:layout_marginBottom="10dp" />
 
 
         </LinearLayout>
 
-
-        <Button
-            android:layout_weight="1"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/delete_account"
-            android:background="@drawable/rounded_button_blue"
-            android:onClick="resetAccountSettings"
-            android:id="@+id/delete_button"
-            android:padding="2sp"
             android:layout_gravity="center_horizontal"
-            android:visibility="gone" />
+            android:orientation="horizontal"
+            android:id="@+id/profileControlFooter"
+            android:visibility="gone">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/show_profile"
+                android:background="@drawable/rounded_button_blue"
+                android:onClick="showProfile"
+                android:id="@+id/profile_button"
+                android:padding="10sp"
+                android:layout_marginRight="15dp" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/delete_account"
+                android:background="@drawable/rounded_button_blue"
+                android:onClick="resetAccountSettings"
+                android:id="@+id/delete_button"
+                android:padding="10sp"
+                android:layout_gravity="center_horizontal" />
+
+        </LinearLayout>
+
 
     </LinearLayout>
 
