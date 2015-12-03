@@ -28,19 +28,15 @@ public class FriendList implements List<Friend> {
     public FriendList(){
         this.list = new ArrayList<>();
     }
-    public FriendList(JSONArray friendsJSON){
-        this(friendsJSON, false);
-    }
-    public FriendList(JSONArray friendsJSON, boolean idsOnly) {
+    public FriendList(JSONArray friendsJSON) {
         this();
         try {
             for (int i = 0; i < friendsJSON.length(); i++) {
-                if(idsOnly){
-                    Long friendId = friendsJSON.getLong(i);
+                long friendId = friendsJSON.optLong(i,-1);
+                if(friendId==-1){// No id-list was given, but a JSONObject array
+                    this.list.add(new Friend(new JSONObject(friendsJSON.getString(i))));
+                }else{// An id-list was given
                     this.list.add(new Friend(friendId));
-                }else {
-                    JSONObject friendData = new JSONObject(friendsJSON.getString(i));
-                    this.list.add(new Friend(friendData));
                 }
             }
         } catch (JSONException e) {
@@ -53,10 +49,7 @@ public class FriendList implements List<Friend> {
             this.list.add(new Friend(id));
     }
     public FriendList(String friendsJSONString) throws JSONException{
-        this(new JSONArray(friendsJSONString), false);
-    }
-    public FriendList(String friendsJSONString, boolean idsOnly) throws JSONException{
-        this(new JSONArray(friendsJSONString), idsOnly);
+        this(new JSONArray(friendsJSONString));
     }
 
     public JSONArray ToJSONArray(){

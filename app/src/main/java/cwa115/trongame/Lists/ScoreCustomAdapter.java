@@ -12,6 +12,7 @@ import java.util.List;
 
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.R;
+import cwa115.trongame.Utils.DrawableManager;
 
 public class ScoreCustomAdapter extends BaseAdapter {
     private Context context;
@@ -50,7 +51,7 @@ public class ScoreCustomAdapter extends BaseAdapter {
         if(entry.getPlayerPictureUrl()==null)
             profilePicture.setImageResource(R.mipmap.default_profile_picture);
         else
-            GameSettings.drawableCache.fetchDrawableAsync(entry.getPlayerPictureUrl(), profilePicture);
+            DrawableManager.cache.fetchDrawableAsync(entry.getPlayerPictureUrl(), profilePicture);
 
         return convertView;
     }

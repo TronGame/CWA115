@@ -53,7 +53,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final static int LOGIN_HOME = 0;
     private final static int LOGIN_WELCOME = 1;
-    private final static int PROFILE_REQUEST_CODE = 1;
+    private final static int PROFILE_REQUEST_CODE = 1000;// Facebook can use 100 request-codes, so be sure it doesn't overlap
+    private final static int FACEBOOK_REQUEST_CODE_OFFSET = 100;// So facebook sdk will use request codes in the range [100;200]
 
     private CallbackManager callbackManager;
     private AccessToken facebookToken;
@@ -79,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Initialize the SDK before executing any other operations,
         // especially, if you're using Facebook UI elements.
-        FacebookSdk.sdkInitialize(getApplicationContext());
+        FacebookSdk.sdkInitialize(getApplicationContext(), FACEBOOK_REQUEST_CODE_OFFSET);
 
         // activity_main contains facebook login button
         setContentView(R.layout.activity_main);
@@ -127,14 +128,8 @@ public class MainActivity extends AppCompatActivity {
         // Update UI
         if(!isInternetEnabled())
             buildAlertMessageNoInternet();// No internet connection
-        else {
-            // If a user is signed in, show welcome view, otherwise show login view
-            Profile localProfile = Profile.Load(settings);
-            if (localProfile.getId()!=null && localProfile.getToken()!=null)
-                showWelcomeView(true, true);
-            else
-                showLoginView();
-        }
+        else
+            updateUI();
     }
     //endregion
 
@@ -164,16 +159,28 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode==PROFILE_REQUEST_CODE){
-            if(resultCode==RESULT_OK){
+        if(FacebookSdk.isFacebookRequestCode(requestCode))
+            callbackManager.onActivityResult(requestCode, resultCode, data);
+        else if(requestCode==PROFILE_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
                 // Do something with returned data
             }
-        }else
-            callbackManager.onActivityResult(requestCode, resultCode, data);
+        }
     }
     //endregion
 
     //region UI-control
+    private void updateUI(){
+        // If a user is signed in, show welcome view, otherwise show login view
+        Profile localProfile = Profile.Load(settings);
+        if (localProfile.getId()!=null && localProfile.getToken()!=null) {
+            showWelcomeView(true, true);
+            progressDialog = ProgressDialog.show(this, "Updating profile","Please wait...",true,false);
+        }else {
+            showLoginView();
+        }
+    }
+
     private void showWelcomeView(boolean updateUserData, boolean updateFacebookData) {
         // User is already registered
         accountRegistered = true;
@@ -187,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Update current userdata if requested
         if(updateUserData && updateFacebookData){
-            //progressDialog = ProgressDialog.show(this, "Updating userdata","Please wait...",true,false);
             if(isFacebookUser())
                 updateServerUserData(localProfile, false, true);// Update facebook data after first server update
             else
@@ -205,18 +211,21 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // Dismiss progressDialog
-        //progressDialog.dismiss();
+        progressDialog.dismiss();
 
         // Store userdata in GameSettings
-        GameSettings.drawableCache = new DrawableManager(5);
+        DrawableManager.InitializeCache(5);
 
         // Update UI
         loginViewFlipper.setDisplayedChild(LOGIN_WELCOME);// Show welcome screen
         loginWelcomeTextView.setText(String.format(getString(R.string.welcome_message), localProfile.getName()));
-
         mainButton.setText(getString(R.string.start));
         mainButton.setTextSize(60);
         profileControlFooter.setVisibility(View.VISIBLE);
+        if(localProfile.getPictureUrl()==null)
+            profilePicture.setImageResource(R.mipmap.default_profile_picture);
+        else
+            DrawableManager.cache.fetchDrawableAsync(localProfile.getPictureUrl(), profilePicture);
 
         // TODO: check the correctness of the token
 
@@ -225,9 +234,6 @@ public class MainActivity extends AppCompatActivity {
     private void showLoginView() {
         // User is not registered
         accountRegistered = false;
-
-        // Dismiss progressDialog
-        //progressDialog.dismiss();
 
         // Update UI
         mainButton.setText(getString(R.string.register));
@@ -268,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
      * to create an account on our server by calling registerFacebookAccount.
      */
     private void loadFacebookUserData() {
-        //progressDialog = ProgressDialog.show(this, "Loading userdata", "Please wait...", true, false);
+        progressDialog = ProgressDialog.show(this, "Loading userdata", "Please wait...", true, false);
         FacebookRequest.sendRequest(facebookToken, new FacebookRequest.Callback() {
             @Override
             public void handleResult(Profile facebookProfile) {
@@ -299,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
                                 public void handleResult(String data) {
                                     try {
                                         JSONObject result = new JSONObject(data);
-                                        newProfile.setFriends(new FriendList(result.getString("friends"), true));
+                                        newProfile.setFriends(new FriendList(result.getString("friends")));
                                         Profile dataToUpdate = Profile.GetUpdatedData(localProfile, newProfile);
                                         pushUpdatedDataToServer(localProfile, dataToUpdate);
                                     } catch (JSONException e) {
@@ -475,9 +481,10 @@ public class MainActivity extends AppCompatActivity {
      */
     public void mainButtonPressed(View view) {
         EditText nameBox = (EditText) findViewById(R.id.name_entry);
-        if(!accountRegistered)
+        if(!accountRegistered) {
+            progressDialog = ProgressDialog.show(this, "Creating account", "Please wait...", true, false);
             registerAccount(new Profile(nameBox.getText().toString()));// Account not registered => register is pressed => Register
-        else{
+        }else{
             // Check if gps is enabled
             if (!isGpsEnabled())
                 buildAlertMessageNoGps();
@@ -583,6 +590,10 @@ public class MainActivity extends AppCompatActivity {
                 .setNegativeButton(R.string.decline_popup, new DialogInterface.OnClickListener() {
                     public void onClick(final DialogInterface dialog, @SuppressWarnings("unused") final int id) {
                         dialog.cancel();
+                        if(isInternetEnabled())
+                            updateUI();
+                        else
+                            buildAlertMessageNoInternet();
                     }
                 });
         final AlertDialog alert = builder.create();
