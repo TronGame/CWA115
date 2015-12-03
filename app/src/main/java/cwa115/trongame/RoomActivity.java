@@ -258,7 +258,7 @@ public class RoomActivity extends AppCompatActivity
     private void startGame() {
         roomUpdater.cancel();
 
-        if (GameSettings.getGameToken() == null) {
+        if (GameSettings.getGameToken() != null) {
             dataServer.sendRequest(
                 ServerCommand.START_GAME,
                 ImmutableMap.of("token", GameSettings.getGameToken()),
