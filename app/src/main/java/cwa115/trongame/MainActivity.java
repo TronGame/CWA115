@@ -213,10 +213,6 @@ public class MainActivity extends AppCompatActivity {
         // Update UI
         loginViewFlipper.setDisplayedChild(LOGIN_WELCOME);// Show welcome screen
         loginWelcomeTextView.setText(String.format(getString(R.string.welcome_message), localProfile.getName()));
-        if(localProfile.getPictureUrl()==null)
-            profilePicture.setImageResource(R.mipmap.default_profile_picture);
-        else
-            GameSettings.drawableCache.fetchDrawableAsync(localProfile.getPictureUrl(), profilePicture);
 
         mainButton.setText(getString(R.string.start));
         mainButton.setTextSize(60);

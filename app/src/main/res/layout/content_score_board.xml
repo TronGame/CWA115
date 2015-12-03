@@ -27,5 +27,5 @@
         android:background="@color/transparentWhite"
         android:layout_weight="0.95"
         android:layout_marginTop="10dp"
-        android:clickable="true"/>
+        android:clickable="true" />
 </LinearLayout>

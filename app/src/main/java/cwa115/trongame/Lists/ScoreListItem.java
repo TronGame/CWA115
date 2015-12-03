@@ -51,4 +51,9 @@ public class ScoreListItem {
     public String getPlayerPictureUrl(){
         return player.getPictureUrl();
     }
+
+    public Profile getProfile(){
+        return player;
+    }
 }
+

@@ -1,9 +1,12 @@
 package cwa115.trongame;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
 import org.json.JSONArray;
@@ -61,7 +64,7 @@ public class ScoreBoardActivity extends AppCompatActivity {
         dataServer.sendRequest(ServerCommand.SCOREBOARD, null, new HttpConnector.Callback() {
             @Override
             public void handleResult(String data) {
-                List<ScoreListItem> scoreList = new ArrayList<ScoreListItem>();
+                final List<ScoreListItem> scoreList = new ArrayList<ScoreListItem>();
                 try{
                     JSONArray result = new JSONArray(data);
                     for(int i = 0; i < result.length(); ++i) {
@@ -73,9 +76,24 @@ public class ScoreBoardActivity extends AppCompatActivity {
                 } catch(JSONException e) {
                     e.printStackTrace();
                 }
-                ListView lobbyList = (ListView) findViewById(R.id.score_list);
+                final ListView scoreboardList = (ListView) findViewById(R.id.score_list);
                 ScoreCustomAdapter adapter = new ScoreCustomAdapter(ScoreBoardActivity.this, scoreList);
-                lobbyList.setAdapter(adapter);
+                scoreboardList.setAdapter(adapter);
+                scoreboardList.setClickable(true);
+                scoreboardList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
+                        ScoreListItem clickedItem = (ScoreListItem) scoreList.get(position);
+
+                        Bundle data = new Bundle();
+                        data.putParcelable(ProfileActivity.PROFILE_EXTRA, clickedItem.getProfile());
+
+                        Intent intent = new Intent(getBaseContext(), ProfileActivity.class);
+                        intent.putExtra(ProfileActivity.DATA_EXTRA, data);
+
+                        startActivity(intent);
+                    }
+                });
+
             }
         });
     }
