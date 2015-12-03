@@ -33,6 +33,7 @@ import com.google.maps.model.SnappedPoint;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,16 +77,17 @@ public class GameActivity extends AppCompatActivity implements
 
     // region Variables
     // -----------------------------------------------------------------------------------------------------------------
+    // General Settings
     private static final int FINAL_SCORE_TIMEOUT = 1;   // in seconds
     private static final boolean IMMORTAL = true;
     private static final boolean HAS_EVENTS = true;
+    private static final int KILL_SCORE = 500;
 
     // Location thresholds
     private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(10);   // About 10m
     private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(100);    // About 10m
     private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(1);     // About 1m
     private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(20);     // About 20m
-    private static final int KILL_SCORE = 500;
 
     // Permission request ids
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
@@ -253,7 +255,23 @@ public class GameActivity extends AppCompatActivity implements
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
         // Start the game
-        isAlive = true;
+        if (GameSettings.getSpectate()) {
+            isAlive = false;
+            // Hide all wall controls
+            Button startWallButton = (Button) findViewById(R.id.toggleWallButton);
+            startWallButton.setVisibility(View.GONE);
+
+            Button clearWallButton = (Button) findViewById(R.id.clearWallButton);
+            clearWallButton.setVisibility(View.GONE);
+
+            Button breakWallButton = (Button) findViewById(R.id.breakWallButton);
+            breakWallButton.setVisibility(View.GONE);
+
+            TextView textView = (TextView) findViewById(R.id.travelledDistance);
+            textView.setVisibility(View.GONE);
+        } else
+            isAlive = true;
+
         playersAliveCount = GameSettings.getPlayersInGame().size();
 
         // Activate end game timer
@@ -314,8 +332,10 @@ public class GameActivity extends AppCompatActivity implements
             // Update the player marker and the camera
             map.updatePlayer(GameSettings.getPlayerId(), newSnappedGpsLoc);
             map.updateCamera(newSnappedGpsLoc);
+
             // Send the player location
-            gameUpdateHandler.sendMyLocation(newSnappedGpsLoc);
+            if (!GameSettings.getSpectate())
+                gameUpdateHandler.sendMyLocation(newSnappedGpsLoc);
 
             if (isAlive) {
                 // Calculate the distance from the last location to the new location and show it on the screen
@@ -364,7 +384,8 @@ public class GameActivity extends AppCompatActivity implements
             map.updateCamera(gpsLoc);           // Zoom to there as well
 
             // Send the player location
-            gameUpdateHandler.sendMyLocation(gpsLoc);
+            if (!GameSettings.getSpectate())
+                gameUpdateHandler.sendMyLocation(gpsLoc);
 
             if (isAlive) {
                 // onDeath("", ""); TODO killPlayer?
@@ -385,6 +406,9 @@ public class GameActivity extends AppCompatActivity implements
      * @param view parameter passed by the button
      */
     public void createWall(View view) {
+        if (!isAlive)
+            return;
+
         // Is the player currently creating a wall
         if (!creatingWall) {
             // Start creating a wall
@@ -434,6 +458,9 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     public void breakWall(View view) {
+        if (!isAlive)
+            return;
+
         ArrayList<Wall> walls = map.getWalls();
         for (Wall wall : walls) {
             ArrayList<Wall> newWalls = wall.splitWall(snappedGpsLoc, holeSize);
@@ -546,6 +573,9 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     public void sendScore() {
+        if (GameSettings.getSpectate())
+            return;
+
         double score = getScore();
         gameUpdateHandler.sendScore(score);
     }

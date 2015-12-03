@@ -112,28 +112,32 @@ public class LobbyActivity extends AppCompatActivity {
                         GameSettings.setOwnerId(clickedItem.getHostId());
                         GameSettings.setCanBreakWall(clickedItem.getCanBreakWall());
                         GameSettings.setTimelimit(clickedItem.getTimeLimit());
+                        GameSettings.setMaxPlayers(clickedItem.getPlayersAsInteger());
                         GameSettings.setSpectate(checkBoxView.isChecked());
                         showToast("Joining " + gameName);
 
-                        Map<String, String> query = ImmutableMap.of(
-                                "gameId", String.valueOf(roomIds.get(gameName)),
-                                "id", String.valueOf(GameSettings.getPlayerId()),
-                                "token", GameSettings.getPlayerToken());
+                        if (!GameSettings.getSpectate()) {
+                            Map<String, String> query = ImmutableMap.of(
+                                    "gameId", String.valueOf(roomIds.get(gameName)),
+                                    "id", String.valueOf(GameSettings.getPlayerId()),
+                                    "token", GameSettings.getPlayerToken());
 
-                        GameSettings.setMaxPlayers(clickedItem.getPlayersAsInteger());
-                        dataServer.sendRequest(ServerCommand.JOIN_GAME, query, new HttpConnector.Callback() {
-                            @Override
-                            public void handleResult(String data) {
-                                try {
-                                    JSONObject result = new JSONObject(data);
-                                    // TODO check for errors
-                                    showRoomActivity();
+                            dataServer.sendRequest(ServerCommand.JOIN_GAME, query, new HttpConnector.Callback() {
+                                @Override
+                                public void handleResult(String data) {
+                                    try {
+                                        JSONObject result = new JSONObject(data);
+                                        // TODO check for errors
+                                        showRoomActivity();
 
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        } else {
+                            showRoomActivity();
+                        }
                     }
                 });
             }

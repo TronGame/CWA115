@@ -136,9 +136,10 @@ public class RoomActivity extends AppCompatActivity
                                 ));
                                 containsSelf = containsSelf || (playerId == GameSettings.getUserId());
                             }
-                            if (!containsSelf) {
+                            if (!containsSelf && !GameSettings.getSpectate()) {
                                 safeExit();
                             }
+
                             ListView lobbyList = (ListView) findViewById(R.id.room_list);
                             RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
                             lobbyList.setAdapter(adapter);
@@ -168,6 +169,7 @@ public class RoomActivity extends AppCompatActivity
         GameSettings.setOwnerId(0);
         GameSettings.setCanBreakWall(false);
         GameSettings.setTimelimit(-1);
+        GameSettings.setSpectate(false);
         finish();
     }
 

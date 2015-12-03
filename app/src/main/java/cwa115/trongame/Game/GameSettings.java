@@ -26,7 +26,7 @@ public final class GameSettings {
     private static boolean canBreakWall;
     private static int timelimit = -1;
     private static List<Integer> playersInGame;
-    private static boolean spectate;
+    private static boolean spectate = false;
     public static DrawableManager drawableCache;
 
 

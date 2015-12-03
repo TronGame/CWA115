@@ -46,7 +46,7 @@ public class GameEventHandler {
 
     public void start() {
         // TODO add random time here
-        int time = 2;
+        int time = 30;
         timerHandler = new Handler() {
             @Override
             public void handleMessage(Message message) {
@@ -144,6 +144,9 @@ public class GameEventHandler {
      * @param eventType The type of the event
      */
     public void endEvent(int ownerId, String eventType) {
+        if (GameSettings.getSpectate())
+            return;
+
         if (ownerId == GameSettings.getOwner()) {
             if (currentEvent != null && currentEvent.getEventType().equals(eventType)) {
                 JSONObject result = currentEvent.collectData(gameActivity);
@@ -169,6 +172,9 @@ public class GameEventHandler {
      * @param eventType The type of the event
      */
     public void startEvent(int ownerId, String eventType) {
+        if (GameSettings.getSpectate())
+            return;
+
         if (ownerId == GameSettings.getOwner()) {
             if (currentEvent == null) {
                 currentEvent = getEvent(eventType);
