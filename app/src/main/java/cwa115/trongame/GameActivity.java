@@ -273,7 +273,7 @@ public class GameActivity extends AppCompatActivity implements
                 }
             };
             // TODO change this to minutes
-            worker.schedule(task, GameSettings.getTimelimit(), TimeUnit.SECONDS);
+            worker.schedule(task, GameSettings.getTimelimit()*60, TimeUnit.SECONDS);
         }
     }
 
