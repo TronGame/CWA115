@@ -20,16 +20,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/games_available"
-            android:textSize="35sp"
-            android:textColor="@color/basicBlack"/>
+            android:textSize="35dp"
+            android:textColor="@color/basicBlack"
+            android:layout_weight="0.025"/>
         <ListView
             android:id="@+id/mainList"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:background="@color/transparentWhite"
-            android:layout_weight="0.80"
+            android:layout_weight="0.95"
             android:layout_marginTop="10dp"
             android:clickable="true"/>
+
+
+    <LinearLayout
+        android:layout_weight="0.025"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -37,13 +45,23 @@
             android:textSize="35sp"
             android:layout_marginTop="10dp"
             android:padding="10dp"
-            android:background="@drawable/rounded_button_blue"
-            android:onClick="showHostingActivity"/>
-
+            android:background="@drawable/rounded_button_blue_light"
+            android:onClick="showHostingActivity"
+            android:gravity="end"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/showScoreboard"
-            android:onClick="showScoreBoard"/>
+            android:onClick="showScoreBoard"
+            android:id="@+id/hostButton"
+            android:textSize="20sp"
+            android:background="@drawable/rounded_button_blue"
+            android:layout_marginLeft="20dp"/>
+
+
+
+    </LinearLayout>
+
+
 
 </LinearLayout>

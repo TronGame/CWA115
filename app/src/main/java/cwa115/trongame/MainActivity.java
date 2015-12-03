@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     private Button mainButton;
     private TextView loginWelcomeTextView;
     private ProgressDialog progressDialog;
+    private ImageView profilePicture;
 
     private ConnectivityManager connectivityManager;
     private LocationManager locationManager;
@@ -100,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
         mainButton = (Button)findViewById(R.id.main_button);
         profileControlFooter = (LinearLayout)findViewById(R.id.profileControlFooter);
         loginWelcomeTextView = (TextView)findViewById(R.id.login_welcome_textview);
+        profilePicture = (ImageView)findViewById(R.id.mainActivityProfilePicture);
 
         // Load managers
         connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -207,6 +210,11 @@ public class MainActivity extends AppCompatActivity {
         // Update UI
         loginViewFlipper.setDisplayedChild(LOGIN_WELCOME);// Show welcome screen
         loginWelcomeTextView.setText(String.format(getString(R.string.welcome_message), localProfile.getName()));
+        if(localProfile.getPictureUrl()==null)
+            profilePicture.setImageResource(R.mipmap.default_profile_picture);
+        else
+            GameSettings.drawableCache.fetchDrawableAsync(localProfile.getPictureUrl(), profilePicture);
+
         mainButton.setText(getString(R.string.start));
         mainButton.setTextSize(60);
         profileControlFooter.setVisibility(View.VISIBLE);
@@ -284,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void handleResult(final Profile newProfile) {
                 // newProfile contains FACEBOOK-userids instead of SERVER-userids:
-                if(newProfile.getFriends().size()>0){
+                if (newProfile.getFriends().size() > 0) {
                     // Get corresponding friend ids
                     dataServer.sendRequest(
                             ServerCommand.GET_FRIEND_IDS,
@@ -297,12 +305,12 @@ public class MainActivity extends AppCompatActivity {
                                         newProfile.setFriends(new FriendList(result.getString("friends")));
                                         Profile dataToUpdate = Profile.GetUpdatedData(localProfile, newProfile);
                                         pushUpdatedDataToServer(localProfile, dataToUpdate);
-                                    }catch(JSONException e){
+                                    } catch (JSONException e) {
                                         showToast(R.string.update_failed);
                                     }
                                 }
                             });
-                }else {
+                } else {
                     Profile dataToUpdate = Profile.GetUpdatedData(localProfile, newProfile);
                     pushUpdatedDataToServer(localProfile, dataToUpdate);
                 }
@@ -318,34 +326,34 @@ public class MainActivity extends AppCompatActivity {
                 ServerCommand.UPDATE_ACCOUNT,
                 dataToUpdate.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM, Profile.SERVER_NAME_PARAM, Profile.SERVER_PICTURE_URL_PARAM),
                 new HttpConnector.Callback() {
-                @Override
-                public void handleResult(String data) {
-                    try {
-                        JSONObject result = new JSONObject(data);
-                        if (result.getBoolean("success")) {
-                            if(dataToUpdate.getFriends()!=null) {
-                                // Also add new friends:
-                                Map<String, String> query = dataToUpdate.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM, Profile.SERVER_FRIENDS_PARAM);
-                                query.put("accepted", "1");
-                                dataServer.sendRequest(
-                                        ServerCommand.ADD_FRIENDS,
-                                        query,
-                                        new HttpConnector.Callback() {
-                                            @Override
-                                            public void handleResult(String data) {
-                                                updateServerUserData(localProfile, false);
+                    @Override
+                    public void handleResult(String data) {
+                        try {
+                            JSONObject result = new JSONObject(data);
+                            if (result.getBoolean("success")) {
+                                if (dataToUpdate.getFriends() != null) {
+                                    // Also add new friends:
+                                    Map<String, String> query = dataToUpdate.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM, Profile.SERVER_FRIENDS_PARAM);
+                                    query.put("accepted", "1");
+                                    dataServer.sendRequest(
+                                            ServerCommand.ADD_FRIENDS,
+                                            query,
+                                            new HttpConnector.Callback() {
+                                                @Override
+                                                public void handleResult(String data) {
+                                                    updateServerUserData(localProfile, false);
+                                                }
                                             }
-                                        }
-                                );
-                            }else
-                                updateServerUserData(localProfile, false);
-                        }else
+                                    );
+                                } else
+                                    updateServerUserData(localProfile, false);
+                            } else
+                                showToast(R.string.update_failed);
+                        } catch (JSONException e) {
                             showToast(R.string.update_failed);
-                    } catch (JSONException e) {
-                        showToast(R.string.update_failed);
+                        }
                     }
-                }
-        });
+                });
     }
 
     /***
@@ -398,17 +406,17 @@ public class MainActivity extends AppCompatActivity {
                 ServerCommand.GET_FRIEND_IDS,
                 ImmutableMap.of("facebookIds", new JSONArray(facebookProfile.getFriends().ToIdList()).toString()),
                 new HttpConnector.Callback() {
-                @Override
-                public void handleResult(String data) {
-                    try {
-                        JSONObject result = new JSONObject(data);
-                        facebookProfile.setFriends(new FriendList(result.getString("friends")));
-                        registerAccount(facebookProfile);
-                    } catch (JSONException e) {
-                        showToast(R.string.register_failed);
+                    @Override
+                    public void handleResult(String data) {
+                        try {
+                            JSONObject result = new JSONObject(data);
+                            facebookProfile.setFriends(new FriendList(result.getString("friends")));
+                            registerAccount(facebookProfile);
+                        } catch (JSONException e) {
+                            showToast(R.string.register_failed);
+                        }
                     }
-                }
-        });
+                });
     }
 
     /***

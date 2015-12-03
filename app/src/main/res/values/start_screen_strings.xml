@@ -38,4 +38,7 @@
     <string name="gps_disabled_message">Your GPS seems to be disabled, do you want to enable it?</string>
     <string name="show_profile">Show profile</string>
     <string name="internet_unavailable_message">You don\'t seem to be connected to the internet, do you want to connect?</string>
+    <string name="scoreboardTitle">Scoreboard</string>
+    <string name="name">Name</string>
+    <string name="gamesWon">Games Won</string>
 </resources>
