@@ -247,7 +247,6 @@ public class RoomActivity extends AppCompatActivity
                         }
                         GameSettings.setPlayersInGame(listOfPlayerIds);
                         startGame();
-                        showGameActivity();
 
                     } catch (JSONException e) {
                         e.printStackTrace();
