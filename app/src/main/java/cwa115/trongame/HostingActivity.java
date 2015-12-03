@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import cwa115.trongame.Game.GameSettings;
@@ -37,36 +38,40 @@ public class HostingActivity extends AppCompatActivity {
         GameSettings.setMaxPlayers(maxPlayers);
         CheckBox breakWallBox = (CheckBox) findViewById(R.id.checkBoxWallBreaker);
         final boolean canBreakWalls = breakWallBox.isChecked();
-        Map<String, String> query = ImmutableMap.of(
-                "owner", Integer.toString(GameSettings.getUserId()),
-                "name", gameName,
-                "token", GameSettings.getPlayerToken(),
-                "maxPlayers", Integer.toString(maxPlayers),
-                "canBreakWall", (canBreakWalls ? "1" : "0"));
+        Map<String, String> query = new HashMap<>();
+
+        query.put("owner", Integer.toString(GameSettings.getUserId()));
+        query.put("name", gameName);
+        query.put("token", GameSettings.getPlayerToken());
+        query.put("maxPlayers", Integer.toString(maxPlayers));
+        query.put("canBreakWall", (canBreakWalls ? "1" : "0"));
         query.put("timeLimit", Integer.toString(getTimeLimit()));
+
+        query = ImmutableMap.copyOf(query);
+
         dataServer.sendRequest(
                 ServerCommand.INSERT_GAME,
                 query,
                 new HttpConnector.Callback() {
-                @Override
-                public void handleResult(String data) {
-                    try {
-                        JSONObject result = new JSONObject(data);
-                        GameSettings.setGameToken(result.getString("token"));
-                        GameSettings.setGameId(result.getInt("id"));
-                        GameSettings.setGameName(gameName);
-                        GameSettings.setOwnerId(GameSettings.getUserId());
-                        GameSettings.setCanBreakWall(canBreakWalls);
-                        GameSettings.setTimelimit(getTimeLimit());
-                        joinOwnGame();
-                    } catch (JSONException e) {
-                        Toast.makeText(
-                                getBaseContext(), getString(R.string.hosting_failed),
-                                Toast.LENGTH_SHORT
-                        ).show();
+                    @Override
+                    public void handleResult(String data) {
+                        try {
+                            JSONObject result = new JSONObject(data);
+                            GameSettings.setGameToken(result.getString("token"));
+                            GameSettings.setGameId(result.getInt("id"));
+                            GameSettings.setGameName(gameName);
+                            GameSettings.setOwnerId(GameSettings.getUserId());
+                            GameSettings.setCanBreakWall(canBreakWalls);
+                            GameSettings.setTimelimit(getTimeLimit());
+                            joinOwnGame();
+                        } catch (JSONException e) {
+                            Toast.makeText(
+                                    getBaseContext(), getString(R.string.hosting_failed),
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
                     }
-                }
-        });
+                });
 
     }
 
@@ -94,7 +99,7 @@ public class HostingActivity extends AppCompatActivity {
     private int getTimeLimit(){
         EditText editTimeLimit = (EditText) findViewById(R.id.editTimeLimit);
         String timeLimit = editTimeLimit.getText().toString();
-        if (timeLimit == getString(R.string.unlimited))
+        if (timeLimit.equals(""))
             return -1;
         else
             return Integer.parseInt(timeLimit);
