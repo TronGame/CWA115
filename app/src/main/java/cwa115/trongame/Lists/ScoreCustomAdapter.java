@@ -5,10 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
 
+import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.R;
 
 public class ScoreCustomAdapter extends BaseAdapter {
@@ -44,6 +46,12 @@ public class ScoreCustomAdapter extends BaseAdapter {
         playerName.setText(entry.getPlayerName());
         TextView playerWins = (TextView) convertView.findViewById(R.id.scorePlayerWins);
         playerWins.setText(Integer.toString(entry.getGamesWon()));
+        ImageView profilePicture = (ImageView) convertView.findViewById(R.id.scoreBoardPicture);
+        if(entry.getPlayerPictureUrl()==null)
+            profilePicture.setImageResource(R.mipmap.default_profile_picture);
+        else
+            GameSettings.drawableCache.fetchDrawableAsync(entry.getPlayerPictureUrl(), profilePicture);
+
         return convertView;
     }
 }

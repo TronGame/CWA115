@@ -18,13 +18,14 @@
         android:text="@string/scoreboardTitle"
         android:textSize="35sp"
         android:textColor="@color/basicBlack"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:layout_weight="0.05"/>
     <ListView
         android:id="@+id/score_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:background="@color/transparentWhite"
-        android:layout_weight="0.80"
+        android:layout_weight="0.95"
         android:layout_marginTop="10dp"
         android:clickable="true"/>
 </LinearLayout>
