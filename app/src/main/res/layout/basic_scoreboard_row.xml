@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent">
     <ImageView
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:src="@mipmap/default_profile_picture"
-        android:id="@+id/scoreBoardPicture"/>
+        android:id="@+id/scoreBoardPicture"
+        android:layout_alignParentLeft="true"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:textSize="20sp"
-        android:id="@+id/scorePlayerName"/>
+        android:id="@+id/scorePlayerName"
+        android:layout_toRightOf="@id/scoreBoardPicture"/>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="50dp"
         android:textSize="20sp"
-        android:id="@+id/scorePlayerWins"/>
-</LinearLayout>
+        android:id="@+id/scorePlayerWins"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="25dp"/>
+</RelativeLayout>
