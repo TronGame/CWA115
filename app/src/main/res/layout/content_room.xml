@@ -28,7 +28,7 @@
         android:id="@+id/room_list"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:background="@color/transparentWhite"
+        android:background="@drawable/rounded_list"
         android:layout_centerVertical="true"
         android:layout_alignLeft="@+id/readyButton"
         android:layout_alignStart="@+id/readyButton" />
