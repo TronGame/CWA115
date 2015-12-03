@@ -114,48 +114,48 @@ public class RoomActivity extends AppCompatActivity
                 ServerCommand.SHOW_GAME,
                 ImmutableMap.of("gameId", String.valueOf(GameSettings.getGameId())),
                 new HttpConnector.Callback() {
-                @Override
-                public void handleResult(String data) {
-                    final List<RoomListItem> listOfPlayerNames = new ArrayList<>();
-                    try {
-                        JSONObject result = new JSONObject(data);
-                        if (result.getBoolean("hasStarted")) {
-                            roomUpdater.cancel();
-                            gameReady(null);
-                            return;
+                    @Override
+                    public void handleResult(String data) {
+                        final List<RoomListItem> listOfPlayerNames = new ArrayList<>();
+                        try {
+                            JSONObject result = new JSONObject(data);
+                            if (result.getBoolean("hasStarted")) {
+                                roomUpdater.cancel();
+                                gameReady(null);
+                                return;
+                            }
+                            JSONArray players = result.getJSONArray("players");
+                            boolean containsSelf = false;
+                            for (int i = 0; i < players.length(); i++) {
+                                JSONObject player = players.getJSONObject(i);
+                                int playerId = player.getInt("id");
+                                listOfPlayerNames.add(new RoomListItem(
+                                        player.getString("name"), listOfColors.get(i), playerId
+                                ));
+                                containsSelf = containsSelf || (playerId == GameSettings.getUserId());
+                            }
+                            if (!containsSelf) {
+                                safeExit();
+                            }
+                            ListView lobbyList = (ListView) findViewById(R.id.room_list);
+                            RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
+                            lobbyList.setAdapter(adapter);
+                            if (GameSettings.isOwner()) {
+                                lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                    public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
+                                        RoomListItem clickedItem = listOfPlayerNames.get(position);
+                                        selectedPlayerName = clickedItem.getPlayerName();
+                                        selectedPlayerId = clickedItem.getPlayerId();
+                                        showNoticeDialog();
+                                    }
+                                });
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            safeExit(); // Probably game was deleted
                         }
-                        JSONArray players = result.getJSONArray("players");
-                        boolean containsSelf = false;
-                        for (int i = 0; i < players.length(); i++) {
-                            JSONObject player = players.getJSONObject(i);
-                            int playerId = player.getInt("id");
-                            listOfPlayerNames.add(new RoomListItem(
-                                    player.getString("name"), listOfColors.get(i), playerId
-                            ));
-                            containsSelf = containsSelf || (playerId == GameSettings.getUserId());
-                        }
-                        if (!containsSelf) {
-                            safeExit();
-                        }
-                        ListView lobbyList = (ListView) findViewById(R.id.room_list);
-                        RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
-                        lobbyList.setAdapter(adapter);
-                        if(GameSettings.isOwner()) {
-                            lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                                public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
-                                    RoomListItem clickedItem = listOfPlayerNames.get(position);
-                                    selectedPlayerName = clickedItem.getPlayerName();
-                                    selectedPlayerId = clickedItem.getPlayerId();
-                                    showNoticeDialog();
-                                }
-                            });
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        safeExit(); // Probably game was deleted
                     }
-                }
-        });
+                });
 
     }
 
@@ -232,42 +232,47 @@ public class RoomActivity extends AppCompatActivity
                 ServerCommand.SHOW_GAME,
                 ImmutableMap.of("gameId", String.valueOf(GameSettings.getGameId())),
                 new HttpConnector.Callback() {
-                @Override
-                public void handleResult(String data) {
-                    try {
-                        JSONObject result = new JSONObject(data);
-                        JSONArray players = result.getJSONArray("players");
-                        List<Integer> listOfPlayerIds = new ArrayList<>();
-                        for (int i = 0; i < players.length(); i++) {
-                            JSONObject player = players.getJSONObject(i);
-                            listOfPlayerIds.add(player.getInt("id"));
-                            // TODO make sure that this happens more reliably (the server might have to store player color as well?)
-                            if (player.getInt("id") == GameSettings.getUserId())
-                                GameSettings.setWallColor(listOfColors.get(i));
-                        }
-                        GameSettings.setPlayersInGame(listOfPlayerIds);
-                        startGame();
+                    @Override
+                    public void handleResult(String data) {
+                        try {
+                            JSONObject result = new JSONObject(data);
+                            JSONArray players = result.getJSONArray("players");
+                            List<Integer> listOfPlayerIds = new ArrayList<>();
+                            for (int i = 0; i < players.length(); i++) {
+                                JSONObject player = players.getJSONObject(i);
+                                listOfPlayerIds.add(player.getInt("id"));
+                                // TODO make sure that this happens more reliably (the server might have to store player color as well?)
+                                if (player.getInt("id") == GameSettings.getUserId())
+                                    GameSettings.setWallColor(listOfColors.get(i));
+                            }
+                            GameSettings.setPlayersInGame(listOfPlayerIds);
+                            startGame();
 
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
-                }
-        });
+                });
     }
 
     private void startGame() {
         roomUpdater.cancel();
 
-        dataServer.sendRequest(
+        if (GameSettings.getGameToken() == null) {
+            dataServer.sendRequest(
                 ServerCommand.START_GAME,
                 ImmutableMap.of("token", GameSettings.getGameToken()),
                 new HttpConnector.Callback() {
-                @Override
-                public void handleResult(String data) {
-                    // TODO check for errors
-                    showGameActivity();
+                    @Override
+                    public void handleResult(String data) {
+                        // TODO check for errors
+                        showGameActivity();
+                    }
                 }
-        });
+            );
+        } else {
+            showGameActivity();
+        }
     }
 
     private void showGameActivity() {
