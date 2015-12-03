@@ -762,15 +762,12 @@ public class GameActivity extends AppCompatActivity implements
         if(isBellRinging)
             return; // Wait for the bell to stop ringing
         isBellRinging = true;
-        Player me = (Player)map.getItemById(GameSettings.getPlayerId());
-        me.setCustomMarker(R.mipmap.bell_marker);
+        gameUpdateHandler.sendBellSound(GameSettings.getPlayerId());
 
         // After 3 seconds, disable the bell.
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Player me = (Player)map.getItemById(GameSettings.getPlayerId());
-                me.resetMarker();
                 isBellRinging = false;
             }
         }, 3000);

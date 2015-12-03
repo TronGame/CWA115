@@ -1,9 +1,8 @@
 package cwa115.trongame.Game;
 
+import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.google.android.gms.games.Game;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.GeoApiContext;
 
@@ -18,6 +17,7 @@ import cwa115.trongame.Map.Player;
 import cwa115.trongame.Map.Wall;
 import cwa115.trongame.Network.SocketIoConnection;
 import cwa115.trongame.Network.SocketIoHandler;
+import cwa115.trongame.R;
 import cwa115.trongame.Utils.LatLngConversion;
 
 /**
@@ -58,6 +58,7 @@ public class GameUpdateHandler implements SocketIoHandler {
 
         public static final String FINAL_SCORE = "totalScore";
         public static final String WINNER_ID = "winnerId";
+        public static final String BELL_MESSAGE = "ringBell";
     }
 
     public GameUpdateHandler(GameActivity gameActivity, SocketIoConnection socket, Map map, GeoApiContext context) {
@@ -145,6 +146,9 @@ public class GameUpdateHandler implements SocketIoHandler {
                             message.getString(Protocol.WINNER_ID)
                     );
                     break;
+                // Remote bell
+                case Protocol.BELL_MESSAGE:
+                    onBellSound(message.getString(Protocol.PLAYER_ID));
                 default:
                     break;
 
@@ -269,6 +273,20 @@ public class GameUpdateHandler implements SocketIoHandler {
         if (GameSettings.getOwner() == Integer.valueOf(playerId))
             gameActivity.setWinner(winner);
             gameActivity.showWinner();
+    }
+
+    public void onBellSound(final String playerId) {
+        Player remotePlayer = (Player)map.getItemById(GameSettings.getPlayerId());
+        remotePlayer.setCustomMarker(R.mipmap.bell_marker);
+
+        // After 3 seconds, disable the bell.
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Player me = (Player)map.getItemById(playerId);
+                me.resetMarker();
+            }
+        }, 3000);
     }
 
     // endregion
@@ -407,6 +425,16 @@ public class GameUpdateHandler implements SocketIoHandler {
             e.printStackTrace();
         }
         socket.sendMessage(scoreMessage, Protocol.WINNER_MESSAGE);
+    }
+
+    public void sendBellSound(String playerId) {
+        JSONObject bellMessage = new JSONObject();
+        try {
+            bellMessage.put(Protocol.PLAYER_ID, playerId);
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
+        socket.sendMessage(bellMessage, Protocol.BELL_MESSAGE);
     }
 
     // endregion
