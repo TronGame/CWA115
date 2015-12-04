@@ -91,6 +91,7 @@ public class NotificationService extends Service {
                                     int inviteId = invite.getInt("inviteId");
                                     int inviterId = invite.getInt("inviterId");
                                     int gameId = invite.getInt("gameId");
+                                    //TODO: check if game still exists, otherwise delete invite
                                     showGameInviteNotification(inviteId, inviterId, gameId);
                                 }
                             }else
