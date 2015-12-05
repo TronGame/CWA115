@@ -28,6 +28,7 @@ import cwa115.trongame.Utils.Vector2D;
  */
 public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
 
+    static final private boolean SNAP_WALL = false; // TODO maybe set this to true
     static final private int LINE_WIDTH = 15;
 
     private String id;                      // The wall id
@@ -67,19 +68,21 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
         if (points.size() == 1)
             points.add(point);
 
-        // Create a PendingResult object
-        // This is used by the snappedPointHandler to snap the provided points to the road
-        PendingResult<SnappedPoint[]> req = RoadsApi.snapToRoads(
-                context,                                    // The context (basically the api key used by google
-                true,                                       // Interpolate the points (add new points to smooth the line
-                LatLngConversion.getConvertedPoints(points) // The points that need to be snapped (these need to be converted to a different type of LatLng
-        );
-        // Check if the snappedPointHandler is still busy with a previous request
-        if (snappedPointHandler != null && !snappedPointHandler.isFinished())
-            snappedPointHandler.stop(); // Cancel the previous request
+        if (SNAP_WALL) {
+            // Create a PendingResult object
+            // This is used by the snappedPointHandler to snap the provided points to the road
+            PendingResult<SnappedPoint[]> req = RoadsApi.snapToRoads(
+                    context,                                    // The context (basically the api key used by google
+                    true,                                       // Interpolate the points (add new points to smooth the line
+                    LatLngConversion.getConvertedPoints(points) // The points that need to be snapped (these need to be converted to a different type of LatLng
+            );
+            // Check if the snappedPointHandler is still busy with a previous request
+            if (snappedPointHandler != null && !snappedPointHandler.isFinished())
+                snappedPointHandler.stop(); // Cancel the previous request
 
-        // Create a new snappedPointHandler to take care of the request
-        snappedPointHandler = new SnappedPointHandler(req, this);
+            // Create a new snappedPointHandler to take care of the request
+            snappedPointHandler = new SnappedPointHandler(req, this);
+        }
     }
 
     @Override
@@ -155,12 +158,12 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
         return PolyLineUtils.getDistanceToLine(new Vector2D(point), points);
     }
 
-    public boolean hasCrossed(LatLng last, LatLng current, double minDistance, String playerId) {
+    public boolean hasCrossed(LatLng last, LatLng current, double minDistance, double ignorePointsDist, String playerId) {
         boolean awayFromPlayer = !playerId.equals(ownerId);
         ArrayList<LatLng> points = new ArrayList<>(this.points);
         int n = points.size()-1;
         while (n>=0 && !awayFromPlayer) {
-            if (LatLngConversion.getDistancePoints(current, points.get(n)) < minDistance)
+            if (LatLngConversion.getDistancePoints(current, points.get(n)) < ignorePointsDist)
                 points.remove(n);
             else
                 awayFromPlayer = true;

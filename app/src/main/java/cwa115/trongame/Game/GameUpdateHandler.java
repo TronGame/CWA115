@@ -41,6 +41,7 @@ public class GameUpdateHandler implements SocketIoHandler {
         public static final String CREATE_WALL_MESSAGE = "createWall";
         public static final String REMOVE_WALL_MESSAGE = "removeWall";
         public static final String END_GAME_MESSAGE = "endGame";
+        public static final String START_GAME_MESSAGE = "startGame";
         public static final String FINAL_SCORE_MESSAGE = "finalScore";
         public static final String WINNER_MESSAGE = "winner";
 
@@ -126,6 +127,12 @@ public class GameUpdateHandler implements SocketIoHandler {
                             message.getString(Protocol.WALL_ID)
                     );
                     break;
+                // Start the game
+                case Protocol.START_GAME_MESSAGE:
+                    onStartGameMessage(
+                            message.getString(Protocol.PLAYER_ID)
+                    );
+                    break;
                 // End the game
                 case Protocol.END_GAME_MESSAGE:
                     onEndGameMessage(
@@ -161,7 +168,7 @@ public class GameUpdateHandler implements SocketIoHandler {
         }
     }
 
-    // region Removing messages
+    // region Receiving messages
     /**
      * Change the location of another player
      *
@@ -255,11 +262,32 @@ public class GameUpdateHandler implements SocketIoHandler {
      * @param ownerId The sender of the message
      */
     public void onEndGameMessage(String ownerId) {
+        if (ownerId.equals(GameSettings.getPlayerId()))
+            return; // We sent this ourselves
+
         if (!GameSettings.isOwner() && GameSettings.getOwner() == Integer.valueOf(ownerId)) {
             gameActivity.sendScore();
         }
     }
 
+    /**
+     * Start the game
+     * @param ownerId The id of the sender (this has to be the owner)
+     */
+    public void onStartGameMessage(String ownerId) {
+        if (ownerId.equals(GameSettings.getPlayerId()))
+            return; // We sent this ourselves
+
+        if (!GameSettings.isOwner() && GameSettings.getOwner() == Integer.valueOf(ownerId)) {
+            gameActivity.startGame();
+        }
+    }
+
+    /**
+     * Process a final score send by another player
+     * @param playerId The player
+     * @param score The score of that player
+     */
     public void onFinalScore(String playerId, double score) {
         if (GameSettings.getPlayerId().equals(playerId))
             return; // We sent this ourselves
@@ -267,14 +295,25 @@ public class GameUpdateHandler implements SocketIoHandler {
             gameActivity.storePlayerScore(playerId, score);
     }
 
-    public void onWinner(String playerId, String winner) {
-        if (GameSettings.getPlayerId().equals(playerId))
+    /**
+     * Process the winner received from the host
+     * @param ownerId The sender
+     * @param winner The winner
+     */
+    public void onWinner(String ownerId, String winner) {
+        if (GameSettings.getPlayerId().equals(ownerId))
             return; // We sent this ourselves
-        if (GameSettings.getOwner() == Integer.valueOf(playerId))
+
+        if (GameSettings.getOwner() == Integer.valueOf(ownerId))
             gameActivity.setWinner(winner);
             gameActivity.showWinner();
     }
 
+    /**
+     * Update the bike icon of the player that rang his bell
+     * (player id can be the id of the player himself)
+     * @param playerId the player that rang the bell
+     */
     public void onBellSound(final String playerId) {
         Player remotePlayer = (Player)map.getItemById(playerId);
         remotePlayer.setCustomMarker(R.mipmap.bell_marker);
@@ -292,11 +331,15 @@ public class GameUpdateHandler implements SocketIoHandler {
     // endregion
 
     // region Sending messages
+
     /**
      * Send the current player location
      * @param location the location of the player
      */
     public void sendMyLocation(LatLng location) {
+        if (GameSettings.getSpectate())
+            return;
+
         // Create the message that will be send over the socket connection
         JSONObject locationMessage = new JSONObject();
         try {
@@ -317,6 +360,9 @@ public class GameUpdateHandler implements SocketIoHandler {
      * @param killerName The name of the killer that has died
      */
     public void sendDeathMessage(String killerId, String killerName) {
+        if (GameSettings.getSpectate())
+            return;
+
         // Create the message that will be send over the socket connection
         JSONObject deathMessage = new JSONObject();
         try {
@@ -337,6 +383,9 @@ public class GameUpdateHandler implements SocketIoHandler {
      * @param point the point to be remotely added to the wall
      */
     public void sendUpdateWall(LatLng point, String wallId) {
+        if (GameSettings.getSpectate())
+            return;
+
         JSONObject updateWallMessage = new JSONObject();
         try {
             updateWallMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
@@ -356,6 +405,9 @@ public class GameUpdateHandler implements SocketIoHandler {
      * @param color The color of the newly created wall
      */
     public void sendCreateWall(String ownerId, String wallId, ArrayList<LatLng> points, int color) {
+        if (GameSettings.getSpectate())
+            return;
+
         JSONObject createWallMessage = new JSONObject();
         try {
             createWallMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
@@ -375,6 +427,9 @@ public class GameUpdateHandler implements SocketIoHandler {
      * @param wallId The id of the wall that has been removed
      */
     public void sendRemoveWall(String wallId) {
+        if (GameSettings.getSpectate())
+            return;
+
         JSONObject removeWallMessage = new JSONObject();
         try {
             removeWallMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
@@ -386,22 +441,12 @@ public class GameUpdateHandler implements SocketIoHandler {
     }
 
     /**
-     * Called by the host when the game has ended
-     */
-    public void sendEndGame() {
-        JSONObject endGameMessage = new JSONObject();
-        try {
-            endGameMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        socket.sendMessage(endGameMessage, Protocol.END_GAME_MESSAGE);
-    }
-
-    /**
      * Sends the score at the end of the game
      */
     public void sendScore(double score) {
+        if (GameSettings.getSpectate())
+            return;
+
         JSONObject scoreMessage = new JSONObject();
         try {
             scoreMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
@@ -411,6 +456,26 @@ public class GameUpdateHandler implements SocketIoHandler {
         }
         socket.sendMessage(scoreMessage, Protocol.FINAL_SCORE_MESSAGE);
     }
+
+    /**
+     * Tell the other players that your bell is ringing
+     * @param playerId Your id
+     */
+    public void sendBellSound(String playerId) {
+        if (GameSettings.getSpectate())
+            return;
+
+        JSONObject bellMessage = new JSONObject();
+        try {
+            bellMessage.put(Protocol.PLAYER_ID, playerId);
+        } catch(JSONException e) {
+            e.printStackTrace();
+        }
+        socket.sendMessage(bellMessage, Protocol.BELL_MESSAGE);
+    }
+
+    // Host Messages
+    // -----------------
 
     /**
      * Sends the score at the end of the game
@@ -427,14 +492,30 @@ public class GameUpdateHandler implements SocketIoHandler {
         socket.sendMessage(scoreMessage, Protocol.WINNER_MESSAGE);
     }
 
-    public void sendBellSound(String playerId) {
-        JSONObject bellMessage = new JSONObject();
+    /**
+     * Called by the host when the game has ended
+     */
+    public void sendEndGame() {
+        JSONObject endGameMessage = new JSONObject();
         try {
-            bellMessage.put(Protocol.PLAYER_ID, playerId);
-        } catch(JSONException e) {
+            endGameMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
+        } catch (JSONException e) {
             e.printStackTrace();
         }
-        socket.sendMessage(bellMessage, Protocol.BELL_MESSAGE);
+        socket.sendMessage(endGameMessage, Protocol.END_GAME_MESSAGE);
+    }
+
+    /**
+     * Tell the other players that the game has started
+     */
+    public void sendStartGame() {
+        JSONObject startGameMessage = new JSONObject();
+        try {
+            startGameMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        socket.sendMessage(startGameMessage, Protocol.START_GAME_MESSAGE);
     }
 
     // endregion

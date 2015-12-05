@@ -1,9 +1,6 @@
 package cwa115.trongame.GameEvent;
 
-import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
 import android.widget.Toast;
 
 import org.json.JSONObject;
@@ -11,9 +8,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.GameActivity;
@@ -121,7 +115,7 @@ public class GameEventHandler {
         if (currentEvent != null) {
             List<Integer> players = GameSettings.getPlayersInGame();
             if (!players.contains(playerId)) {
-                Log.d("GameEvents", "got result from player that is not in this game: " + playerId);
+                Toast.makeText(gameActivity, "player: " + playerId + " entered game illegally", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -137,24 +131,30 @@ public class GameEventHandler {
      * @param eventType The type of the event
      */
     public void endEvent(int ownerId, String eventType) {
-        if (GameSettings.getSpectate())
-            return;
-
         if (ownerId == GameSettings.getOwner()) {
             if (currentEvent != null && currentEvent.getEventType().equals(eventType)) {
-                JSONObject result = currentEvent.collectData(gameActivity);
-                eventUpdateHandler.sendEventResult(GameSettings.getUserId(), result);
+
+                // The player can only send a result when he is alive
+                if (gameActivity.isAlive) {
+                    JSONObject result = currentEvent.collectData(gameActivity);
+                    eventUpdateHandler.sendEventResult(GameSettings.getUserId(), result);
+                }
+
+                // The owner must process the results
                 if (GameSettings.isOwner()) {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             processResults();
                         }
-                    }, RESULT_TIMEOUT * 1000);  // TODO is this time correct?
-                } else
+                    }, RESULT_TIMEOUT * 1000);
+                } else {
+                    // Other players can already reset currentEvent
                     currentEvent = null;
+                }
             } else {
-                // TODO panic
+                Toast.makeText(gameActivity, "Might be listening on wrong channel", Toast.LENGTH_SHORT).show();
+                // TODO deal with this
             }
         }
     }
@@ -165,12 +165,6 @@ public class GameEventHandler {
      * @param eventType The type of the event
      */
     public void startEvent(int ownerId, String eventType) {
-        if (GameSettings.getSpectate()) {
-            String notification = currentEvent.getNotification(gameActivity);
-            gameActivity.showNotification(notification, Toast.LENGTH_LONG);
-            return;
-        }
-
         if (ownerId == GameSettings.getOwner()) {
             if (currentEvent == null) {
                 if (GameSettings.isOwner())
@@ -180,7 +174,8 @@ public class GameEventHandler {
                 String notification = currentEvent.getNotification(gameActivity);
                 gameActivity.showNotification(notification, Toast.LENGTH_LONG);
             } else {
-                // TODO panic or multiple events?
+                Toast.makeText(gameActivity, "Might be listening on wrong channel", Toast.LENGTH_SHORT).show();
+                // TODO deal with this
             }
         }
     }
@@ -192,6 +187,10 @@ public class GameEventHandler {
      * @param score The score the player has to receive
      */
     public void addScore(int ownerId, int playerId, int score) {
+        // This can only happen when a player has just send the result before dying
+        if (!gameActivity.isAlive)
+            return;
+
         if (ownerId == GameSettings.getOwner()) {
             if (playerId == GameSettings.getUserId()) {
                 gameActivity.addScore(score);

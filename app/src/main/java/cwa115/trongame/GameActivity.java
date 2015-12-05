@@ -80,15 +80,17 @@ public class GameActivity extends AppCompatActivity implements
     // -----------------------------------------------------------------------------------------------------------------
     // General Settings
     private static final int FINAL_SCORE_TIMEOUT = 1;   // in seconds
-    private static final boolean IMMORTAL = true;
+    private static final boolean IMMORTAL = false;
     private static final boolean HAS_EVENTS = true;
     private static final int KILL_SCORE = 500;
 
     // Location thresholds
-    private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(10);   // About 10m
-    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(100);    // About 10m
-    private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(1);     // About 1m
-    private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(20);     // About 20m
+    private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(20);
+    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(100);
+    private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(10);
+    private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(30);
+    private static final double IGNORE_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(100);
+    private static final double WALL_DELAY_DISTANCE = LatLngConversion.meterToLatLngDistance(300);
 
     // Permission request ids
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
@@ -121,7 +123,7 @@ public class GameActivity extends AppCompatActivity implements
 
     // Game data
     private String winner;
-    private boolean isAlive;
+    public boolean isAlive;
     private int playersAliveCount;
     private HashMap<String, Double> playerScores;
 
@@ -158,6 +160,13 @@ public class GameActivity extends AppCompatActivity implements
         this.winner = winner;
     }
 
+    public void addScore(int score) {
+        travelledDistance += score;
+
+        TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
+        distanceView.setText(String.valueOf(travelledDistance));
+    }
+
     // endregion
 
     // endregion
@@ -177,6 +186,74 @@ public class GameActivity extends AppCompatActivity implements
         // Initialize sensorDataObservable and proximityObserver
         acceleration = 0;
         sensorDataObservable = new SensorDataObservable(this);
+        isBellRinging = false;
+
+        // Location tracking
+        // -----------------------------------------------------------------------------------------
+        // Initialize the stored locations to 0,0
+        snappedGpsLoc = new LatLng(0, 0);
+        gpsLoc = new LatLng(0, 0);
+        travelledDistance = 0.0;
+
+        // Initialize location listener
+        locationListener = new CustomLocationListener(
+                this,                                       // The activity that builds the google api
+                this,                                       // The LocationObserver
+                1500,                                       // Normal update frequency of the location
+                500,                                        // Fastest update frequency of the location
+                LocationRequest.PRIORITY_HIGH_ACCURACY      // Accuracy of the location
+        );
+
+        // Create the context used by the google api (just stores the google key)
+        context = new GeoApiContext().setApiKey(
+                getString(R.string.google_maps_key_server));
+
+        // Permissions
+        // -----------------------------------------------------------------------------------------
+        // Request permissions before doing anything else (after initializing the location listener!)
+        requestPermissions();
+
+        // Map Object
+        // -----------------------------------------------------------------------------------------
+        // Create the map object
+        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
+        map = new Map(mapFragment);
+
+        // Player objects
+        // -----------------------------------------------------------------------------------------
+        // Create the player
+        map.addMapItem(new Player(GameSettings.getPlayerId(), GameSettings.getPlayerName(), new LatLng(0.0, 0.0)));
+
+        // Networking
+        // -----------------------------------------------------------------------------------------
+        // Create the gameUpdateHandler object
+        connection = new SocketIoConnection("testA1", String.valueOf(GameSettings.getGameId()));
+
+        gameUpdateHandler = new GameUpdateHandler(this, connection, map, context);
+        gameEventHandler = new GameEventHandler(connection, this);
+
+        // Create the data server
+        dataServer = new HttpConnector(getString(R.string.dataserver_url));
+
+        // Setup the game ui
+        Button wallBreaker = (Button) findViewById(R.id.breakWallButton);
+        wallBreaker.setVisibility(View.GONE);
+
+        TextView textView = (TextView) findViewById(R.id.travelledDistance);
+        textView.setVisibility(View.GONE);
+    }
+
+    public void onStartGame(View view) {
+        view.setVisibility(View.GONE);
+        startGame();
+    }
+
+    public void startGame() {
+        // Tell the other players that the game has started
+        if (GameSettings.isOwner())
+            gameUpdateHandler.sendStartGame();
+
+        // Start sensor tracking
         // Listen to proximity updates
         sensorDataObservable.startSensorTracking(SensorFlag.PROXIMITY, new SensorDataObserver() {
             /**
@@ -231,10 +308,7 @@ public class GameActivity extends AppCompatActivity implements
                 return -1;
             }
         });
-
-        // Sound (bell) detection
-        // -----------------------------------------------------------------------------------------
-        // Initialize frequencyListener
+        // Listen to microphone
         frequencyListener = new FrequencyListener(new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
@@ -242,101 +316,47 @@ public class GameActivity extends AppCompatActivity implements
                 return false;
             }
         }), 44100, 1650, 2450, 16384);
-        isBellRinging = false;
 
-        // Location tracking
-        // -----------------------------------------------------------------------------------------
-        // Initialize the stored locations to 0,0
-        snappedGpsLoc = new LatLng(0, 0);
-        gpsLoc = new LatLng(0, 0);
-        travelledDistance = 0.0;
-
-        // Initialize location listener
-        locationListener = new CustomLocationListener(
-                this,                                       // The activity that builds the google api
-                this,                                       // The LocationObserver
-                1500,                                       // Normal update frequency of the location
-                500,                                        // Fastest update frequency of the location
-                LocationRequest.PRIORITY_HIGH_ACCURACY      // Accuracy of the location
-        );
-
-        // Create the context used by the google api (just stores the google key)
-        context = new GeoApiContext().setApiKey(
-                getString(R.string.google_maps_key_server));
-
-        // Permissions
-        // -----------------------------------------------------------------------------------------
-        // Request permissions before doing anything else (after initializing the location listener!)
-        requestPermissions();
-
-        // Map Object
-        // -----------------------------------------------------------------------------------------
-        // Create the map object
-        MapFragment mapFragment = (MapFragment) getFragmentManager().findFragmentById(R.id.map);
-        map = new Map(mapFragment);
-
-        // Player objects
-        // -----------------------------------------------------------------------------------------
-        // Create the player
-        map.addMapItem(new Player(GameSettings.getPlayerId(), GameSettings.getPlayerName(), new LatLng(0.0, 0.0)));
-
-        // Networking
-        // -----------------------------------------------------------------------------------------
-        // Create the gameUpdateHandler object
-        connection = new SocketIoConnection("testA1", String.valueOf(GameSettings.getGameId()));
-
-        gameUpdateHandler = new GameUpdateHandler(this, connection, map, context);
-        gameEventHandler = new GameEventHandler(connection, this);
-        if (HAS_EVENTS)
-            gameEventHandler.start();
-
-        // Create the data server
-        dataServer = new HttpConnector(getString(R.string.dataserver_url));
-
-        // Setup the game ui
-        if (!GameSettings.getCanBreakWall()) {
-            // TODO hide the breakWall button when there is a proximity sensor
-            Button wallBreaker = (Button) findViewById(R.id.breakWallButton);
-            wallBreaker.setVisibility(View.GONE);
-        }
-        else if (GameSettings.getSpectate()) {
-            Button wallBreaker = (Button) findViewById(R.id.breakWallButton);
-            wallBreaker.setVisibility(View.GONE);
+        // Set the correct buttons to visible
+        if (!GameSettings.getSpectate()) {
+            if (GameSettings.getCanBreakWall()) {
+                // TODO hide the breakWall button when there is a proximity sensor
+                Button wallBreaker = (Button) findViewById(R.id.breakWallButton);
+                wallBreaker.setVisibility(View.VISIBLE);
+            }
 
             TextView textView = (TextView) findViewById(R.id.travelledDistance);
-            textView.setVisibility(View.GONE);
+            textView.setVisibility(View.VISIBLE);
         } else {
-            isAlive = true;
-            createWall();
+            Toast.makeText(this, "Problem: Spectator is active", Toast.LENGTH_SHORT).show();
         }
 
+        // Set start time (in order to measure total playtime)
+        startTime = System.currentTimeMillis();
+        // Set the amount of players that are alive
         playersAliveCount = GameSettings.getPlayersInGame().size();
+
 
         // Activate end game timer
         if (GameSettings.isOwner() && GameSettings.getTimelimit()>=0) {
             // End the game in FINAL_SCORE_TIMEOUT seconds
-            // After 3 seconds, disable the bell.
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     endGame();
                 }
-            }, 1000*GameSettings.getTimelimit() / 60);  // TODO is this time correct?
+            }, 1000 * GameSettings.getTimelimit() * 60);
         }
 
-        // Set start time (in order to measure total playtime)
-        startTime = System.currentTimeMillis();
+        // Start the events
+        if (GameSettings.isOwner() && HAS_EVENTS)
+            gameEventHandler.start();
+
+        // Set the player to alive
+        if (!GameSettings.getSpectate())
+            isAlive = true;
     }
 
-    // Override the back button so that it doesn't to anything
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            //preventing default implementation previous to android.os.Build.VERSION_CODES.ECLAIR
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
     // endregion
 
     // region Game functionality
@@ -367,39 +387,48 @@ public class GameActivity extends AppCompatActivity implements
             map.updateCamera(newSnappedGpsLoc);
 
             // Send the player location
-            if (!GameSettings.getSpectate())
-                gameUpdateHandler.sendMyLocation(newSnappedGpsLoc);
+            gameUpdateHandler.sendMyLocation(newSnappedGpsLoc);
 
+            // If the player is alive the interactions with the wall can be checked
+            //      Add the travelled distance to the score
+            //      Check if the player is to close to or has crossed a wall
+            //      Update the wall
             if (isAlive) {
-                // Calculate the distance from the last location to the new location and show it on the screen
+                // Add the travelled distance to the score
+                // ---------------------------------------
                 double distance = 0.0;
                 if (!(snappedGpsLoc.longitude == 0 && snappedGpsLoc.latitude == 0)) {
                     // This checks if there has been a previous location update
                     distance = LatLngConversion.getDistancePoints(snappedGpsLoc, newSnappedGpsLoc);
                 }
                 travelledDistance += LatLngConversion.latLngDistanceToMeter(distance);
+                if (!creatingWall && travelledDistance >= WALL_DELAY_DISTANCE)
+                    createWall();
 
                 TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
                 distanceView.setText(String.valueOf(travelledDistance));
 
-                // Wall functionality
+                // Check if the player is to close to or has crossed a wall
+                // ---------------------------------------------------------
                 ArrayList<Wall> walls = map.getWalls();
                 for (Wall wall : walls) {
                     // Check if the player hasn't crossed a wall
-                    if (wall.hasCrossed(snappedGpsLoc, newSnappedGpsLoc, MIN_WALL_DISTANCE, GameSettings.getPlayerId())) {
-                        // Show the "player crossed wall" notification
-                        showNotification(getString(R.string.wall_crossed), Toast.LENGTH_LONG);
+                    if (wall.hasCrossed(snappedGpsLoc, newSnappedGpsLoc, MIN_WALL_DISTANCE, IGNORE_WALL_DISTANCE, GameSettings.getPlayerId())) {
+                        // The player has crossed the wall and has therefore died
+                        showNotification(getString(R.string.wall_crossed), Toast.LENGTH_SHORT);
                         String killerName = ((Player)map.getItemById(wall.getOwnerId())).getName(); // TODO this is kind of ugly/
                         onDeath(wall.getOwnerId(), killerName);
                     } else {
                         // Check if the player isn't to close to a wall
                         if (wall.getDistanceTo(newSnappedGpsLoc, MIN_WALL_WARNING_DISTANCE, GameSettings.getPlayerId()) < MIN_WALL_WARNING_DISTANCE) {
                             // Show the "player to close to wall" notification
-                            showNotification(getString(R.string.wall_too_close), Toast.LENGTH_LONG);
+                            showNotification(getString(R.string.wall_too_close), Toast.LENGTH_SHORT);
                         }
                     }
                 }
 
+                // Update the wall
+                // ---------------
                 Wall wall = (Wall) map.getItemById(wallId);
                 // Update the wall (this must happen after the "player to close to wall" check
                 if (creatingWall) {
@@ -413,12 +442,11 @@ public class GameActivity extends AppCompatActivity implements
 
         } else {
             // Player is to far from the road
-            map.updatePlayer(GameSettings.getPlayerId(), gpsLoc);     // Draw the player on the actual location instead
-            map.updateCamera(gpsLoc);           // Zoom to there as well
+            map.updatePlayer(GameSettings.getPlayerId(), gpsLoc);       // Draw the player on the actual location instead
+            map.updateCamera(gpsLoc);                                   // Zoom to there as well
 
             // Send the player location
-            if (!GameSettings.getSpectate())
-                gameUpdateHandler.sendMyLocation(gpsLoc);
+            gameUpdateHandler.sendMyLocation(gpsLoc);
 
             if (isAlive) {
                 // onDeath("", ""); TODO killPlayer?
@@ -459,18 +487,20 @@ public class GameActivity extends AppCompatActivity implements
             // Show the "creating wall" notification
             showNotification(getString(R.string.wall_on_notification), Toast.LENGTH_SHORT);
         }
-        else {
-            // Stop creating the wall
-            creatingWall = false;                       // The player is no longer creating a wall
-            wallId = null;                              // Forget about the current wall
-
-            // Show the "stopped creating wall" notification
-            showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_LONG);
-        }
+        // The wall is never turned off
+        // else {
+        //     // Stop creating the wall
+        //     creatingWall = false;                       // The player is no longer creating a wall
+        //     wallId = null;                              // Forget about the current wall
+        //
+        //     // Show the "stopped creating wall" notification
+        //     showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_LONG);
+        // }
     }
 
     /**
      * Called when the clear wall button is pressed
+     * TODO remove this as it isn't used
      */
     public void clearWall() {
         // Is there a wall right now?
@@ -481,9 +511,11 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     public void breakWall(View view) {
+        // This should never be true !
         if (!isAlive)
             return;
 
+        // Break the wall
         ArrayList<Wall> walls = map.getWalls();
         for (Wall wall : walls) {
             ArrayList<Wall> newWalls = wall.splitWall(snappedGpsLoc, holeSize);
@@ -504,16 +536,18 @@ public class GameActivity extends AppCompatActivity implements
         }
         showNotification(getString(R.string.wall_breaker_notification), Toast.LENGTH_SHORT);
     }
+
     // endregion
 
-    public void addScore(int score) {
-        travelledDistance += score;
+    // region End Game
 
-        TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
-        distanceView.setText(String.valueOf(travelledDistance));
-    }
-
+    /**
+     * Is called when the player himself has died
+     * @param killerId The user id of the killer of the player
+     * @param killerName The name of the killer
+     */
     public void onDeath(String killerId, String killerName) {
+        // For debugging purposes
         if (IMMORTAL)
             return;
 
@@ -526,22 +560,34 @@ public class GameActivity extends AppCompatActivity implements
         wallId = null;
 
         // Tell the applications that the player has died
-        isAlive = false;
         showNotification(getString(R.string.you_died_text), Toast.LENGTH_LONG);
         gameUpdateHandler.sendDeathMessage(killerId, killerName);
+
+        isAlive = false;
     }
 
+    /**
+     * Is called when another player has died
+     * @param playerName The name of the player that died
+     * @param killerId The id of the killer
+     * @param killerName The name of the killer
+     */
     public void playerDied(String playerName, String killerId, String killerName) {
+        // There is one less player alive now
         playersAliveCount -= 1;
-        if (!IMMORTAL && playersAliveCount <= 1 && GameSettings.isOwner())
+        // If there is only one player left : end the game
+        if (!IMMORTAL && GameSettings.isOwner() &&playersAliveCount <= 1)
             endGame();
 
         if (killerId.equals("")) {
+            // The player died because he went to far from the road
             showNotification(
                     getString(R.string.player_died_text).replaceAll("%name", playerName),
                     Toast.LENGTH_LONG
             );
         } else {
+            // The player crossed a wall
+            // The killer gets a bonus score
             if (GameSettings.getPlayerId().equals(killerId)) {
                 addScore(KILL_SCORE);
                 showNotification(
@@ -559,9 +605,10 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     /**
-     * End the game
+     * Is called by the host when either the time runs out or when there are no players left
      */
     public void endGame() {
+        // The host stores his own score and initializes all of the other scores to -1
         playerScores = new HashMap<>();
         for (Integer player : GameSettings.getPlayersInGame()) {
             if (player == GameSettings.getUserId())
@@ -570,8 +617,10 @@ public class GameActivity extends AppCompatActivity implements
                 playerScores.put(String.valueOf(player), -1.0);
         }
 
+        // Tell the other players that the game has ended
         gameUpdateHandler.sendEndGame();
-        // End the game in FINAL_SCORE_TIMEOUT seconds
+
+        // Wait for the final scores of the other players before ending the game
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -581,17 +630,47 @@ public class GameActivity extends AppCompatActivity implements
         }, FINAL_SCORE_TIMEOUT * 1000);  // TODO is this time correct?
     }
 
+    /**
+     * Used to send a players final score to the host
+     */
     public void sendScore() {
-        if (GameSettings.getSpectate())
-            return;
-
         double score = getScore();
         gameUpdateHandler.sendScore(score);
     }
 
+    /**
+     * Used by the host to store the player score
+     * @param playerId The id of the player
+     * @param score The score of the player
+     */
+    public void storePlayerScore(String playerId, double score) {
+        playerScores.put(playerId, score);
+    }
+
+    /**
+     * Called by the host when the time to send scores ran out
+     * @return The winner
+     */
+    public String processFinalScores() {
+        double maxScore = -1;
+        String winningPlayer = "";
+        for (String playerId : playerScores.keySet()) {
+            if (playerScores.get(playerId) > maxScore) {
+                maxScore = playerScores.get(playerId);
+                winningPlayer = playerId;
+            }
+        }
+        return winningPlayer;
+    }
+
+    /**
+     * Show the winner in a dialog box. (is called when the host has calculated the winner)
+     * When the user presses ok the game ends
+     */
     public void showWinner() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getString(R.string.game_over_text));
+        // Show the winner
         builder.setMessage(
                 getString(R.string.game_winner_text).replaceAll(
                         "%winner",
@@ -600,6 +679,7 @@ public class GameActivity extends AppCompatActivity implements
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
+                // End the game
                 quitGame();
             }
         });
@@ -608,9 +688,16 @@ public class GameActivity extends AppCompatActivity implements
         dialog.show();
     }
 
+    /**
+     * Tell all of the players and the server that the game has ended
+     * @param winner The winner of the game
+     */
     public void notifyEndGame(String winner) {
+        // Tell the other players that the game has ended
+        // The players show the winner when they receive this message
         gameUpdateHandler.sendWinner(winner);
 
+        // Tell the server that the game has ended
         ImmutableMap query = ImmutableMap.of(
                 "gameId", String.valueOf(GameSettings.getGameId()),
                 "token", GameSettings.getGameToken(),
@@ -622,6 +709,7 @@ public class GameActivity extends AppCompatActivity implements
                 try {
                     JSONObject result = new JSONObject(data);
                     // TODO check for errors
+                    // The host shows the winner here
                     showWinner();
 
                 } catch (JSONException e) {
@@ -640,6 +728,8 @@ public class GameActivity extends AppCompatActivity implements
                     public void handleResult(String data) { }
                 }
         );
+
+        // The host updates the high scores
         if(playerScores.get(GameSettings.getPlayerId())>GameSettings.getProfile().getHighscore()){
             dataServer.sendRequest(
                     ServerCommand.SET_HIGHSCORE,
@@ -655,22 +745,9 @@ public class GameActivity extends AppCompatActivity implements
         }
     }
 
-    public void storePlayerScore(String playerId, double score) {
-        playerScores.put(playerId, score);
-    }
-
-    public String processFinalScores() {
-        double maxScore = -1;
-        String winningPlayer = "";
-        for (String playerId : playerScores.keySet()) {
-            if (playerScores.get(playerId) > maxScore) {
-                maxScore = playerScores.get(playerId);
-                winningPlayer = playerId;
-            }
-        }
-        return winningPlayer;
-    }
-
+    /**
+     * Quit game activity
+     */
     public void quitGame() {
         // Clear data from GameSettings
         GameSettings.setGameId(-1);
@@ -685,6 +762,8 @@ public class GameActivity extends AppCompatActivity implements
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
+
+    // endregion
 
     // endregion
 
@@ -732,6 +811,18 @@ public class GameActivity extends AppCompatActivity implements
 
     // region Application handling
     // ---------------------------------------------------------------------------------------------
+
+    /**
+     * Override the back button so it doesn't work
+     */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            //preventing default implementation previous to android.os.Build.VERSION_CODES.ECLAIR
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
     /**
      * Is called when the application is paused
