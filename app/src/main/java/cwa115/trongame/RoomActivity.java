@@ -11,7 +11,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,9 +31,9 @@ import java.util.TimerTask;
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Lists.RoomCustomAdapter;
 import cwa115.trongame.Lists.RoomListItem;
-import cwa115.trongame.Network.HttpConnector;
-import cwa115.trongame.Network.ServerCommand;
-import cwa115.trongame.PopUp.PopUp;
+import cwa115.trongame.Network.Server.HttpConnector;
+import cwa115.trongame.Network.Server.ServerCommand;
+import cwa115.trongame.Utils.PopUp;
 
 public class RoomActivity extends AppCompatActivity
         implements PopUp.NoticeDialogListener{
@@ -263,7 +262,6 @@ public class RoomActivity extends AppCompatActivity
     }
 
     public void gameReady(View view) {
-
         dataServer.sendRequest(
                 ServerCommand.SHOW_GAME,
                 ImmutableMap.of("gameId", String.valueOf(GameSettings.getGameId())),
@@ -273,35 +271,50 @@ public class RoomActivity extends AppCompatActivity
                         try {
                             JSONObject result = new JSONObject(data);
                             JSONArray players = result.getJSONArray("players");
-                            List<Integer> listOfPlayerIds = new ArrayList<>();
-                            for (int i = 0; i < players.length(); i++) {
-                                JSONObject player = players.getJSONObject(i);
-                                int playerId = player.getInt("id");
-                                listOfPlayerIds.add(playerId);
-                                // TODO make sure that this happens more reliably (the server might have to store player color as well?)
-                                if (player.getInt("id") == GameSettings.getUserId())
-                                    GameSettings.setWallColor(listOfColors.get(i));
-                                // If player is friend of current user, increase commonPlays
-                                dataServer.sendRequest(
-                                        ServerCommand.INCREASE_COMMON_PLAYS,
-                                        ImmutableMap.of(
-                                                "id", GameSettings.getPlayerId(),
-                                                "token", GameSettings.getPlayerToken(),
-                                                "friendId", String.valueOf(playerId)
-                                        ),
-                                        new HttpConnector.Callback() {
-                                            @Override
-                                            public void handleResult(String data) { }
-                                        });
+
+                            if (players.length() > GameSettings.getMaxPlayers()) {
+                                onToManyPlayers();
+                            // } else if (players.length() < 2) {
+                            //     onToFewPlayers(); TODO uncomment this
+                            } else {
+                                List<Integer> listOfPlayerIds = new ArrayList<>();
+                                for (int i = 0; i < players.length(); i++) {
+                                    JSONObject player = players.getJSONObject(i);
+                                    int playerId = player.getInt("id");
+                                    listOfPlayerIds.add(playerId);
+                                    if (player.getInt("id") == GameSettings.getUserId())
+                                        GameSettings.setWallColor(listOfColors.get(i));
+                                    // If player is friend of current user, increase commonPlays
+                                    dataServer.sendRequest(
+                                            ServerCommand.INCREASE_COMMON_PLAYS,
+                                            ImmutableMap.of(
+                                                    "id", GameSettings.getPlayerId(),
+                                                    "token", GameSettings.getPlayerToken(),
+                                                    "friendId", String.valueOf(playerId)
+                                            ),
+                                            new HttpConnector.Callback() {
+                                                @Override
+                                                public void handleResult(String data) {
+                                                }
+                                            });
+                                }
+                                GameSettings.setPlayersInGame(listOfPlayerIds);
+                                startGame();
                             }
-                            GameSettings.setPlayersInGame(listOfPlayerIds);
-                            startGame();
 
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
                     }
                 });
+    }
+
+    public void onToManyPlayers() {
+        Toast.makeText(this, R.string.to_many_players, Toast.LENGTH_SHORT).show();
+    }
+
+    public void onToFewPlayers() {
+        Toast.makeText(this, R.string.to_few_players, Toast.LENGTH_SHORT).show();
     }
 
     public void inviteFriends(View v){

@@ -17,8 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cwa115.trongame.Game.GameSettings;
-import cwa115.trongame.Network.HttpConnector;
-import cwa115.trongame.Network.ServerCommand;
+import cwa115.trongame.Network.Server.HttpConnector;
+import cwa115.trongame.Network.Server.ServerCommand;
 
 public class HostingActivity extends AppCompatActivity {
 
@@ -90,8 +90,8 @@ public class HostingActivity extends AppCompatActivity {
     private int getMaxPlayers(){
         EditText editMaxPlayers = (EditText)findViewById(R.id.maxPlayers);
         String maxPlayers = editMaxPlayers.getText().toString();
-        if (maxPlayers.length() == 0)  //TODO: change "== 0" in "<=1"
-            return 1; //TODO: change 1 in 2 so that it isn't possible to play alone
+        if (maxPlayers.length() <= 0)
+            return 2;
         else
             return Integer.parseInt(maxPlayers);
 

@@ -2,13 +2,9 @@ package cwa115.trongame;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -16,26 +12,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.collect.ImmutableMap;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
-import cwa115.trongame.Game.GameSettings;
-import cwa115.trongame.Lists.LobbyCustomAdapter;
-import cwa115.trongame.Lists.LobbyListItem;
 import cwa115.trongame.Lists.StatsCustomAdapter;
 import cwa115.trongame.Lists.StatsListItem;
-import cwa115.trongame.Network.HttpConnector;
-import cwa115.trongame.Network.ServerCommand;
+import cwa115.trongame.Network.Server.HttpConnector;
+import cwa115.trongame.User.Profile;
 import cwa115.trongame.Utils.DrawableManager;
 
 public class ProfileActivity extends AppCompatActivity {

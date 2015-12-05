@@ -1,13 +1,10 @@
 package cwa115.trongame.Game;
 
-import org.json.JSONArray;
-
 import java.util.List;
 import java.util.UUID;
 
-import cwa115.trongame.FriendList;
-import cwa115.trongame.Profile;
-import cwa115.trongame.Utils.DrawableManager;
+import cwa115.trongame.User.FriendList;
+import cwa115.trongame.User.Profile;
 
 /**
  * Singleton to manage the settings of the current game.

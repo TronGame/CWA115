@@ -2,41 +2,29 @@ package cwa115.trongame;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
-import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Lists.FriendListAdapter;
 import cwa115.trongame.Lists.FriendListItem;
-import cwa115.trongame.Lists.LobbyCustomAdapter;
-import cwa115.trongame.Lists.LobbyListItem;
-import cwa115.trongame.Network.HttpConnector;
-import cwa115.trongame.Network.ServerCommand;
+import cwa115.trongame.Network.Server.HttpConnector;
+import cwa115.trongame.Network.Server.ServerCommand;
+import cwa115.trongame.User.Friend;
+import cwa115.trongame.User.FriendList;
+import cwa115.trongame.User.Profile;
 
 public class FriendsListActivity extends AppCompatActivity {
 
