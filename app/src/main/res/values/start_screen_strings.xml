@@ -44,4 +44,6 @@
     <string name="spectator">Spectator</string>
     <string name="invite_friends">Invite friends</string>
     <string name="hostingError">You can\'t host a game in spectator mode</string>
+    <string name="to_many_players">There are to many players to start the game</string>
+    <string name="to_few_players">There need to be at least two players to start the game</string>
 </resources>

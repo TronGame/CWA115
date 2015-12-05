@@ -29,6 +29,7 @@
     <string name="player_died_text">Player %name, has died.</string>
     <string name="player_killed_text">Player %name, was killed by %killer.</string>
 
+    <string name="game_started">The Game Has Started</string>
     <string name="game_over_text">Game Over</string>
     <string name="game_winner_text">The winner was %winner.</string>
 </resources>

@@ -355,6 +355,8 @@ public class GameActivity extends AppCompatActivity implements
         // Set the player to alive
         if (!GameSettings.getSpectate())
             isAlive = true;
+
+        showNotification(getString(R.string.game_started), Toast.LENGTH_SHORT);
     }
 
     // endregion
@@ -451,7 +453,7 @@ public class GameActivity extends AppCompatActivity implements
             if (isAlive) {
                 // onDeath("", ""); TODO killPlayer?
                 // Show the "player to far from road" notification
-                showNotification(getString(R.string.road_too_far), Toast.LENGTH_LONG);
+                showNotification(getString(R.string.road_too_far), Toast.LENGTH_SHORT);
             }
         }
 
@@ -494,7 +496,7 @@ public class GameActivity extends AppCompatActivity implements
         //     wallId = null;                              // Forget about the current wall
         //
         //     // Show the "stopped creating wall" notification
-        //     showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_LONG);
+        //     showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_SHORT);
         // }
     }
 
@@ -560,7 +562,7 @@ public class GameActivity extends AppCompatActivity implements
         wallId = null;
 
         // Tell the applications that the player has died
-        showNotification(getString(R.string.you_died_text), Toast.LENGTH_LONG);
+        showNotification(getString(R.string.you_died_text), Toast.LENGTH_SHORT);
         gameUpdateHandler.sendDeathMessage(killerId, killerName);
 
         isAlive = false;
@@ -583,7 +585,7 @@ public class GameActivity extends AppCompatActivity implements
             // The player died because he went to far from the road
             showNotification(
                     getString(R.string.player_died_text).replaceAll("%name", playerName),
-                    Toast.LENGTH_LONG
+                    Toast.LENGTH_SHORT
             );
         } else {
             // The player crossed a wall
@@ -593,12 +595,12 @@ public class GameActivity extends AppCompatActivity implements
                 showNotification(
                         getString(R.string.player_killed_text).replaceAll("%name", playerName).replaceAll("%killer", "you")
                                 +" "+getString(R.string.score_received_text).replaceAll("%score", String.valueOf(KILL_SCORE)),
-                        Toast.LENGTH_LONG
+                        Toast.LENGTH_SHORT
                 );
             } else {
                 showNotification(
                         getString(R.string.player_killed_text).replaceAll("%name", playerName).replaceAll("%killer", killerName),
-                        Toast.LENGTH_LONG
+                        Toast.LENGTH_SHORT
                 );
             }
         }
@@ -739,7 +741,8 @@ public class GameActivity extends AppCompatActivity implements
                             "highscore", String.valueOf(Math.round(playerScores.get(GameSettings.getPlayerId())))),
                     new HttpConnector.Callback() {
                         @Override
-                        public void handleResult(String data) { }
+                        public void handleResult(String data) {
+                        }
                     }
             );
         }
@@ -829,10 +832,11 @@ public class GameActivity extends AppCompatActivity implements
      */
     public void onPause() {
         super.onPause();
-        sensorDataObservable.Pause();           // Pauses the sensor observer
-        locationListener.stopLocationUpdate();  // Pauses the lcoation listener
-        // TODO sampleRate can't be 5500 on all devices
-        frequencyListener.pause();
+        locationListener.stopLocationUpdate();      // Pauses the lcoation listener
+        if (isAlive) {
+            frequencyListener.pause();
+            sensorDataObservable.Pause();           // Pauses the sensor observer
+        }
     }
 
     /**
@@ -840,9 +844,11 @@ public class GameActivity extends AppCompatActivity implements
      */
     public void onResume() {
         super.onResume();
-        sensorDataObservable.Resume();          // Resume the sensor observer
         locationListener.startLocationUpdate(); // Start the location listener again
-        frequencyListener.run();
+        if (isAlive) {
+            sensorDataObservable.Resume();          // Resume the sensor observer
+            frequencyListener.run();
+        }
     }
 
     // endregion    
