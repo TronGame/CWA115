@@ -171,7 +171,8 @@ public class GameActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        GameSettings.loadFromBundle(savedInstanceState);
+        if (savedInstanceState != null)
+            GameSettings.loadFromBundle(savedInstanceState);
 
         // Content of Activity
         // -----------------------------------------------------------------------------------------
@@ -189,7 +190,10 @@ public class GameActivity extends AppCompatActivity implements
         // Initialize the stored locations to 0,0
         snappedGpsLoc = new LatLng(0, 0);
         gpsLoc = new LatLng(0, 0);
-        travelledDistance = savedInstanceState.getDouble("travelledDistance", 0.0);
+        if (savedInstanceState != null)
+            travelledDistance = savedInstanceState.getDouble("travelledDistance", 0.0);
+        else
+            travelledDistance = 0.0;
 
         // Initialize location listener
         locationListener = new CustomLocationListener(
