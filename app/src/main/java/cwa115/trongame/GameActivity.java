@@ -429,7 +429,11 @@ public class GameActivity extends AppCompatActivity implements
                     if (wall.hasCrossed(snappedGpsLoc, newSnappedGpsLoc, MIN_WALL_DISTANCE, IGNORE_WALL_DISTANCE, GameSettings.getPlayerId())) {
                         // The player has crossed the wall and has therefore died
                         showNotification(getString(R.string.wall_crossed), Toast.LENGTH_SHORT);
-                        String killerName = ((Player)map.getItemById(wall.getOwnerId())).getName(); // TODO this is kind of ugly/
+                        Player killer = (Player)map.getItemById(wall.getOwnerId());
+                        String killerName = "";
+                        if (killer != null)
+                            killerName = killer.getName();
+
                         onDeath(wall.getOwnerId(), killerName);
                     } else {
                         // Check if the player isn't to close to a wall
@@ -683,11 +687,17 @@ public class GameActivity extends AppCompatActivity implements
     public void showWinner() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getString(R.string.game_over_text));
+
+        Player winningPlayer = (Player) map.getItemById(winner);
+        String winnerName = "";
+        if (winningPlayer != null)
+            winnerName = winningPlayer.getName();
+
         // Show the winner
         builder.setMessage(
                 getString(R.string.game_winner_text).replaceAll(
                         "%winner",
-                        ((Player) map.getItemById(winner)).getName())
+                        winnerName)
         );
 
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
