@@ -27,6 +27,12 @@ public interface GameEvent {
     public String getNotification(GameActivity gameActivity);
 
     /**
+     * Setup the event
+     * @param gameActivity The game activity
+     */
+    public void startEvent(GameActivity gameActivity);
+
+    /**
      * Collect the data required to calculate the score at the end of the event
      * @param gameActivity The game activity
      * @return JSONObject containing the result

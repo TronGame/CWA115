@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -26,11 +27,12 @@ import cwa115.trongame.R;
 public class GameEventHandler {
     // The time the other players have to send in their results, in seconds
     private static final int RESULT_TIMEOUT = 1;
+    private static final int MIN_EVENT_DELAY = 0;
+    private static final int MAX_EVENT_DELAY = 5*60;
 
-    // Can execute functions after a certain time
-    private static final ScheduledExecutorService worker =
-            Executors.newSingleThreadScheduledExecutor();
-    private static Handler timerHandler;
+    public static final String[] eventTypes = {
+            KingOfHillEvent.EVENT_TYPE, ShowOffEvent.EVENT_TYPE, BellEvent.EVENT_TYPE
+    };
 
     private EventUpdateHandler eventUpdateHandler;          // Handles the socket functionality
     private GameActivity gameActivity;                      // The game activity
@@ -45,22 +47,20 @@ public class GameEventHandler {
     }
 
     public void start() {
-        // TODO add random time here
-        int time = 30;
-        timerHandler = new Handler() {
-            @Override
-            public void handleMessage(Message message) {
-                addPendingEvent(new ShowOffEvent());
-            }
-        };
-        Runnable task = new Runnable() {
+        // Get a random event type
+        int idx = new Random().nextInt(eventTypes.length);
+        final String eventType = (eventTypes[idx]);
+
+        // Get a random time
+        int time = MIN_EVENT_DELAY + new Random().nextInt(MAX_EVENT_DELAY - MIN_EVENT_DELAY);
+
+        // Start the event after time seconds
+        new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Message message = new Message();
-                timerHandler.sendMessage(message);
+                addPendingEvent(getEvent(eventType));
             }
-        };
-        worker.schedule(task, time, TimeUnit.SECONDS);
+        }, time * 1000);  // TODO is this time correct?
     }
 
     /**
@@ -74,6 +74,8 @@ public class GameEventHandler {
                 return new KingOfHillEvent();
             case ShowOffEvent.EVENT_TYPE:
                 return new ShowOffEvent();
+            case BellEvent.EVENT_TYPE:
+                return new BellEvent();
             default:
                 return null;
         }
@@ -86,24 +88,13 @@ public class GameEventHandler {
     private void addPendingEvent(final GameEvent event) {
         if (GameSettings.isOwner()) {
             final String eventType = event.getEventType();
-            timerHandler = new Handler() {
-                @Override
-                public void handleMessage(Message message) {
-                    eventUpdateHandler.broadCastEventEnd(message.getData().getString("eventType"));
-                }
-            };
             eventUpdateHandler.broadCastEventStart(eventType);
-            Runnable task = new Runnable() {
+            new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Message message = new Message();
-                    Bundle bundle = new Bundle();
-                    bundle.putString("eventType", eventType);
-                    message.setData(bundle);
-                    timerHandler.sendMessage(message);
+                    eventUpdateHandler.broadCastEventEnd(eventType);
                 }
-            };
-            worker.schedule(task, event.getTime(), TimeUnit.SECONDS);
+            }, event.getTime() * 1000);  // TODO is this time correct?
         }
     }
 
@@ -117,6 +108,8 @@ public class GameEventHandler {
         }
         results = null;
         currentEvent = null;
+        // start another event
+        start();
     }
 
     /**
@@ -152,14 +145,14 @@ public class GameEventHandler {
                 JSONObject result = currentEvent.collectData(gameActivity);
                 eventUpdateHandler.sendEventResult(GameSettings.getUserId(), result);
                 if (GameSettings.isOwner()) {
-                    Runnable task = new Runnable() {
+                    new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
                             processResults();
                         }
-                    };
-                    worker.schedule(task, RESULT_TIMEOUT, TimeUnit.SECONDS);
-                }
+                    }, RESULT_TIMEOUT * 1000);  // TODO is this time correct?
+                } else
+                    currentEvent = null;
             } else {
                 // TODO panic
             }
@@ -172,13 +165,18 @@ public class GameEventHandler {
      * @param eventType The type of the event
      */
     public void startEvent(int ownerId, String eventType) {
-        if (GameSettings.getSpectate())
+        if (GameSettings.getSpectate()) {
+            String notification = currentEvent.getNotification(gameActivity);
+            gameActivity.showNotification(notification, Toast.LENGTH_LONG);
             return;
+        }
 
         if (ownerId == GameSettings.getOwner()) {
             if (currentEvent == null) {
+                if (GameSettings.isOwner())
+                    results = new ArrayList<>();
                 currentEvent = getEvent(eventType);
-                results = new ArrayList<>();
+                currentEvent.startEvent(gameActivity);
                 String notification = currentEvent.getNotification(gameActivity);
                 gameActivity.showNotification(notification, Toast.LENGTH_LONG);
             } else {
