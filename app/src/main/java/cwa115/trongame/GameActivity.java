@@ -231,11 +231,19 @@ public class GameActivity extends AppCompatActivity implements
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
         // Setup the game ui
+        if (!GameSettings.isOwner()) {
+            Button startButton = (Button) findViewById(R.id.start_game_button);
+            startButton.setVisibility(View.GONE);
+        }
+
         Button wallBreaker = (Button) findViewById(R.id.breakWallButton);
         wallBreaker.setVisibility(View.GONE);
 
-        TextView textView = (TextView) findViewById(R.id.travelledDistance);
-        textView.setVisibility(View.GONE);
+        TextView travelledDistance = (TextView) findViewById(R.id.travelledDistance);
+        travelledDistance.setVisibility(View.GONE);
+
+        TextView travelledDistanceHead = (TextView) findViewById(R.id.travelledDistanceHead);
+        travelledDistanceHead.setVisibility(View.GONE);
     }
 
     public void onStartGame(View view) {
@@ -320,8 +328,11 @@ public class GameActivity extends AppCompatActivity implements
                 wallBreaker.setVisibility(View.VISIBLE);
             }
 
-            TextView textView = (TextView) findViewById(R.id.travelledDistance);
-            textView.setVisibility(View.VISIBLE);
+            TextView travelledDistance = (TextView) findViewById(R.id.travelledDistance);
+            travelledDistance.setVisibility(View.VISIBLE);
+
+            TextView travelledDistanceHead = (TextView) findViewById(R.id.travelledDistanceHead);
+            travelledDistanceHead.setVisibility(View.VISIBLE);
         } else {
             Toast.makeText(this, "Problem: Spectator is active", Toast.LENGTH_SHORT).show();
         }
@@ -333,14 +344,14 @@ public class GameActivity extends AppCompatActivity implements
 
 
         // Activate end game timer
-        if (GameSettings.isOwner() && GameSettings.getTimelimit()>=0) {
+        if (GameSettings.isOwner() && GameSettings.getTimeLimit()>=0) {
             // End the game in FINAL_SCORE_TIMEOUT seconds
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     endGame();
                 }
-            }, 1000 * GameSettings.getTimelimit() * 60);
+            }, 1000 * GameSettings.getTimeLimit() * 60);
         }
 
         // Start the events
@@ -752,7 +763,7 @@ public class GameActivity extends AppCompatActivity implements
         GameSettings.setGameName(null);
         GameSettings.setGameToken(null);
         GameSettings.setCanBreakWall(false);
-        GameSettings.setTimelimit(-1);
+        GameSettings.setTimeLimit(-1);
         GameSettings.setLastPlayTime((System.currentTimeMillis()-startTime)/1000);
 
         // Start Lobby activity while destroying RoomActivity and HostActivity

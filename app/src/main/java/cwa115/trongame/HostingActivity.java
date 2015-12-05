@@ -62,7 +62,7 @@ public class HostingActivity extends AppCompatActivity {
                             GameSettings.setGameName(gameName);
                             GameSettings.setOwnerId(GameSettings.getUserId());
                             GameSettings.setCanBreakWall(canBreakWalls);
-                            GameSettings.setTimelimit(getTimeLimit());
+                            GameSettings.setTimeLimit(getTimeLimit());
                             joinOwnGame();
                         } catch (JSONException e) {
                             Toast.makeText(

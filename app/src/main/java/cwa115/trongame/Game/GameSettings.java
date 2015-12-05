@@ -21,11 +21,10 @@ public final class GameSettings {
     private static String gameName;
     private static int maxPlayers;
     private static boolean canBreakWall;
-    private static int timelimit = -1;
+    private static int timeLimit = -1;
     private static List<Integer> playersInGame;
     private static boolean spectate = false;
     private static long lastPlayTime = -1;
-
 
     /**
      * Sets the profile of the player.
@@ -104,9 +103,13 @@ public final class GameSettings {
         profile.setToken(token);
     }
 
-    public static void setUserId(int id) { profile.setId(id); }
+    public static void setUserId(int id) {
+        profile.setId(id);
+    }
 
-    public static int getUserId() {return profile.getId(); }
+    public static int getUserId() {
+        return profile.getId();
+    }
 
     public static String getPlayerId() {return String.valueOf(getUserId());}
 
@@ -176,11 +179,11 @@ public final class GameSettings {
         return canBreakWall;
     }
 
-    public static void setTimelimit(int minutes){
-        timelimit=minutes;
+    public static void setTimeLimit(int minutes){
+        timeLimit =minutes;
     }
-    public static int getTimelimit(){
-        return timelimit;
+    public static int getTimeLimit(){
+        return timeLimit;
     }
 
     public static void setSpectate(boolean bool){

@@ -127,7 +127,7 @@ public class LobbyActivity extends AppCompatActivity {
                         GameSettings.setGameId(roomIds.get(gameName));
                         GameSettings.setOwnerId(clickedItem.getHostId());
                         GameSettings.setCanBreakWall(clickedItem.getCanBreakWall());
-                        GameSettings.setTimelimit(clickedItem.getTimeLimit());
+                        GameSettings.setTimeLimit(clickedItem.getTimeLimit());
                         GameSettings.setMaxPlayers(clickedItem.getPlayersAsInteger());
                         GameSettings.setSpectate(checkBoxView.isChecked());
                         showToast("Joining " + gameName);

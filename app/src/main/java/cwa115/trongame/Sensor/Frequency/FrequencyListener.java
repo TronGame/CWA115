@@ -82,8 +82,10 @@ public class FrequencyListener {
     }
 
     public void pause() {
-        audio.stop();
-        audio.release();
+        if (audio != null) {
+            audio.stop();
+            audio.release();
+        }
     }
 
     private int frequencyToIndex(double frequency, int length) {
