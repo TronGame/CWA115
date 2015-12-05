@@ -10,6 +10,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.StringRes;
 import android.support.v7.app.AppCompatActivity;
@@ -96,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
         // Load settings file
-        settings = getPreferences(MODE_PRIVATE);
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Create reference to important UI-elements
         loginViewFlipper = (ViewFlipper)findViewById(R.id.login_view_flipper);

@@ -27,10 +27,21 @@
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
 
+        <service
+            android:name=".Service.NotificationService"
+            android:exported="false"></service>
+
+        <receiver android:name=".Service.AppReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="sensorPortrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -41,13 +52,14 @@
             android:name=".GameActivity"
             android:configChanges="orientation"
             android:label="@string/title_activity_game"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensorPortrait"
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity
             android:name=".LobbyActivity"
             android:label="@string/title_activity_lobby"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="sensorPortrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cwa115.trongame.MainActivity" />
@@ -56,7 +68,8 @@
             android:name=".HostingActivity"
             android:label="@string/title_activity_hosting"
             android:parentActivityName=".LobbyActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="sensorPortrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cwa115.trongame.LobbyActivity" />
@@ -65,7 +78,8 @@
             android:name=".RoomActivity"
             android:label="@string/title_activity_room"
             android:parentActivityName=".LobbyActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="sensorPortrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="cwa115.trongame.LobbyActivity" />
@@ -78,13 +92,16 @@
         <activity
             android:name=".ScoreBoardActivity"
             android:label="@string/title_activity_score_board"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="sensorPortrait"></activity>
         <activity
             android:name=".ProfileActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="sensorPortrait"></activity>
         <activity
             android:name=".FriendsListActivity"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"
+            android:screenOrientation="sensorPortrait"></activity>
     </application>
 
 </manifest>
