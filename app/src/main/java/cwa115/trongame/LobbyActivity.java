@@ -7,7 +7,6 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.CheckBox;
@@ -159,8 +158,7 @@ public class LobbyActivity extends AppCompatActivity {
                         newRoom.getInt("maxPlayers"),
                         (newRoom.getInt("canBreakWall") == 1),
                         newRoom.getInt("timeLimit"),
-                        -1.0 // TODO uncomment below, remove this
-                        // newRoom.getDouble("maxDist")
+                        newRoom.getDouble("maxDist")
                 );
                 listOfRooms.add(item);
                 roomIds.put(newRoom.getString("name"),newRoom.getInt("id"));
