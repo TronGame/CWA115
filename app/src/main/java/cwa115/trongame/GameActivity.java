@@ -161,7 +161,7 @@ public class GameActivity extends AppCompatActivity implements
         travelledDistance += score;
 
         TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
-        distanceView.setText(String.valueOf(travelledDistance));
+        distanceView.setText(String.valueOf((int)travelledDistance));
     }
 
     // endregion
