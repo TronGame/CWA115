@@ -15,6 +15,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Lists.StatsCustomAdapter;
 import cwa115.trongame.Lists.StatsListItem;
 import cwa115.trongame.Network.Server.HttpConnector;
@@ -85,7 +86,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void loadProfile(){
-        if(profile.getName()==null){
+        if(profile.getName()==null || profile.getId()==null){
             finish();
             return;
         }else
@@ -97,6 +98,15 @@ public class ProfileActivity extends AppCompatActivity {
         }else {
             friendFooter.setVisibility(View.VISIBLE);
             friendListButton.setVisibility(View.GONE);
+            if(GameSettings.getFriends()!=null && GameSettings.getFriends().ToIdList().contains((long)profile.getId())){
+                // Player is a friend
+                ((TextView)findViewById(R.id.friend_text)).setText(String.format(getString(R.string.friends_message),""));
+                ((Button)findViewById(R.id.friend_button)).setText(R.string.delete_friend);
+            }else{
+                // Player is not a friend
+                ((TextView)findViewById(R.id.friend_text)).setText(String.format(getString(R.string.friends_message),"not"));
+                ((Button)findViewById(R.id.friend_button)).setText(R.string.add_friend);
+            }
         }
         if(profile.getPictureUrl()==null)
             profileImageView.setImageResource(R.mipmap.default_profile_picture);
@@ -135,12 +145,13 @@ public class ProfileActivity extends AppCompatActivity {
         Bundle data = new Bundle();
         data.putString(FriendsListActivity.TITLE_EXTRA, "Friend List");
         data.putParcelable(FriendsListActivity.PROFILE_EXTRA, profile);
-        data.putBoolean(FriendsListActivity.SELECTABLE_EXTRA, true);
+        //data.putBoolean(FriendsListActivity.SELECTABLE_EXTRA, true);
 
         Intent intent = new Intent(this, FriendsListActivity.class);
         intent.putExtra(FriendsListActivity.DATA_EXTRA, data);
 
-        startActivityForResult(intent, FRIEND_LIST_REQUEST_CODE);
+        //startActivityForResult(intent, FRIEND_LIST_REQUEST_CODE);
+        startActivity(intent);
     }
 
     @Override

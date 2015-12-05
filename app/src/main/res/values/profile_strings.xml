@@ -6,6 +6,7 @@
     <string name="stats">Stats</string>
     <string name="friends_message">This is %1$s your friend!</string>
     <string name="add_friend">Add as friend</string>
+    <string name="delete_friend">Delete friend</string>
     <string name="show_friend_list">Show Friend List</string>
 
     <string name="friends_list_title">Friends list</string>

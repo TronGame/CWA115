@@ -313,6 +313,7 @@ public class MainActivity extends AppCompatActivity {
                                         pushUpdatedDataToServer(localProfile, dataToUpdate);
                                     } catch (JSONException e) {
                                         showToast(R.string.update_failed);
+                                        progressDialog.dismiss();
                                     }
                                 }
                             });
@@ -353,10 +354,13 @@ public class MainActivity extends AppCompatActivity {
                                     );
                                 } else
                                     updateServerUserData(localProfile, true, false);
-                            } else
+                            } else {
                                 showToast(R.string.update_failed);
+                                progressDialog.dismiss();
+                            }
                         } catch (JSONException e) {
                             showToast(R.string.update_failed);
+                            progressDialog.dismiss();
                         }
                     }
                 });
@@ -393,11 +397,13 @@ public class MainActivity extends AppCompatActivity {
                             } else {
                                 // User was not found on server
                                 showToast("Profile not found.");
+                                progressDialog.dismiss();
                                 // Completely remove the account and settings
                                 resetAccountSettings(null);
                             }
                         } catch (JSONException e) {
                             showToast(R.string.update_failed);
+                            progressDialog.dismiss();
                         }
                     }
                 });
@@ -427,6 +433,7 @@ public class MainActivity extends AppCompatActivity {
                             registerAccount(facebookProfile);
                         } catch (JSONException e) {
                             showToast(R.string.register_failed);
+                            progressDialog.dismiss();
                         }
                     }
                 });
@@ -445,9 +452,10 @@ public class MainActivity extends AppCompatActivity {
             public void handleResult(String data) {
                 try {
                     JSONObject result = new JSONObject(data);
-                    if(result.has("error"))
+                    if(result.has("error")) {
                         showToast(R.string.register_failed);
-                    else {
+                        progressDialog.dismiss();
+                    }else {
                         profile.setId(result.getInt("id"));
                         profile.setToken(result.getString("token"));
                         profile.Store(settings);
@@ -456,6 +464,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } catch(JSONException e) {
                     showToast(R.string.register_failed);
+                    progressDialog.dismiss();
                 }
             }
         });

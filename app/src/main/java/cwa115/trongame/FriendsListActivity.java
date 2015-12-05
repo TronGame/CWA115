@@ -6,6 +6,8 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,10 +31,11 @@ import cwa115.trongame.User.FriendList;
 import cwa115.trongame.User.Profile;
 import cwa115.trongame.Utils.DrawableManager;
 
-public class FriendsListActivity extends AppCompatActivity {
+public class FriendsListActivity extends AppCompatActivity implements FriendListAdapter.Callback {
 
     public final static String DATA_EXTRA = "friendsListActivity_dataExtra";
     public final static String TITLE_EXTRA = "friendsListActivity_titleExtra";
+    public final static String COMMIT_TEXT_EXTRA = "friendsListActivity_commitTextExtra";
     public final static String SELECTABLE_EXTRA = "friendsListActivity_selectableExtra";
     public final static String PROFILE_EXTRA = "friendsListActivity_profileExtra";
     public final static String SELECTED_IDS_EXTRA = "friendsListActivity_selectedIdsExtra";
@@ -65,9 +68,15 @@ public class FriendsListActivity extends AppCompatActivity {
         }
 
         ((TextView)findViewById(R.id.friends_list_title)).setText(data.getString(TITLE_EXTRA));
+
         selectable = false;
         if(data.containsKey(SELECTABLE_EXTRA))
             selectable = data.getBoolean(SELECTABLE_EXTRA);
+        else
+            findViewById(R.id.friends_list_commitButton).setVisibility(View.GONE);
+
+        if(data.containsKey(COMMIT_TEXT_EXTRA))
+            ((Button)findViewById(R.id.friends_list_commitButton)).setText(data.getString(COMMIT_TEXT_EXTRA));
         profile = data.getParcelable(PROFILE_EXTRA);
 
         // Initialize server connection
@@ -134,7 +143,20 @@ public class FriendsListActivity extends AppCompatActivity {
                         public void handleResult(String data) {
                             try {
                                 JSONObject result = new JSONObject(data);
-                                friendListItems.add(new FriendListItem(friend.getId(), result.getString("name")));
+                                long facebookId = result.optLong("facebookId",-1);
+                                Profile friendProfile = new Profile(
+                                        (int)friend.getId(),
+                                        null,
+                                        facebookId==-1 ? null : facebookId,
+                                        result.getString("name"),
+                                        result.getString("pictureUrl"),
+                                        result.getInt("wins"),
+                                        result.getInt("losses"),
+                                        result.getInt("highscore"),
+                                        null,
+                                        null
+                                );
+                                friendListItems.add(new FriendListItem(friend, friendProfile));
                                 if (friendListItems.size() == friends.size()) // All friend names are received
                                     populateFriendsList();
                             } catch (JSONException e) {
@@ -148,16 +170,32 @@ public class FriendsListActivity extends AppCompatActivity {
     }
 
     private void populateFriendsList(){
-        adapter = new FriendListAdapter(this, friendListItems, selectable);
+        adapter = new FriendListAdapter(this, friendListItems, selectable, this);
         mainList.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+        if(!selectable){
+            mainList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Profile friendProfile = friendListItems.get(position).getPlayerProfile();
+
+                    Bundle data = new Bundle();
+                    data.putParcelable(ProfileActivity.PROFILE_EXTRA, friendProfile);
+
+                    Intent intent = new Intent(getBaseContext(), ProfileActivity.class);
+                    intent.putExtra(ProfileActivity.DATA_EXTRA, data);
+
+                    startActivity(intent);
+                }
+            });
+        }
     }
 
     public void commitButtonPressed(View v){
         List<Long> selectedIds = new ArrayList<>();
         for(FriendListItem item : friendListItems){
             if(item.isSelected())
-                selectedIds.add(item.getPlayerId());
+                selectedIds.add(item.getPlayer().getId());
         }
         commit(Longs.toArray(selectedIds));
     }
@@ -178,5 +216,36 @@ public class FriendsListActivity extends AppCompatActivity {
         data.putExtra(SELECTED_IDS_EXTRA, selectedIds);
         setResult(RESULT_OK, data);
         finish();
+    }
+
+    @Override
+    public void onFriendAccepted(Friend friend) {
+        dataServer.sendRequest(
+                ServerCommand.ACCEPT_FRIEND,
+                ImmutableMap.of(
+                        "id", String.valueOf(profile.getId()),
+                        "token", profile.getToken(),
+                        "friendId", String.valueOf(friend.getId())),
+                new HttpConnector.Callback() {
+                    @Override
+                    public void handleResult(String data) { }
+                }
+        );
+    }
+
+    @Override
+    public void onFriendRejected(Friend friend) {
+        dataServer.sendRequest(
+                ServerCommand.DELETE_FRIEND,
+                ImmutableMap.of(
+                        "id", String.valueOf(profile.getId()),
+                        "token", profile.getToken(),
+                        "friendId", String.valueOf(friend.getId())
+                ),
+                new HttpConnector.Callback() {
+                    @Override
+                    public void handleResult(String data) { }
+                }
+        );
     }
 }
