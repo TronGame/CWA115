@@ -1,5 +1,12 @@
 package cwa115.trongame.Game;
 
+import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import org.json.JSONException;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,20 +18,63 @@ import cwa115.trongame.User.Profile;
  * These settings are not persistent.
  */
 public final class GameSettings {
-
     private static Profile profile;
+    private static ArrayList<Integer> playersInGame;
+
     private static int playerMarkerImage;
     private static int wallColor;
     private static int ownerId;
     private static int gameId;
+    private static int maxPlayers;
+    private static int timeLimit = -1;
+
+    private static long lastPlayTime = -1;
+
+    private static boolean spectate = false;
+    private static boolean canBreakWall;
+
     private static String gameToken;
     private static String gameName;
-    private static int maxPlayers;
-    private static boolean canBreakWall;
-    private static int timeLimit = -1;
-    private static List<Integer> playersInGame;
-    private static boolean spectate = false;
-    private static long lastPlayTime = -1;
+
+    public static void storeInBundle(Bundle bundle) {
+        bundle.putParcelable("profile", profile);
+        bundle.putIntegerArrayList("playersInGame", playersInGame);
+
+        bundle.putInt("playerMarkerImage", playerMarkerImage);
+        bundle.putInt("wallColor", wallColor);
+        bundle.putInt("ownerId", ownerId);
+        bundle.putInt("gameId", gameId);
+        bundle.putInt("maxPlayers", maxPlayers);
+        bundle.putInt("timeLimit", timeLimit);
+
+        bundle.putLong("lastPlayTime", lastPlayTime);
+
+        bundle.putBoolean("spectate", spectate);
+        bundle.putBoolean("spectate", canBreakWall);
+
+        bundle.putString("gameToken", gameToken);
+        bundle.putString("gameName", gameName);
+    }
+
+    public static void loadFromBundle(Bundle bundle) {
+        profile = bundle.getParcelable("profile");
+        playersInGame = bundle.getIntegerArrayList("playersInGame");
+
+        playerMarkerImage = bundle.getInt("playerMarkerImage", playerMarkerImage);
+        wallColor = bundle.getInt("wallColor", wallColor);
+        ownerId = bundle.getInt("ownerId", ownerId);
+        gameId = bundle.getInt("gameId", gameId);
+        maxPlayers = bundle.getInt("maxPlayers", maxPlayers);
+        timeLimit = bundle.getInt("timeLimit", timeLimit);
+
+        lastPlayTime  = bundle.getLong("lastPlayTime", lastPlayTime);
+
+        spectate = bundle.getBoolean("spectate", spectate);
+        canBreakWall = bundle.getBoolean("spectate", canBreakWall);
+
+        gameToken = bundle.getString("gameToken", gameToken);
+        gameName = bundle.getString("gameName", gameName);
+    }
 
     /**
      * Sets the profile of the player.
@@ -160,7 +210,7 @@ public final class GameSettings {
         return playersInGame;
     }
 
-    public static void setPlayersInGame(List<Integer> players) {
+    public static void setPlayersInGame(ArrayList<Integer> players) {
         playersInGame = players;
     }
 

@@ -171,6 +171,7 @@ public class GameActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        GameSettings.loadFromBundle(savedInstanceState);
 
         // Content of Activity
         // -----------------------------------------------------------------------------------------
@@ -188,7 +189,7 @@ public class GameActivity extends AppCompatActivity implements
         // Initialize the stored locations to 0,0
         snappedGpsLoc = new LatLng(0, 0);
         gpsLoc = new LatLng(0, 0);
-        travelledDistance = 0.0;
+        travelledDistance = savedInstanceState.getDouble("travelledDistance", 0.0);
 
         // Initialize location listener
         locationListener = new CustomLocationListener(
@@ -831,6 +832,19 @@ public class GameActivity extends AppCompatActivity implements
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        // Save UI state changes to the savedInstanceState.
+        // This bundle will be passed to onCreate if the process is
+        // killed and restarted.
+
+        // Store game settings
+        GameSettings.storeInBundle(savedInstanceState);
+        savedInstanceState.putDouble("travelledDistance", travelledDistance);
+        // TODO maybe add more data (at least it won't crash now)
     }
 
     /**

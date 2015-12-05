@@ -277,7 +277,7 @@ public class RoomActivity extends AppCompatActivity
                             // } else if (players.length() < 2) {
                             //     onToFewPlayers(); TODO uncomment this
                             } else {
-                                List<Integer> listOfPlayerIds = new ArrayList<>();
+                                ArrayList<Integer> listOfPlayerIds = new ArrayList<>();
                                 for (int i = 0; i < players.length(); i++) {
                                     JSONObject player = players.getJSONObject(i);
                                     int playerId = player.getInt("id");
