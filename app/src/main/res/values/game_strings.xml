@@ -13,7 +13,7 @@
     <string name="wall_breaker_notification">Wall breaker activated</string>
 
     <string name="wall_too_close">Very close to wall</string>
-    <string name="wall_crossed">Crossed Wall</string>
+    <string name="wall_crossed">Crossed wall</string>
     <string name="road_too_far">Too far from road</string>
 
     <string name="distance_count_text">Travelled Distance</string>
@@ -29,7 +29,7 @@
     <string name="player_died_text">Player %name, has died.</string>
     <string name="player_killed_text">Player %name, was killed by %killer.</string>
 
-    <string name="game_started">The Game Has Started</string>
+    <string name="game_started">The game has started.</string>
     <string name="game_over_text">Game Over</string>
     <string name="game_winner_text">The winner was %winner.</string>
 
