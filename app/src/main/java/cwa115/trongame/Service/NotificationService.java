@@ -322,15 +322,12 @@ public class NotificationService extends Service {
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         // Adds the previous intents to the stack:
         Intent mainIntent = new Intent(this, MainActivity.class);
-        Intent lobbyIntent = new Intent(this, LobbyActivity.class);
-        stackBuilder.addNextIntent(mainIntent)
-                    .addNextIntent(lobbyIntent);
+        stackBuilder.addNextIntent(mainIntent);
         // Adds the Intent that starts the Activity to the top of the stack
-        //TODO: fix RoomActivity class so it accepts a gameId to join the game instantly
-        Intent roomIntent = new Intent(this, RoomActivity.class);
-        roomIntent.putExtra("gameId", gameId);
+        Intent lobbyIntent = new Intent(this, LobbyActivity.class);
+        lobbyIntent.putExtra(LobbyActivity.JOIN_GAME_EXTRA, gameId);
 
-        stackBuilder.addNextIntent(roomIntent);
+        stackBuilder.addNextIntent(lobbyIntent);
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(
                         0,
@@ -373,6 +370,7 @@ public class NotificationService extends Service {
         Bundle data = new Bundle();
         data.putParcelable(FriendsListActivity.PROFILE_EXTRA, profile);
         data.putString(FriendsListActivity.TITLE_EXTRA, "Friend List");
+        data.putBoolean(FriendsListActivity.FROM_NOTIFICATION_EXTRA, true);
         friendsListIntent.putExtra(FriendsListActivity.DATA_EXTRA, data);
 
         stackBuilder.addNextIntent(friendsListIntent);
