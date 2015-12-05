@@ -18,6 +18,7 @@ public class Friend {
     private long Id;
     private int CommonPlays;
     private boolean Pending, Inviter;
+    // Inviter means: this FRIEND is the inviter, NOT the current user who is collecting the friend data!
 
     public Friend(long Id){
         this(Id, true, true, 0);
@@ -29,15 +30,19 @@ public class Friend {
         this.CommonPlays = CommonPlays;
     }
     public Friend(JSONObject friendJSON){
-        this(0, true, true, 0);
+        this(0, true, false, 0);
         try {
             this.Id = friendJSON.has("id") ? friendJSON.getLong("id") : 0;
             if (!friendJSON.has("accepted") && !friendJSON.has("pending")) {
                 this.Pending = true;
             } else if (!friendJSON.has("accepted")) {
-                this.Inviter = false;
+                // pending=0 -> inviter=true (current user didn't send the invite, so the other one is the inviter) ; pending=false (they are already friends)
+                // pending=1 -> inviter=true (current user didn't send the invite, so the other one is the inviter) ; pending=true
+                this.Inviter = true;
                 this.Pending = friendJSON.getInt("pending") == 1;
             } else {
+                // accepted=0 -> inviter=false (current user sent the invite) ; pending=true
+                // accepted=1 -> inviter=false (current user sent the invite) ; pending=false (they are already friends)
                 this.Pending = friendJSON.getInt("accepted") == 0;
             }
             this.CommonPlays = friendJSON.has("commonPlays") ? friendJSON.getInt("commonPlays") : 0;
@@ -50,10 +55,10 @@ public class Friend {
         JSONObject data = new JSONObject();
         try {
             data.put("id", this.Id);
-            if(this.Inviter)
-                data.put("accepted",this.Pending ? 0 : 1);
-            else
+            if(this.Inviter) // friend is inviter, so current user isn't => set pending
                 data.put("pending",this.Pending ? 1 : 0);
+            else // friend isn't the inviter, so current user is => set accepted
+                data.put("accepted",this.Pending ? 0 : 1);
             data.put("commonPlays",this.CommonPlays);
         }catch(JSONException e){
             e.printStackTrace();

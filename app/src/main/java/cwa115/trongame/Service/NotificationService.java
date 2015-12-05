@@ -65,7 +65,8 @@ public class NotificationService extends Service {
         // check the global background data setting
         ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
-        if (activeNetworkInfo != null && activeNetworkInfo.isConnected()) {
+        if (activeNetworkInfo == null || !activeNetworkInfo.isConnected()) {
+            Log.d(TAG, "No internet connection => Stop service");
             stopSelf();
             return;
         }
@@ -76,6 +77,7 @@ public class NotificationService extends Service {
         friendInvitesReceived = false;
         gameInvitesReceived = false;
         // do the actual work, in a separate thread
+        Log.d(TAG, "Send SHOW_INVITES server request.");
         dataServer.sendRequest(
                 ServerCommand.SHOW_INVITES,
                 profile.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM),
@@ -83,6 +85,7 @@ public class NotificationService extends Service {
                     @Override
                     public void handleResult(String data) {
                         try{
+                            Log.d(TAG, "SHOW_INVITES result");
                             JSONObject result = new JSONObject(data);
                             if(!result.has("error")){
                                 JSONArray invites = result.getJSONArray("invites");
@@ -105,6 +108,7 @@ public class NotificationService extends Service {
                     }
                 }
         );
+        Log.d(TAG, "Send SHOW_ACCOUNT server request.");
         dataServer.sendRequest(
                 ServerCommand.SHOW_ACCOUNT,
                 profile.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM),
@@ -112,6 +116,7 @@ public class NotificationService extends Service {
                     @Override
                     public void handleResult(String data) {
                         try {
+                            Log.d(TAG, "SHOW_ACCOUNT result");
                             JSONObject result = new JSONObject(data);
                             if (!result.has("error")) {
                                 FriendList friendList = new FriendList(result.getJSONArray("friends"));
@@ -138,6 +143,7 @@ public class NotificationService extends Service {
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(TAG, "Service started.");
         handleIntent(intent);
         return START_NOT_STICKY;
     }
@@ -149,6 +155,7 @@ public class NotificationService extends Service {
      */
     public void onDestroy() {
         super.onDestroy();
+        Log.d(TAG, "Service destroyed.");
         profile = null;
         mWakeLock.release();
     }
@@ -169,6 +176,7 @@ public class NotificationService extends Service {
      * @param gameId The id of the game to which the user is invited
      */
     private void showGameInviteNotification(int inviteId, int inviterId, int gameId){
+        Log.d(TAG, "Show new game notification: " + inviteId + "," + inviterId + "," + gameId);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("New game invite")
@@ -203,6 +211,7 @@ public class NotificationService extends Service {
      * @param friendId The id of the friend who sent an invite
      */
     private void showFriendInviteNotification(long friendId){
+        Log.d(TAG, "Show new friend notification: " + friendId);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("New friend invite")
