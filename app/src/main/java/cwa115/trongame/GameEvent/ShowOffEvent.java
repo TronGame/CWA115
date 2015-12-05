@@ -31,6 +31,11 @@ public class ShowOffEvent implements GameEvent {
         return EVENT_TYPE;
     }
 
+    public void startEvent(GameActivity gameActivity) {
+
+    }
+
+
     @Override
     public String getNotification(GameActivity gameActivity) {
         return gameActivity.getString(R.string.show_off_text).replaceAll("%time", ""+TIME/60);

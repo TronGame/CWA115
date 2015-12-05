@@ -74,7 +74,7 @@ import cwa115.trongame.Utils.LatLngConversion;
  *                          using the onPlayerJoined and onRemoteLocationChange functions
  */
 public class GameActivity extends AppCompatActivity implements
-        LocationObserver, SensorDataObserver, ApiListener<ArrayList<LatLng>> {
+        LocationObserver, ApiListener<ArrayList<LatLng>> {
 
     // region Variables
     // -----------------------------------------------------------------------------------------------------------------
@@ -112,6 +112,7 @@ public class GameActivity extends AppCompatActivity implements
     // Sensor data
     private double acceleration;                        // Cumulative acceleration
     private boolean isBellRinging;                      // Indicates the state of the bell
+    private int bellCount;                              // Stores the amount of times a bell was detected
 
     // Wall data
     private double holeSize = LatLngConversion.meterToLatLngDistance(50);
@@ -119,6 +120,7 @@ public class GameActivity extends AppCompatActivity implements
     private String wallId;                              // The Wall id
 
     // Game data
+    private String winner;
     private boolean isAlive;
     private int playersAliveCount;
     private HashMap<String, Double> playerScores;
@@ -128,14 +130,6 @@ public class GameActivity extends AppCompatActivity implements
     private GameUpdateHandler gameUpdateHandler;
     private GameEventHandler gameEventHandler;
     private HttpConnector dataServer;
-
-    // Used to call methods with a delay
-    private static final ScheduledExecutorService worker =
-            Executors.newSingleThreadScheduledExecutor();
-    private static Handler timerHandler;
-    private static Handler endGameHandler;
-    private String winner;
-
     // Timing
     private long startTime;
 
@@ -144,7 +138,17 @@ public class GameActivity extends AppCompatActivity implements
         return height;
     }
 
-    public double getAcceleration() { return acceleration; }
+    public double getAcceleration() {
+        return acceleration;
+    }
+
+    public int getBellCount() {
+        return bellCount;
+    }
+
+    public void setBellCount(int i) {
+        bellCount = i;
+    }
 
     public double getScore() {
         return travelledDistance;
@@ -167,19 +171,47 @@ public class GameActivity extends AppCompatActivity implements
         // Content of Activity
         // -----------------------------------------------------------------------------------------
         setContentView(R.layout.activity_game);
-        if (!GameSettings.getCanBreakWall()) {
-            Button wallBreaker = (Button) findViewById(R.id.breakWallButton);
-            wallBreaker.setVisibility(View.GONE);
-        }
 
         // Sensor tracking
         // -----------------------------------------------------------------------------------------
         // Initialize sensorDataObservable and proximityObserver
         acceleration = 0;
         sensorDataObservable = new SensorDataObservable(this);
-        sensorDataObservable.startSensorTracking(SensorFlag.PROXIMITY, this);
+        // Listen to proximity updates
+        sensorDataObservable.startSensorTracking(SensorFlag.PROXIMITY, new SensorDataObserver() {
+            /**
+             * Is called when the proximity sensor detects something
+             *
+             * @param observable The observable that has changed
+             * @param data       Extra data attached by observable
+             */
+            @Override
+            public void updateSensor(SensorDataObservable observable, Object data) {
+                // Check whether it was the proximity sensor that detected something
+                if (observable != sensorDataObservable)
+                    return;
+
+                if (GameSettings.getCanBreakWall())
+                    breakWall(null);       // Activiate break wall button
+            }
+
+            /**
+             * The amount of times the sensor can detect useful information before updateSensor is called
+             */
+            @Override
+            public int getCountLimit() {
+                return 1;
+            }
+        });
+        // Listen to accelerometer updates
         sensorDataObservable.startSensorTracking(SensorFlag.ACCELEROMETER, new SensorDataObserver() {
             @Override
+            /**
+             * Is called when the accelerometer sensor detects something
+             *
+             * @param observable The observable that has changed
+             * @param data       Extra data attached by observable
+             */
             public void updateSensor(SensorDataObservable observable, Object data) {
                 // Check whether it was the proximity sensor that detected something
                 if (observable != sensorDataObservable)
@@ -191,6 +223,9 @@ public class GameActivity extends AppCompatActivity implements
                 }
             }
 
+            /**
+             * The amount of times the sensor can detect useful information before updateSensor is called
+             */
             @Override
             public int getCountLimit() {
                 return -1;
@@ -258,44 +293,35 @@ public class GameActivity extends AppCompatActivity implements
         // Create the data server
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
-        // Start the game
-        if (GameSettings.getSpectate()) {
-            isAlive = false;
-            // Hide all wall controls
-            Button startWallButton = (Button) findViewById(R.id.toggleWallButton);
-            startWallButton.setVisibility(View.GONE);
-
-            Button clearWallButton = (Button) findViewById(R.id.clearWallButton);
-            clearWallButton.setVisibility(View.GONE);
-
-            Button breakWallButton = (Button) findViewById(R.id.breakWallButton);
-            breakWallButton.setVisibility(View.GONE);
+        // Setup the game ui
+        if (!GameSettings.getCanBreakWall()) {
+            // TODO hide the breakWall button when there is a proximity sensor
+            Button wallBreaker = (Button) findViewById(R.id.breakWallButton);
+            wallBreaker.setVisibility(View.GONE);
+        }
+        else if (GameSettings.getSpectate()) {
+            Button wallBreaker = (Button) findViewById(R.id.breakWallButton);
+            wallBreaker.setVisibility(View.GONE);
 
             TextView textView = (TextView) findViewById(R.id.travelledDistance);
             textView.setVisibility(View.GONE);
-        } else
+        } else {
             isAlive = true;
+            createWall();
+        }
 
         playersAliveCount = GameSettings.getPlayersInGame().size();
 
         // Activate end game timer
         if (GameSettings.isOwner() && GameSettings.getTimelimit()>=0) {
             // End the game in FINAL_SCORE_TIMEOUT seconds
-            endGameHandler = new Handler() {
-                @Override
-                public void handleMessage(Message message) {
-                    endGame();
-                }
-            };
-            Runnable task = new Runnable() {
+            // After 3 seconds, disable the bell.
+            new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    Message message = new Message();
-                    endGameHandler.sendMessage(message);
+                    endGame();
                 }
-            };
-            // TODO change this to minutes
-            worker.schedule(task, GameSettings.getTimelimit()*60, TimeUnit.SECONDS);
+            }, 1000*GameSettings.getTimelimit() / 60);  // TODO is this time correct?
         }
 
         // Set start time (in order to measure total playtime)
@@ -409,10 +435,8 @@ public class GameActivity extends AppCompatActivity implements
     /**
      * Called when the start/stop wall button is pressed
      * or when the proximity sensor detects something
-     *
-     * @param view parameter passed by the button
      */
-    public void createWall(View view) {
+    public void createWall() {
         if (!isAlive)
             return;
 
@@ -432,10 +456,6 @@ public class GameActivity extends AppCompatActivity implements
             // Tell the other devices that a new wall has been created
             gameUpdateHandler.sendCreateWall(GameSettings.getPlayerId(), wallId, new ArrayList<LatLng>(), GameSettings.getWallColor());
 
-            // Update the button
-            Button button = (Button) view.findViewById(R.id.toggleWallButton);
-            button.setText(getString(R.string.wall_button_off_text));
-
             // Show the "creating wall" notification
             showNotification(getString(R.string.wall_on_notification), Toast.LENGTH_SHORT);
         }
@@ -443,10 +463,6 @@ public class GameActivity extends AppCompatActivity implements
             // Stop creating the wall
             creatingWall = false;                       // The player is no longer creating a wall
             wallId = null;                              // Forget about the current wall
-
-            // Update the button
-            Button button = (Button) view.findViewById(R.id.toggleWallButton);
-            button.setText(getString(R.string.wall_button_on_text));
 
             // Show the "stopped creating wall" notification
             showNotification(getString(R.string.wall_off_notification), Toast.LENGTH_LONG);
@@ -456,7 +472,7 @@ public class GameActivity extends AppCompatActivity implements
     /**
      * Called when the clear wall button is pressed
      */
-    public void clearWall(View view) {
+    public void clearWall() {
         // Is there a wall right now?
         if (wallId != null) {
             map.clear(wallId);    // Clear the wall from the map
@@ -502,12 +518,6 @@ public class GameActivity extends AppCompatActivity implements
             return;
 
         // Hide all wall controls
-        Button startWallButton = (Button) findViewById(R.id.toggleWallButton);
-        startWallButton.setVisibility(View.GONE);
-
-        Button clearWallButton = (Button) findViewById(R.id.clearWallButton);
-        clearWallButton.setVisibility(View.GONE);
-
         Button breakWallButton = (Button) findViewById(R.id.breakWallButton);
         breakWallButton.setVisibility(View.GONE);
 
@@ -562,21 +572,13 @@ public class GameActivity extends AppCompatActivity implements
 
         gameUpdateHandler.sendEndGame();
         // End the game in FINAL_SCORE_TIMEOUT seconds
-        timerHandler = new Handler() {
+        new Handler().postDelayed(new Runnable() {
             @Override
-            public void handleMessage(Message message) {
+            public void run() {
                 winner = processFinalScores();
                 notifyEndGame(winner);
             }
-        };
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                Message message = new Message();
-                timerHandler.sendMessage(message);
-            }
-        };
-        worker.schedule(task, FINAL_SCORE_TIMEOUT, TimeUnit.SECONDS);
+        }, FINAL_SCORE_TIMEOUT * 1000);  // TODO is this time correct?
     }
 
     public void sendScore() {
@@ -794,29 +796,6 @@ public class GameActivity extends AppCompatActivity implements
         }
     }
 
-    /**
-     * Is called when the proximity sensor detects something
-     *
-     * @param observable The observable that has changed
-     * @param data       Extra data attached by observable
-     */
-    @Override
-    public void updateSensor(SensorDataObservable observable, Object data) {
-        // Check whether it was the proximity sensor that detected something
-        if (observable != sensorDataObservable)
-            return;
-
-        findViewById(R.id.toggleWallButton).performClick();       // Press the Start/Stop wall button
-    }
-
-    /**
-     * The amount of times the sensor can detect useful information before updateSensor is called
-     */
-    @Override
-    public int getCountLimit() {
-        return 1;
-    }
-
     public void handleBellDetected() {
         // TODO: avoid calling this when the map is not yet ready
 
@@ -824,6 +803,7 @@ public class GameActivity extends AppCompatActivity implements
             return; // Wait for the bell to stop ringing
         isBellRinging = true;
         gameUpdateHandler.sendBellSound(GameSettings.getPlayerId());
+        bellCount += 1;
 
         // After 3 seconds, disable the bell.
         new Handler().postDelayed(new Runnable() {
