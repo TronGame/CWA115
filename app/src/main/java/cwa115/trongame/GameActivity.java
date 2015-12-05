@@ -322,6 +322,7 @@ public class GameActivity extends AppCompatActivity implements
                 return -1;
             }
         });
+
         // Listen to microphone
         frequencyListener = new FrequencyListener(new Handler(new Handler.Callback() {
             @Override
@@ -330,6 +331,7 @@ public class GameActivity extends AppCompatActivity implements
                 return false;
             }
         }), 44100, 1650, 2450, 16384);
+        frequencyListener.run(); // Start the FrequencyListener
 
         // Set the correct buttons to visible
         if (!GameSettings.getSpectate()) {
