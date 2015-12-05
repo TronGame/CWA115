@@ -51,6 +51,8 @@ public class GameUpdateHandler implements SocketIoHandler {
         public static final String PLAYER_KILLER_ID = "playerKillerId";
         public static final String PLAYER_KILLER_NAME = "playerKillerName";
 
+        public static final String START_LOCATION = "startLocation";
+
         public static final String WALL_ID = "wallId";
         public static final String WALL_OWNER_ID = "wallOwnerId";
         public static final String WALL_POINT = "point";
@@ -130,7 +132,10 @@ public class GameUpdateHandler implements SocketIoHandler {
                 // Start the game
                 case Protocol.START_GAME_MESSAGE:
                     onStartGameMessage(
-                            message.getString(Protocol.PLAYER_ID)
+                            message.getString(Protocol.PLAYER_ID),
+                            LatLngConversion.getPointFromJSON(
+                                    message.getJSONObject(Protocol.START_LOCATION)
+                            )
                     );
                     break;
                 // End the game
@@ -274,12 +279,12 @@ public class GameUpdateHandler implements SocketIoHandler {
      * Start the game
      * @param ownerId The id of the sender (this has to be the owner)
      */
-    public void onStartGameMessage(String ownerId) {
+    public void onStartGameMessage(String ownerId, LatLng position) {
         if (ownerId.equals(GameSettings.getPlayerId()))
             return; // We sent this ourselves
 
         if (!GameSettings.isOwner() && GameSettings.getOwner() == Integer.valueOf(ownerId)) {
-            gameActivity.startGame();
+            gameActivity.startGame(position);
         }
     }
 
@@ -509,10 +514,11 @@ public class GameUpdateHandler implements SocketIoHandler {
     /**
      * Tell the other players that the game has started
      */
-    public void sendStartGame() {
+    public void sendStartGame(LatLng position) {
         JSONObject startGameMessage = new JSONObject();
         try {
             startGameMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
+            startGameMessage.put(Protocol.START_LOCATION, LatLngConversion.getJSONFromPoint(position));
         } catch (JSONException e) {
             e.printStackTrace();
         }

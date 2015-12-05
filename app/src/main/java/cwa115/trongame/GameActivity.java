@@ -86,6 +86,7 @@ public class GameActivity extends AppCompatActivity implements
     private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(30);
     private static final double IGNORE_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(100);
     private static final double WALL_DELAY_DISTANCE = LatLngConversion.meterToLatLngDistance(300);
+    private static final double WARNING_DISTANCE_TO_WALL = LatLngConversion.meterToLatLngDistance(300);
 
     // Permission request ids
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
@@ -105,6 +106,7 @@ public class GameActivity extends AppCompatActivity implements
     private LatLng snappedGpsLoc;                       // Snapped location of player
     private double travelledDistance;                   // Distance travelled from the start
     private double height;                              // The last recorded height of the player
+    private LatLng mapCenter;                           // The center of the map
 
     // Sensor data
     private double acceleration;                        // Cumulative acceleration
@@ -257,13 +259,13 @@ public class GameActivity extends AppCompatActivity implements
 
     public void onStartGame(View view) {
         view.setVisibility(View.GONE);
-        startGame();
+        startGame(gpsLoc);
     }
 
-    public void startGame() {
+    public void startGame(LatLng startPos) {
         // Tell the other players that the game has started
         if (GameSettings.isOwner())
-            gameUpdateHandler.sendStartGame();
+            gameUpdateHandler.sendStartGame(startPos);
 
         // Start sensor tracking
         // Listen to proximity updates
@@ -350,7 +352,10 @@ public class GameActivity extends AppCompatActivity implements
         startTime = System.currentTimeMillis();
         // Set the amount of players that are alive
         playersAliveCount = GameSettings.getPlayersInGame().size();
-
+        // Set the initial location
+        mapCenter = startPos;
+        if (GameSettings.getMaxDistance() > 0)
+            map.drawBorder(mapCenter, GameSettings.getMaxDistance());
 
         // Activate end game timer
         if (GameSettings.isOwner() && GameSettings.getTimeLimit()>=0) {
@@ -396,6 +401,17 @@ public class GameActivity extends AppCompatActivity implements
         double snappedDistance = LatLngConversion.getDistancePoints(gpsLoc, newSnappedGpsLoc);
 
         // Log.d("VALUE", "Snapped Distance "+String.valueOf(snappedDistance));
+
+        if (isAlive && mapCenter != null && GameSettings.getMaxDistance() > 0) {
+            if (LatLngConversion.getDistancePoints(mapCenter, newSnappedGpsLoc) > GameSettings.getMaxDistance()) {
+                showNotification(getString(R.string.crossed_border), Toast.LENGTH_SHORT);
+                onDeath("", "");
+            }
+
+            if (LatLngConversion.getDistancePoints(mapCenter, newSnappedGpsLoc) > GameSettings.getMaxDistance() - WARNING_DISTANCE_TO_WALL) {
+                showNotification(getString(R.string.close_to_border), Toast.LENGTH_SHORT);
+            }
+        }
 
         // Check is the player is (almost) on the road
         if (snappedDistance < MAX_ROAD_DISTANCE) {

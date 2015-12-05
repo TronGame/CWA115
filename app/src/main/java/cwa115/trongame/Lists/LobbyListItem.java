@@ -7,9 +7,10 @@ public class LobbyListItem {
     private int players;
     private boolean canBreakWalls;
     private int timeLimit;
+    private double maxDist;
 
     // Constructor for the LobbyListItem class
-    public LobbyListItem(String name, String host, int hostId, int maxPlayers, boolean canBreakWalls, int timeLimit) {
+    public LobbyListItem(String name, String host, int hostId, int maxPlayers, boolean canBreakWalls, int timeLimit, double maxDist) {
         super();
         this.gamename = name;
         this.host = host;
@@ -17,6 +18,7 @@ public class LobbyListItem {
         this.canBreakWalls = canBreakWalls;
         this.timeLimit = timeLimit;
         this.players = maxPlayers;
+        this.maxDist = maxDist;
     }
 
     // Getter and setter methods for all the fields.
@@ -52,5 +54,8 @@ public class LobbyListItem {
     public boolean getCanBreakWall() {return this.canBreakWalls;}
     public int getTimeLimit() {
         return timeLimit;
+    }
+    public double getMaxDist() {
+        return maxDist;
     }
 }

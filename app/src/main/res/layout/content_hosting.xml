@@ -99,4 +99,27 @@
         android:layout_alignEnd="@+id/checkBoxWallBreaker"
         android:inputType="number"
         android:id="@+id/editTimeLimit"/>
+
+    <TextView
+        android:textColor="@color/basicBlack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/max_distance"
+        android:textSize="25sp"
+        android:layout_below="@+id/editTimeLimit"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/max_dist_text"/>
+
+    <EditText
+        android:inputType="numberDecimal"
+        android:textColor="@color/basicBlack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="@string/unlimited"
+        android:textSize="25sp"
+        android:id="@+id/maxDist"
+        android:layout_alignTop="@+id/max_dist_text"
+        android:layout_alignRight="@+id/game_name"
+        android:layout_alignEnd="@+id/game_name" />
 </RelativeLayout>

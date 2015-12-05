@@ -200,6 +200,7 @@ public class RoomActivity extends AppCompatActivity
         GameSettings.setOwnerId(0);
         GameSettings.setCanBreakWall(false);
         GameSettings.setTimeLimit(-1);
+        GameSettings.setMaxDistance(-1);
         GameSettings.setSpectate(false);
         finish();
     }

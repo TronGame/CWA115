@@ -128,6 +128,7 @@ public class LobbyActivity extends AppCompatActivity {
                         GameSettings.setOwnerId(clickedItem.getHostId());
                         GameSettings.setCanBreakWall(clickedItem.getCanBreakWall());
                         GameSettings.setTimeLimit(clickedItem.getTimeLimit());
+                        GameSettings.setMaxDistance(clickedItem.getMaxDist());
                         GameSettings.setMaxPlayers(clickedItem.getPlayersAsInteger());
                         GameSettings.setSpectate(checkBoxView.isChecked());
                         showToast("Joining " + gameName);
@@ -189,7 +190,9 @@ public class LobbyActivity extends AppCompatActivity {
                         newRoom.getInt("owner"),
                         newRoom.getInt("maxPlayers"),
                         (newRoom.getInt("canBreakWall") == 1),
-                        newRoom.getInt("timeLimit")
+                        newRoom.getInt("timeLimit"),
+                        -1.0 // TODO uncomment below, remove this
+                        // newRoom.getDouble("maxDist")
                 ));
                 roomIds.put(newRoom.getString("name"),newRoom.getInt("id"));
             }

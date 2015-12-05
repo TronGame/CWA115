@@ -46,6 +46,7 @@ public class HostingActivity extends AppCompatActivity {
         query.put("maxPlayers", Integer.toString(maxPlayers));
         query.put("canBreakWall", (canBreakWalls ? "1" : "0"));
         query.put("timeLimit", Integer.toString(getTimeLimit()));
+        query.put("maxDist", Double.toString(getMaxDist()));
 
         query = ImmutableMap.copyOf(query);
 
@@ -63,6 +64,7 @@ public class HostingActivity extends AppCompatActivity {
                             GameSettings.setOwnerId(GameSettings.getUserId());
                             GameSettings.setCanBreakWall(canBreakWalls);
                             GameSettings.setTimeLimit(getTimeLimit());
+                            GameSettings.setMaxDistance(getMaxDist());
                             joinOwnGame();
                         } catch (JSONException e) {
                             Toast.makeText(
@@ -103,5 +105,14 @@ public class HostingActivity extends AppCompatActivity {
             return -1;
         else
             return Integer.parseInt(timeLimit);
+    }
+
+    private double getMaxDist() {
+        EditText editMaxDist = (EditText) findViewById(R.id.maxDist);
+        String maxDist = editMaxDist.getText().toString();
+        if (maxDist.equals(""))
+            return -1;
+        else
+            return Double.parseDouble(maxDist);
     }
 }

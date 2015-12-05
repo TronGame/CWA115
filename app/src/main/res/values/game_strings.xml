@@ -34,4 +34,7 @@
     <string name="game_winner_text">The winner was %winner.</string>
 
     <string name="game_activity_closed">Warning: The app was unloaded, this might have corrupted your game</string>
+
+    <string name="crossed_border">Crossed map border</string>
+    <string name="close_to_border">Very close to border</string>
 </resources>

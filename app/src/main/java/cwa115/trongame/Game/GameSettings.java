@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import cwa115.trongame.User.FriendList;
 import cwa115.trongame.User.Profile;
+import cwa115.trongame.Utils.LatLngConversion;
 
 /**
  * Singleton to manage the settings of the current game.
@@ -29,6 +30,7 @@ public final class GameSettings {
     private static int timeLimit = -1;
 
     private static long lastPlayTime = -1;
+    private static double maxDistance = -1;
 
     private static boolean spectate = false;
     private static boolean canBreakWall;
@@ -48,6 +50,7 @@ public final class GameSettings {
         bundle.putInt("timeLimit", timeLimit);
 
         bundle.putLong("lastPlayTime", lastPlayTime);
+        bundle.putDouble("maxDistance", maxDistance);
 
         bundle.putBoolean("spectate", spectate);
         bundle.putBoolean("spectate", canBreakWall);
@@ -68,6 +71,7 @@ public final class GameSettings {
         timeLimit = bundle.getInt("timeLimit", timeLimit);
 
         lastPlayTime  = bundle.getLong("lastPlayTime", lastPlayTime);
+        maxDistance = bundle.getDouble("maxDistance", maxDistance);
 
         spectate = bundle.getBoolean("spectate", spectate);
         canBreakWall = bundle.getBoolean("spectate", canBreakWall);
@@ -246,5 +250,17 @@ public final class GameSettings {
     public static void resetLastPlaytime(){ lastPlayTime = -1; }
     public static void setLastPlayTime(long playTime){ lastPlayTime = playTime; }
     public static long getLastPlayTime(){ return lastPlayTime; }
+
+    public static void setMaxDistance(double dist) {
+        maxDistance = dist;
+    }
+
+    public static double getMaxDistance() {
+        return LatLngConversion.meterToLatLngDistance(maxDistance);
+    }
+
+    public static double getMaxDistanceInMeters() {
+        return maxDistance;
+    }
 }
 

@@ -1,14 +1,20 @@
 package cwa115.trongame.Game.Map;
 
+import android.graphics.Color;
+
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import cwa115.trongame.Utils.LatLngConversion;
 
 /**
  * Stores information (e.g. item locations) of the map
@@ -23,6 +29,7 @@ public class Map implements OnMapReadyCallback {
     private ArrayList<Wall> walls;                          // Stores the walls currently on the map
     private ArrayList<DrawableMapItem> pendingItemsDraw;    // The items that still need to be redrawn
     private ArrayList<DrawableMapItem> pendingItemsClear;   // The items that still need to be cleared
+    private CircleOptions border;
 
     private CameraUpdate cameraUpdate;                      // The next camera position update
     private boolean firstCameraHandled = false;
@@ -90,6 +97,22 @@ public class Map implements OnMapReadyCallback {
         Player player = (Player)mapItems.get(id);
         player.setLocation(location);
         redraw(id);
+    }
+
+    /**
+     * Draw the border on the map
+     *
+     */
+    public void drawBorder(LatLng center, double radius) {
+        border = new CircleOptions();
+        border.center(center);
+        border.radius(LatLngConversion.latLngDistanceToMeter(radius));
+        border.strokeColor(Color.BLUE);
+        border.fillColor(Color.TRANSPARENT);
+        border.strokeWidth(15);
+
+        mapFragment.getMapAsync(this);
+
     }
 
     /**
@@ -163,6 +186,9 @@ public class Map implements OnMapReadyCallback {
             cameraUpdate = CameraUpdateFactory.zoomTo(MapZoom); // The next update for the camera
             firstCameraHandled = true;
         }
+
+        if (border != null)
+            map.addCircle(border);
 
         if (cameraUpdate != null) {
             map.animateCamera(cameraUpdate);
