@@ -12,6 +12,11 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 
+import cwa115.trongame.Sensor.Accelerometer.HorizontalAccelerationDataHolder;
+import cwa115.trongame.Sensor.Accelerometer.VerticalAccelerationDataHolder;
+import cwa115.trongame.Sensor.Gyroscope.GyroscopeDataHolder;
+import cwa115.trongame.Sensor.Proximity.ProximityDataHolder;
+
 /**
  * Created by Bram on 31-10-2015.
  */

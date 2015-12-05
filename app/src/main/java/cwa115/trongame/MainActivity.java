@@ -46,8 +46,10 @@ import java.util.Map;
 
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Network.FacebookRequest;
-import cwa115.trongame.Network.HttpConnector;
-import cwa115.trongame.Network.ServerCommand;
+import cwa115.trongame.Network.Server.HttpConnector;
+import cwa115.trongame.Network.Server.ServerCommand;
+import cwa115.trongame.User.FriendList;
+import cwa115.trongame.User.Profile;
 import cwa115.trongame.Utils.DrawableManager;
 
 public class MainActivity extends AppCompatActivity {

@@ -2,8 +2,6 @@ package cwa115.trongame.Sensor;
 
 import android.hardware.SensorEvent;
 
-import cwa115.trongame.Test.DataQueue;
-
 /**
  * Created by Bram on 1-11-2015.
  */

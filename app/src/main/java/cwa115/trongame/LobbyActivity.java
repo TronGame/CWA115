@@ -29,8 +29,8 @@ import java.util.TimerTask;
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Lists.LobbyCustomAdapter;
 import cwa115.trongame.Lists.LobbyListItem;
-import cwa115.trongame.Network.HttpConnector;
-import cwa115.trongame.Network.ServerCommand;
+import cwa115.trongame.Network.Server.HttpConnector;
+import cwa115.trongame.Network.Server.ServerCommand;
 
 public class LobbyActivity extends AppCompatActivity {
 

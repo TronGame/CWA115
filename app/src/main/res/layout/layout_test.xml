@@ -29,7 +29,7 @@
             android:checked="true" />
     </LinearLayout>
 
-    <cwa115.trongame.Test.PlotView
+    <cwa115.trongame.Sensor.Test.PlotView
         android:id="@+id/test_plot"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

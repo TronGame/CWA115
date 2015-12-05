@@ -12,7 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import cwa115.trongame.Profile;
+import cwa115.trongame.User.Profile;
 
 /**
  * Created by Bram on 27-11-2015.

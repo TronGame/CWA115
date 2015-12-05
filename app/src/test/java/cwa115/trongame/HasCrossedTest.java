@@ -5,15 +5,13 @@ import android.graphics.Color;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.maps.GeoApiContext;
 
-import junit.framework.TestCase;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import cwa115.trongame.Map.Wall;
+import cwa115.trongame.Game.Map.Wall;
 
 import static junit.framework.Assert.assertEquals;
 

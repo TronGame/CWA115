@@ -4,6 +4,8 @@ import com.google.android.gms.maps.model.LatLng;
 
 import junit.framework.TestCase;
 
+import cwa115.trongame.Network.OldApi.ApiRequest;
+
 public class ApiRequestTest extends TestCase {
     LatLng[] points = {
             new LatLng(0, 0),

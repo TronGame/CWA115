@@ -11,7 +11,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,9 +31,9 @@ import java.util.TimerTask;
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Lists.RoomCustomAdapter;
 import cwa115.trongame.Lists.RoomListItem;
-import cwa115.trongame.Network.HttpConnector;
-import cwa115.trongame.Network.ServerCommand;
-import cwa115.trongame.PopUp.PopUp;
+import cwa115.trongame.Network.Server.HttpConnector;
+import cwa115.trongame.Network.Server.ServerCommand;
+import cwa115.trongame.Utils.PopUp;
 
 public class RoomActivity extends AppCompatActivity
         implements PopUp.NoticeDialogListener{

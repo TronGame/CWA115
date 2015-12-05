@@ -1,6 +1,6 @@
 package cwa115.trongame.Lists;
 
-import cwa115.trongame.Profile;
+import cwa115.trongame.User.Profile;
 
 public class ScoreListItem {
     private Profile player;

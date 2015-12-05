@@ -10,6 +10,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import cwa115.trongame.Network.OldApi.ApiResponse;
+
 public class ApiResponseTest extends TestCase {
     double[] longitudes = { 0, 1 };
     double[] latitudes = { 0, 1 };

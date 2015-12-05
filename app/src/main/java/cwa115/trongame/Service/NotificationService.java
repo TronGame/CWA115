@@ -20,13 +20,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import cwa115.trongame.Friend;
-import cwa115.trongame.FriendList;
+import cwa115.trongame.User.Friend;
+import cwa115.trongame.User.FriendList;
 import cwa115.trongame.FriendsListActivity;
 import cwa115.trongame.MainActivity;
-import cwa115.trongame.Network.HttpConnector;
-import cwa115.trongame.Network.ServerCommand;
-import cwa115.trongame.Profile;
+import cwa115.trongame.Network.Server.HttpConnector;
+import cwa115.trongame.Network.Server.ServerCommand;
+import cwa115.trongame.User.Profile;
 import cwa115.trongame.ProfileActivity;
 import cwa115.trongame.R;
 import cwa115.trongame.RoomActivity;

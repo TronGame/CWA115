@@ -17,8 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cwa115.trongame.Game.GameSettings;
-import cwa115.trongame.Network.HttpConnector;
-import cwa115.trongame.Network.ServerCommand;
+import cwa115.trongame.Network.Server.HttpConnector;
+import cwa115.trongame.Network.Server.ServerCommand;
 
 public class HostingActivity extends AppCompatActivity {
 

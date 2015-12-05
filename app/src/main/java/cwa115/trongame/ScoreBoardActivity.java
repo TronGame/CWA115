@@ -20,8 +20,8 @@ import java.util.TimerTask;
 
 import cwa115.trongame.Lists.ScoreCustomAdapter;
 import cwa115.trongame.Lists.ScoreListItem;
-import cwa115.trongame.Network.HttpConnector;
-import cwa115.trongame.Network.ServerCommand;
+import cwa115.trongame.Network.Server.HttpConnector;
+import cwa115.trongame.Network.Server.ServerCommand;
 
 public class ScoreBoardActivity extends AppCompatActivity {
     private static final int SCORE_BOARD_REFRESH_TIME = 5000;

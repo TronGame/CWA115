@@ -12,11 +12,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import cwa115.trongame.GameActivity;
-import cwa115.trongame.Map.Map;
-import cwa115.trongame.Map.Player;
-import cwa115.trongame.Map.Wall;
-import cwa115.trongame.Network.SocketIoConnection;
-import cwa115.trongame.Network.SocketIoHandler;
+import cwa115.trongame.Game.Map.Map;
+import cwa115.trongame.Game.Map.Player;
+import cwa115.trongame.Game.Map.Wall;
+import cwa115.trongame.Network.Socket.SocketIoConnection;
+import cwa115.trongame.Network.Socket.SocketIoHandler;
 import cwa115.trongame.R;
 import cwa115.trongame.Utils.LatLngConversion;
 
