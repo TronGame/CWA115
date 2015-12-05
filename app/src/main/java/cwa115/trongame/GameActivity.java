@@ -171,8 +171,12 @@ public class GameActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (savedInstanceState != null)
+        if (savedInstanceState != null) {
+            // If the application closed accidentally the player is set to spectator mode
             GameSettings.loadFromBundle(savedInstanceState);
+            GameSettings.setSpectate(true);
+            Toast.makeText(this, getString(R.string.game_activity_closed), Toast.LENGTH_SHORT).show();
+        }
 
         // Content of Activity
         // -----------------------------------------------------------------------------------------

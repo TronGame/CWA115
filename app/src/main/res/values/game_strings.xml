@@ -32,4 +32,6 @@
     <string name="game_started">The Game Has Started</string>
     <string name="game_over_text">Game Over</string>
     <string name="game_winner_text">The winner was %winner.</string>
+
+    <string name="game_activity_closed">Warning: The app was unloaded, this might have corrupted your game</string>
 </resources>
