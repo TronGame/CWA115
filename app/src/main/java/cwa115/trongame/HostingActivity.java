@@ -48,7 +48,8 @@ public class HostingActivity extends AppCompatActivity {
         query.put("timeLimit", Integer.toString(getTimeLimit()));
         query.put("maxDist", Double.toString(getMaxDist()));
 
-        query = ImmutableMap.copyOf(query);
+        //query = ImmutableMap.copyOf(query);
+        //^^ query can be any Map<String, String> , an ImmutableMap is not required
 
         dataServer.sendRequest(
                 ServerCommand.INSERT_GAME,

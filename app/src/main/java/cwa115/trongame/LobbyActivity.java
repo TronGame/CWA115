@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -31,10 +32,14 @@ import cwa115.trongame.Lists.LobbyCustomAdapter;
 import cwa115.trongame.Lists.LobbyListItem;
 import cwa115.trongame.Network.Server.HttpConnector;
 import cwa115.trongame.Network.Server.ServerCommand;
+import cwa115.trongame.User.Profile;
+import cwa115.trongame.Utils.DrawableManager;
 
 public class LobbyActivity extends AppCompatActivity {
 
-    final static int GAME_LIST_REFRESH_TIME = 1000;
+    public final static String JOIN_GAME_EXTRA = "lobbyActivity_joinGameExtra";
+
+    private final static int GAME_LIST_REFRESH_TIME = 1000;
 
     private HttpConnector dataServer;
     private HashMap<String,Integer> roomIds;
@@ -42,12 +47,20 @@ public class LobbyActivity extends AppCompatActivity {
     private Handler gameListHandler;
     private List<LobbyListItem> listOfRooms;
     private CheckBox checkBoxView;
-
+    private int gameToJoin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lobby);
+
+        gameToJoin = getIntent().getIntExtra(JOIN_GAME_EXTRA, -1);
+        if(gameToJoin!=-1){
+            // We started from a notification => make sure basic initializations, normally
+            // made in MainActivity are performed here:
+            GameSettings.setProfile(Profile.Load(PreferenceManager.getDefaultSharedPreferences(this)));
+            DrawableManager.InitializeCache(5);
+        }
 
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
@@ -95,18 +108,6 @@ public class LobbyActivity extends AppCompatActivity {
         gameListUpdater.cancel();
     }
 
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            GameSettings.setPlayerName(null);
-            GameSettings.setPlayerToken(null);
-            GameSettings.setUserId(0);
-            finish();
-            return true;
-        }
-        return super.onKeyUp(keyCode, event);
-    }
-
     private void listGames() {
         dataServer.sendRequest(ServerCommand.LIST_GAMES, null, new HttpConnector.Callback() {
             @Override
@@ -120,41 +121,8 @@ public class LobbyActivity extends AppCompatActivity {
                 ListView lobbyList = (ListView) findViewById(R.id.mainList);
                 lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
-                        LobbyListItem clickedItem = (LobbyListItem) listOfRooms.get(position);
-                        String gameName = clickedItem.getGamename();
-
-                        GameSettings.setGameName(gameName);
-                        GameSettings.setGameId(roomIds.get(gameName));
-                        GameSettings.setOwnerId(clickedItem.getHostId());
-                        GameSettings.setCanBreakWall(clickedItem.getCanBreakWall());
-                        GameSettings.setTimeLimit(clickedItem.getTimeLimit());
-                        GameSettings.setMaxDistance(clickedItem.getMaxDist());
-                        GameSettings.setMaxPlayers(clickedItem.getPlayersAsInteger());
-                        GameSettings.setSpectate(checkBoxView.isChecked());
-                        showToast("Joining " + gameName);
-
-                        if (!GameSettings.getSpectate()) {
-                            Map<String, String> query = ImmutableMap.of(
-                                    "gameId", String.valueOf(roomIds.get(gameName)),
-                                    "id", String.valueOf(GameSettings.getPlayerId()),
-                                    "token", GameSettings.getPlayerToken());
-
-                            dataServer.sendRequest(ServerCommand.JOIN_GAME, query, new HttpConnector.Callback() {
-                                @Override
-                                public void handleResult(String data) {
-                                    try {
-                                        JSONObject result = new JSONObject(data);
-                                        // TODO check for errors
-                                        showRoomActivity();
-
-                                    } catch (JSONException e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-                            });
-                        } else {
-                            showRoomActivity();
-                        }
+                        LobbyListItem clickedItem = listOfRooms.get(position);
+                        joinGame(clickedItem);
                     }
                 });
             }
@@ -179,12 +147,12 @@ public class LobbyActivity extends AppCompatActivity {
     public void createLobby(JSONArray result) {
 
         listOfRooms = new ArrayList<>();
-        roomIds = new HashMap();
+        roomIds = new HashMap<>();
 
         try {
             for(int i = 0; i < result.length(); i++) {
                 JSONObject newRoom = result.getJSONObject(i);
-                listOfRooms.add(new LobbyListItem(
+                LobbyListItem item = new LobbyListItem(
                         newRoom.getString("name"),
                         newRoom.getString("ownerName"),
                         newRoom.getInt("owner"),
@@ -193,8 +161,11 @@ public class LobbyActivity extends AppCompatActivity {
                         newRoom.getInt("timeLimit"),
                         -1.0 // TODO uncomment below, remove this
                         // newRoom.getDouble("maxDist")
-                ));
+                );
+                listOfRooms.add(item);
                 roomIds.put(newRoom.getString("name"),newRoom.getInt("id"));
+                if(gameToJoin==newRoom.getInt("id"))
+                    joinGame(item);
             }
         }catch (JSONException e){
             e.printStackTrace();
@@ -223,7 +194,42 @@ public class LobbyActivity extends AppCompatActivity {
         ).show();
     }
 
+    private void joinGame(LobbyListItem item){
+        String gameName = item.getGamename();
 
+        GameSettings.setGameName(gameName);
+        GameSettings.setGameId(roomIds.get(gameName));
+        GameSettings.setOwnerId(item.getHostId());
+        GameSettings.setCanBreakWall(item.getCanBreakWall());
+        GameSettings.setTimeLimit(item.getTimeLimit());
+        GameSettings.setMaxDistance(item.getMaxDist());
+        GameSettings.setMaxPlayers(item.getPlayersAsInteger());
+        GameSettings.setSpectate(checkBoxView.isChecked());
+        showToast("Joining " + gameName);
+
+        if (!GameSettings.getSpectate()) {
+            Map<String, String> query = ImmutableMap.of(
+                    "gameId", String.valueOf(roomIds.get(gameName)),
+                    "id", String.valueOf(GameSettings.getPlayerId()),
+                    "token", GameSettings.getPlayerToken());
+
+            dataServer.sendRequest(ServerCommand.JOIN_GAME, query, new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    try {
+                        JSONObject result = new JSONObject(data);
+                        // TODO check for errors
+                        showRoomActivity();
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        } else {
+            showRoomActivity();
+        }
+    }
 
     public void showScoreBoard(View view) {
         startActivity(new Intent(this, ScoreBoardActivity.class));
