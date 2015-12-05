@@ -16,7 +16,8 @@ import android.util.Log;
  */
 public class AppReceiver extends BroadcastReceiver {
 
-    private final static int REPEAT_MINUTES = 1;
+    private final static int REPEAT_MINUTES = 5;
+    private final static int FIRE_DELAY_SECONDS = 30;
     private final static String TAG = "AppReceiver";
 
     @Override
@@ -36,7 +37,7 @@ public class AppReceiver extends BroadcastReceiver {
         if(activeNetwork!=null && activeNetwork.isConnected()) {
             Log.d(TAG, "Connected to internet => setRepeating service call");
             am.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                    SystemClock.elapsedRealtime() + REPEAT_MINUTES * 60 * 1000,
+                    SystemClock.elapsedRealtime() + FIRE_DELAY_SECONDS * 1000,
                     REPEAT_MINUTES * 60 * 1000, pi);
         }
     }

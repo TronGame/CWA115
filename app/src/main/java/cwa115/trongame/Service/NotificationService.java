@@ -16,6 +16,8 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
+import com.google.common.collect.ImmutableMap;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,6 +25,7 @@ import org.json.JSONObject;
 import cwa115.trongame.Friend;
 import cwa115.trongame.FriendList;
 import cwa115.trongame.FriendsListActivity;
+import cwa115.trongame.LobbyActivity;
 import cwa115.trongame.MainActivity;
 import cwa115.trongame.Network.HttpConnector;
 import cwa115.trongame.Network.ServerCommand;
@@ -37,10 +40,14 @@ import cwa115.trongame.RoomActivity;
 public class NotificationService extends Service {
 
     private final static String TAG = "NotificationService";
+    private final static int FRIEND_NOTIFICATION_ID = 1000000;
+    private final static int GAME_NOTIFICATION_ID = 2000000;
 
     private PowerManager.WakeLock mWakeLock;
+    private HttpConnector dataServer;
     private boolean gameInvitesReceived, friendInvitesReceived;
     private Profile profile;
+    private int totalGameInvites, totalFriendInvites, handledGameInvites, handledFriendInvites;
 
     /**
      * Simply return null, since our Service will not be communicating with
@@ -71,11 +78,18 @@ public class NotificationService extends Service {
             return;
         }
 
-        HttpConnector dataServer = new HttpConnector(getString(R.string.dataserver_url));
+        dataServer = new HttpConnector(getString(R.string.dataserver_url));
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         profile = Profile.Load(settings);
         friendInvitesReceived = false;
         gameInvitesReceived = false;
+        handledGameInvites = 0;
+        handledFriendInvites = 0;
+        if(profile.getId()==null || profile.getToken()==null) { // The user isn't signed in
+            Log.d(TAG, "No user signed in => Stop service");
+            stopSelf();
+            return;
+        }
         // do the actual work, in a separate thread
         Log.d(TAG, "Send SHOW_INVITES server request.");
         dataServer.sendRequest(
@@ -84,27 +98,7 @@ public class NotificationService extends Service {
                 new HttpConnector.Callback() {
                     @Override
                     public void handleResult(String data) {
-                        try{
-                            Log.d(TAG, "SHOW_INVITES result");
-                            JSONObject result = new JSONObject(data);
-                            if(!result.has("error")){
-                                JSONArray invites = result.getJSONArray("invites");
-                                for(int i=0;i<invites.length();i++){
-                                    JSONObject invite = invites.getJSONObject(i);
-                                    int inviteId = invite.getInt("inviteId");
-                                    int inviterId = invite.getInt("inviterId");
-                                    int gameId = invite.getInt("gameId");
-                                    //TODO: check if game still exists, otherwise delete invite
-                                    showGameInviteNotification(inviteId, inviterId, gameId);
-                                }
-                            }else
-                                Log.e(TAG, "Server error while receiving gameInvites.");
-                        }catch (JSONException e){
-                            e.printStackTrace();
-                            Log.e(TAG, "JSON error while receiving gameInvites.");
-                        }
-                        gameInvitesReceived = true;
-                        safeStop();
+                        handleShowInvites(data);
                     }
                 }
         );
@@ -115,25 +109,145 @@ public class NotificationService extends Service {
                 new HttpConnector.Callback() {
                     @Override
                     public void handleResult(String data) {
-                        try {
-                            Log.d(TAG, "SHOW_ACCOUNT result");
-                            JSONObject result = new JSONObject(data);
-                            if (!result.has("error")) {
-                                FriendList friendList = new FriendList(result.getJSONArray("friends"));
-                                for(Friend friend : friendList){
-                                    if(friend.isInviter() && friend.isPending())
-                                        showFriendInviteNotification(friend.getId());
-                                }
-                            } else {
-                                Log.e(TAG, "Server error while receiving friendInvites.");
-                            }
-                        } catch (JSONException e) {
-                            Log.e(TAG, "JSON error while receiving friendInvites.");
-                        }
-                        friendInvitesReceived = true;
-                        safeStop();
+                        handleShowAccount(data);
                     }
                 });
+    }
+
+    private void handleShowInvites(String data){
+        try{
+            Log.d(TAG, "SHOW_INVITES result");
+            JSONObject result = new JSONObject(data);
+            if(!result.has("error")) {
+                JSONArray invites = result.getJSONArray("invites");
+                totalGameInvites = invites.length();
+                if(totalGameInvites==0) gameInvitesFinished();// Make sure gameInvitesFinished is called even when there are no invites
+                for (int i = 0; i < totalGameInvites; i++) {
+                    JSONObject invite = invites.getJSONObject(i);
+                    final int inviteId = invite.getInt("inviteId");
+                    final int inviterId = invite.getInt("inviterId");
+                    final int gameId = invite.getInt("gameId");
+                    dataServer.sendRequest(
+                            ServerCommand.SHOW_GAME,
+                            ImmutableMap.of("gameId", String.valueOf(gameId)),
+                            new HttpConnector.Callback() {
+                                @Override
+                                public void handleResult(String data) {
+                                    handleShowGame(data, inviteId, inviterId, gameId);
+                                }
+                            }
+                    );
+                }
+            }else {
+                Log.e(TAG, "Server error while receiving gameInvites.");
+                gameInvitesFinished();
+            }
+        }catch (JSONException e){
+            e.printStackTrace();
+            Log.e(TAG, "JSON error while receiving gameInvites.");
+            gameInvitesFinished();
+        }
+    }
+
+    private void handleShowGame(String data, final int inviteId, final int inviterId, final int gameId){
+        try {
+            Log.d(TAG, "SHOW_GAME result of invite[" + inviteId + "]");
+            JSONObject result = new JSONObject(data);
+            if (!result.has("error")){
+                // Game exists, get inviter's name to show notification:
+                dataServer.sendRequest(
+                        ServerCommand.SHOW_ACCOUNT,
+                        ImmutableMap.of("id", String.valueOf(inviterId)),
+                        new HttpConnector.Callback() {
+                            @Override
+                            public void handleResult(String data) {
+                                Log.d(TAG, "SHOW_ACCOUNT result of invite[" + inviteId + "]");
+                                try {
+                                    JSONObject result = new JSONObject(data);
+                                    if (!result.has("error")) {
+                                        showGameInviteNotification(inviteId, result.getString("name"), gameId);
+                                        // Delete invite so it isn't shown again
+                                        deleteInvite(inviteId);
+                                    } else {
+                                        Log.e(TAG, "Server error while receiving inviter's name.");
+                                        gameInviteFinished();
+                                    }
+                                } catch (JSONException e) {
+                                    Log.e(TAG, "JSON error while receiving inviter's name.");
+                                    gameInviteFinished();
+                                }
+                            }
+                        }
+                );
+            }else{
+                // Game doesn't exist anymore => delete invite
+                deleteInvite(inviteId);
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "JSON error while receiving game-info.");
+            gameInviteFinished();
+        }
+    }
+
+    private void deleteInvite(final int inviteId){
+        dataServer.sendRequest(
+                ServerCommand.DELETE_INVITE,
+                ImmutableMap.of(
+                        "id", String.valueOf(profile.getId()),
+                        "token", String.valueOf(profile.getToken()),
+                        "inviteId", String.valueOf(inviteId)),
+                new HttpConnector.Callback() {
+                    @Override
+                    public void handleResult(String data) {
+                        Log.d(TAG, "DELETE_INVITE result of invite[" + inviteId + "]");
+                        gameInviteFinished();
+                    }
+                }
+        );
+    }
+
+    private void handleShowAccount(String data){
+        try {
+            Log.d(TAG, "SHOW_ACCOUNT result");
+            JSONObject result = new JSONObject(data);
+            if (!result.has("error")) {
+                FriendList friendList = new FriendList(result.getJSONArray("friends"));
+                totalFriendInvites = friendList.size();
+                if(totalFriendInvites==0) friendInvitesFinished(); // Make sure service stops itself even when there are no friend invites
+                for(Friend friend : friendList){
+                    if(friend.isInviter() && friend.isPending()){
+                        // get friend's name to show notification:
+                        final long friendId = friend.getId();
+                        dataServer.sendRequest(
+                                ServerCommand.SHOW_ACCOUNT,
+                                ImmutableMap.of("id", String.valueOf(friendId)),
+                                new HttpConnector.Callback() {
+                                    @Override
+                                    public void handleResult(String data) {
+                                        try{
+                                            JSONObject result = new JSONObject(data);
+                                            if(!result.has("error")){
+                                                showFriendInviteNotification(friendId, result.getString("name"));
+                                            }else{
+                                                Log.e(TAG, "Server error while receiving friend's name.");
+                                            }
+                                        }catch (JSONException e){
+                                            Log.e(TAG, "JSON error while receiving friend's name.");
+                                        }
+                                        friendInviteFinished();
+                                    }
+                                }
+                        );
+                    }
+                }
+            } else {
+                Log.e(TAG, "Server error while receiving friendInvites.");
+                friendInvitesFinished();
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "JSON error while receiving friendInvites.");
+            friendInvitesFinished();
+        }
     }
 
     /**
@@ -160,6 +274,24 @@ public class NotificationService extends Service {
         mWakeLock.release();
     }
 
+    private void gameInviteFinished(){
+        handledGameInvites++;
+        if(totalGameInvites==handledGameInvites)
+            gameInvitesFinished();
+    }
+    private void friendInviteFinished(){
+        handledFriendInvites++;
+        if(totalFriendInvites==handledFriendInvites)
+            friendInvitesFinished();
+    }
+    private void gameInvitesFinished(){
+        gameInvitesReceived = true;
+        safeStop();
+    }
+    private void friendInvitesFinished(){
+        friendInvitesReceived = true;
+        safeStop();
+    }
     /**
      * Safely stop service. Only stop when friends & game invites were received (or at least
      * we tried to receive them).
@@ -172,28 +304,33 @@ public class NotificationService extends Service {
     /**
      * Show a notification to the user.
      * @param inviteId The id of the invite
-     * @param inviterId The id of the user who invited this player
+     * @param inviterName The name of the user who invited this player
      * @param gameId The id of the game to which the user is invited
      */
-    private void showGameInviteNotification(int inviteId, int inviterId, int gameId){
-        Log.d(TAG, "Show new game notification: " + inviteId + "," + inviterId + "," + gameId);
+    private void showGameInviteNotification(int inviteId, String inviterName, int gameId){
+        Log.d(TAG, "Show new game notification: " + inviteId + "," + inviterName + "," + gameId);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("New game invite")
-                .setContentText("invited you to join his game.");
+                .setContentText("invited you to join his game.")
+                .setAutoCancel(true);
 
         // The stack builder object will contain an artificial back stack for the
         // started Activity.
         // This ensures that navigating backward from the Activity leads out of
         // your application to the Home screen.
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        // Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(MainActivity.class)
-                    .addParentStack(RoomActivity.class);
+        // Adds the previous intents to the stack:
+        Intent mainIntent = new Intent(this, MainActivity.class);
+        Intent lobbyIntent = new Intent(this, LobbyActivity.class);
+        stackBuilder.addNextIntent(mainIntent)
+                    .addNextIntent(lobbyIntent);
         // Adds the Intent that starts the Activity to the top of the stack
-        Intent intent = new Intent(this, RoomActivity.class);
-        intent.putExtra("gameId", gameId);
-        stackBuilder.addNextIntent(new Intent(this, RoomActivity.class));
+        //TODO: fix RoomActivity class so it accepts a gameId to join the game instantly
+        Intent roomIntent = new Intent(this, RoomActivity.class);
+        roomIntent.putExtra("gameId", gameId);
+
+        stackBuilder.addNextIntent(roomIntent);
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(
                         0,
@@ -203,35 +340,42 @@ public class NotificationService extends Service {
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // mId allows you to update the notification later on.
-        mNotificationManager.notify(inviteId, mBuilder.build());
+        mNotificationManager.notify(GAME_NOTIFICATION_ID + inviteId, mBuilder.build());
     }
 
     /**
      * Show a notification to the user.
      * @param friendId The id of the friend who sent an invite
      */
-    private void showFriendInviteNotification(long friendId){
+    private void showFriendInviteNotification(long friendId, String friendName){
         Log.d(TAG, "Show new friend notification: " + friendId);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("New friend invite")
-                .setContentText("sent you a friend request.");
+                .setContentText(friendName + " sent you a friend request.")
+                .setAutoCancel(true);
 
         // The stack builder object will contain an artificial back stack for the
         // started Activity.
         // This ensures that navigating backward from the Activity leads out of
         // your application to the Home screen.
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-        // Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(MainActivity.class)
-                .addParentStack(ProfileActivity.class);
+        // Adds the previous intents to the stack
+        Intent mainIntent = new Intent(this, MainActivity.class);
+        Intent profileIntent = new Intent(this, ProfileActivity.class);
+        Bundle profileExtra = new Bundle();
+        profileExtra.putParcelable(ProfileActivity.PROFILE_EXTRA, profile);
+        profileIntent.putExtra(ProfileActivity.DATA_EXTRA, profileExtra);
+        stackBuilder.addNextIntent(mainIntent)
+                    .addNextIntent(profileIntent);
         // Adds the Intent that starts the Activity to the top of the stack
-        Intent intent = new Intent(this, FriendsListActivity.class);
+        Intent friendsListIntent = new Intent(this, FriendsListActivity.class);
         Bundle data = new Bundle();
         data.putParcelable(FriendsListActivity.PROFILE_EXTRA, profile);
-        data.putString(FriendsListActivity.TITLE_EXTRA, "Friendlist:");
-        intent.putExtra(FriendsListActivity.DATA_EXTRA, data);
-        stackBuilder.addNextIntent(new Intent(this, FriendsListActivity.class));
+        data.putString(FriendsListActivity.TITLE_EXTRA, "Friend List");
+        friendsListIntent.putExtra(FriendsListActivity.DATA_EXTRA, data);
+
+        stackBuilder.addNextIntent(friendsListIntent);
         PendingIntent resultPendingIntent =
                 stackBuilder.getPendingIntent(
                         0,
@@ -241,6 +385,6 @@ public class NotificationService extends Service {
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         // mId allows you to update the notification later on.
-        mNotificationManager.notify((int)friendId, mBuilder.build());
+        mNotificationManager.notify(FRIEND_NOTIFICATION_ID + (int)friendId, mBuilder.build());
     }
 }
