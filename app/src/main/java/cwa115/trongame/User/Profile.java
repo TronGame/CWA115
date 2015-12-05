@@ -278,7 +278,7 @@ public class Profile implements Parcelable{
                 toInt(this.Playtime)
         });
         dest.writeLong(toLong(this.FacebookId));
-        String f = this.Friends.toString();
+        String f = (Friends == null) ? "" : this.Friends.toString();
         dest.writeStringArray(new String[]{
                 this.Token,
                 this.Name,
