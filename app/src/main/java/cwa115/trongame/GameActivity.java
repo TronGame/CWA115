@@ -817,6 +817,9 @@ public class GameActivity extends AppCompatActivity implements
         Intent intent = new Intent(this, LobbyActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+
+        // Close the GameActivity
+        finish();
     }
 
     // endregion
