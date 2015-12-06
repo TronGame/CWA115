@@ -11,9 +11,11 @@
     <color name="tronBlueLight">#c0f2fa</color>
     <color name="tronBlue">#18CAE6</color>
     <color name="tronBlueTransparent">#8718CAE6</color>
+    <color name="tronBlueDark">#103454</color>
+    <color name="tronBlueDarkTransparent">#87103454</color>
     <color name="notificationRed">#FF0000</color>
-    <color name="tronOrange">#ffa900</color>
-    <color name="tronOrangeTransparent">#87ffa900</color>
+    <color name="tronOrange">#F66A35</color>
+    <color name="tronOrangeTransparent">#87F66A35</color>
     <color name="tronOrangeLight">#ffc53b</color>
     <color name="uplayDarkBlue">#1d75bd</color>
     <color name="deadBaby">#0D0C1C</color>

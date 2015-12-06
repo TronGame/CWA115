@@ -24,6 +24,7 @@
         android:layout_centerHorizontal="true" />
 
     <ListView
+        android:padding="@dimen/rounded_list_padding"
         android:layout_weight="5"
         android:id="@+id/room_list"
         android:layout_width="match_parent"

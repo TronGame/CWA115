@@ -26,14 +26,12 @@
         android:layout_marginTop="150dp"
         android:text="@string/start_game_text"
         android:onClick="onStartGame"
-        android:background="@drawable/rounded_button_tron_blue"/>
+        android:background="@drawable/rounded_button_blue"/>
 
     <LinearLayout
         android:layout_width="100pt"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:paddingTop="@dimen/map_vertical_margin"
-        android:paddingRight="@dimen/map_vertical_margin"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true">
 
@@ -41,7 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@color/tronBlueTransparent"
+            android:background="@color/buttonBlue"
             android:paddingLeft="2pt"
             android:paddingRight="2pt"
             android:paddingTop="2pt"
@@ -53,9 +51,10 @@
                 android:id="@+id/travelledDistanceHead"
                 android:layout_width="match_parent"
                 android:layout_gravity="end"
-                android:paddingEnd="5pt"
-                android:paddingRight="5pt"
-                android:paddingLeft="5pt"
+                android:textStyle="bold"
+                android:textSize="17sp"
+                android:gravity="center"
+                android:padding="1pt"
                 android:layout_height="10pt"
                 android:text="@string/distance_count_text"/>
 
@@ -63,9 +62,10 @@
                 android:id="@+id/travelledDistance"
                 android:layout_width="match_parent"
                 android:layout_gravity="end"
-                android:paddingEnd="5pt"
-                android:paddingRight="5pt"
-                android:paddingLeft="5pt"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:padding="1pt"
                 android:layout_height="10pt"
                 android:text="0.0"/>
 

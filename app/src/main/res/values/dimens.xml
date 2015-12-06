@@ -5,4 +5,6 @@
     <dimen name="map_horizontal_margin">0dp</dimen>
     <dimen name="map_vertical_margin">0dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="rounded_list_padding">7dp</dimen>
+    <dimen name="room_row_padding">7dp</dimen>
 </resources>
