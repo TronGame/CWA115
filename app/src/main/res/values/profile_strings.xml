@@ -4,7 +4,10 @@
     <string name="user_name">Username</string>
     <string name="facebook_logo">Facebook logo</string>
     <string name="stats">Stats</string>
-    <string name="friends_message">This is %1$s your friend!</string>
+    <string name="friends_message">This is your friend!</string>
+    <string name="not_friends_message">This is not your friend</string>
+    <string name="friends_pending_inviter_message">This player sent you a friend request</string>
+    <string name="friends_pending_invitee_message">You sent this player a friend request</string>
     <string name="add_friend">Add as friend</string>
     <string name="delete_friend">Delete friend</string>
     <string name="show_friend_list">Show Friend List</string>
