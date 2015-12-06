@@ -51,10 +51,6 @@ public enum ServerCommand {
 
     SCOREBOARD("scoreboard"),
 
-    INCREASE_WINS("increaseWins"),
-
-    INCREASE_LOSSES("increaseLosses"),
-
     INCREASE_COMMON_PLAYS("increaseCommonPlays"),
 
     SET_HIGHSCORE("setHighscore"),
