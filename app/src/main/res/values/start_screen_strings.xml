@@ -47,4 +47,5 @@
     <string name="to_many_players">There are to many players to start the game</string>
     <string name="to_few_players">There need to be at least two players to start the game</string>
     <string name="max_distance">Max distance (meter)</string>
+    <string name="game_deleted">The Game was deleted</string>
 </resources>

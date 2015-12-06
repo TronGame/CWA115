@@ -15,6 +15,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.games.Game;
 import com.google.common.collect.ImmutableMap;
 
 import org.json.JSONArray;
@@ -185,12 +186,16 @@ public class RoomActivity extends AppCompatActivity
                                 });
                             }
                         } catch (JSONException e) {
-                            e.printStackTrace();
-                            safeExit(); // Probably game was deleted
+                            gameDeleted();
                         }
                     }
                 });
 
+    }
+
+    public void gameDeleted() {
+        Toast.makeText(this, getString(R.string.game_deleted), Toast.LENGTH_SHORT).show();
+        safeExit(); // Probably game was deleted
     }
 
     public void safeExit() {
@@ -202,6 +207,44 @@ public class RoomActivity extends AppCompatActivity
         GameSettings.setTimeLimit(-1);
         GameSettings.setMaxDistance(-1);
         GameSettings.setSpectate(false);
+        if (!GameSettings.getSpectate()) {
+            // Tell the server that you have left
+            ImmutableMap query = ImmutableMap.of(
+                    "playerId", GameSettings.getPlayerId(),
+                    "token", GameSettings.getPlayerToken());
+
+            dataServer.sendRequest(ServerCommand.LEAVE_GAME, query, new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    try {
+                        JSONObject result = new JSONObject(data);
+                        // TODO check for errors
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
+        if (GameSettings.getGameToken() != null) {
+            // The owner has left so the game has to be deleted
+            ImmutableMap query = ImmutableMap.of(
+                    "gameId", String.valueOf(GameSettings.getGameId()),
+                    "token", GameSettings.getGameToken());
+
+            dataServer.sendRequest(ServerCommand.DELETE_GAME, query, new HttpConnector.Callback() {
+                @Override
+                public void handleResult(String data) {
+                    try {
+                        JSONObject result = new JSONObject(data);
+                        // TODO check for errors
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
         finish();
     }
 
