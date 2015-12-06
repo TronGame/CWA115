@@ -25,8 +25,8 @@ public class FriendListAdapter extends BaseAdapter {
     private Callback callback;
 
     public interface Callback{
-        public void onFriendAccepted(Friend friend);
-        public void onFriendRejected(Friend friend);
+        public void onFriendAccepted(Friend friend, int friendPosition);
+        public void onFriendRejected(Friend friend, int friendPosition);
     }
 
     public FriendListAdapter(Context context, List<FriendListItem> friendList, boolean selectable, Callback callback) {
@@ -83,26 +83,26 @@ public class FriendListAdapter extends BaseAdapter {
             LinearLayout inviteeView = (LinearLayout)convertView.findViewById(R.id.inviteeView);
             LinearLayout inviterView = (LinearLayout)convertView.findViewById(R.id.inviterView);
             if(showPending && player.isPending()) {
-                if (player.isInviter()) {
-                    inviteeView.setVisibility(View.GONE);
-                    inviterView.setVisibility(View.VISIBLE);
-                } else {
+                if (player.isInviter()) {// Friend is the inviter => this user is invitee:
                     inviteeView.setVisibility(View.VISIBLE);
                     inviterView.setVisibility(View.GONE);
                     convertView.findViewById(R.id.accept_button).setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             int pos = (int) v.getTag();
-                            callback.onFriendAccepted(friendList.get(pos).getPlayer());
+                            callback.onFriendAccepted(friendList.get(pos).getPlayer(), pos);
                         }
                     });
                     convertView.findViewById(R.id.reject_button).setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
                             int pos = (int) v.getTag();
-                            callback.onFriendRejected(friendList.get(pos).getPlayer());
+                            callback.onFriendRejected(friendList.get(pos).getPlayer(), pos);
                         }
                     });
+                } else {// Friend is invitee => this user is inviter:
+                    inviteeView.setVisibility(View.GONE);
+                    inviterView.setVisibility(View.VISIBLE);
                 }
             } else {
                 inviteeView.setVisibility(View.GONE);

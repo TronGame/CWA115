@@ -78,6 +78,10 @@ public class Friend {
     public int getCommonPlays(){
         return this.CommonPlays;
     }
+    public void accept(){
+        if(this.isInviter())
+            this.Pending=false;
+    }
 /*
     //region Parcelable Methods
     public Friend(Parcel in){

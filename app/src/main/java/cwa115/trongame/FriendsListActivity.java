@@ -219,7 +219,7 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
     }
 
     @Override
-    public void onFriendAccepted(Friend friend) {
+    public void onFriendAccepted(Friend friend, final int friendPosition) {
         dataServer.sendRequest(
                 ServerCommand.ACCEPT_FRIEND,
                 ImmutableMap.of(
@@ -228,13 +228,25 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
                         "friendId", String.valueOf(friend.getId())),
                 new HttpConnector.Callback() {
                     @Override
-                    public void handleResult(String data) { }
+                    public void handleResult(String data) {
+                        try{
+                            JSONObject result = new JSONObject(data);
+                            if(!result.has("error") && result.getBoolean("success")){
+                                showToast("Friend request accepted.");
+                                friendListItems.get(friendPosition).getPlayer().accept();
+                                adapter.notifyDataSetChanged();
+                            }else
+                                showToast("Error while accepting friend request.");
+                        }catch(JSONException e){
+                            showToast("Error while accepting friend request.");
+                        }
+                    }
                 }
         );
     }
 
     @Override
-    public void onFriendRejected(Friend friend) {
+    public void onFriendRejected(Friend friend, final int friendPosition) {
         dataServer.sendRequest(
                 ServerCommand.DELETE_FRIEND,
                 ImmutableMap.of(
@@ -244,7 +256,19 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
                 ),
                 new HttpConnector.Callback() {
                     @Override
-                    public void handleResult(String data) { }
+                    public void handleResult(String data) {
+                        try{
+                            JSONObject result = new JSONObject(data);
+                            if(!result.has("error") && result.getBoolean("success")){
+                                showToast("Friend request rejected.");
+                                friendListItems.remove(friendPosition);
+                                adapter.notifyDataSetChanged();
+                            }else
+                                showToast("Error while rejecting friend request.");
+                        }catch(JSONException e){
+                            showToast("Error while rejecting friend request.");
+                        }
+                    }
                 }
         );
     }
