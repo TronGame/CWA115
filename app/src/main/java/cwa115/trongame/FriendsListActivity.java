@@ -29,6 +29,7 @@ import cwa115.trongame.Network.Server.ServerCommand;
 import cwa115.trongame.User.Friend;
 import cwa115.trongame.User.FriendList;
 import cwa115.trongame.User.Profile;
+import cwa115.trongame.User.Updater;
 import cwa115.trongame.Utils.DrawableManager;
 
 public class FriendsListActivity extends AppCompatActivity implements FriendListAdapter.Callback {
