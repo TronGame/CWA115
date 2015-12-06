@@ -784,17 +784,6 @@ public class GameActivity extends AppCompatActivity implements
             }
         });
 
-        // Update player stats
-        ServerCommand command = (winner.equals(GameSettings.getPlayerId())) ? ServerCommand.INCREASE_WINS : ServerCommand.INCREASE_LOSSES;
-        dataServer.sendRequest(
-                command,
-                ImmutableMap.of("id", GameSettings.getPlayerId(), "token", GameSettings.getPlayerToken()),
-                new HttpConnector.Callback() {
-                    @Override
-                    public void handleResult(String data) { }
-                }
-        );
-
         // The host updates the high scores
         if(playerScores.get(GameSettings.getPlayerId())>GameSettings.getProfile().getHighscore()){
             dataServer.sendRequest(
@@ -828,6 +817,9 @@ public class GameActivity extends AppCompatActivity implements
         Intent intent = new Intent(this, LobbyActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+
+        // Close the GameActivity
+        finish();
     }
 
     // endregion
