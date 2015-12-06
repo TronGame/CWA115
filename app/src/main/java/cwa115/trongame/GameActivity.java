@@ -19,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,13 +61,6 @@ import cwa115.trongame.Utils.LatLngConversion;
 /**
  * The Game activity
  * Controls all of the game functionality
- * implements:
- *      TODO: update this
- *      LocationObserver: ability to receive location updates with updateLocation function
- *      SensorDataObserver: ability to receive sensor updates with updateSensor function
- *      ApiListener: ability to receive snapped location results with handleApiResult function
- *      SocketIoHandler: ability to receive information from other players over the socket
- *                          using the onPlayerJoined and onRemoteLocationChange functions
  */
 public class GameActivity extends AppCompatActivity implements
         LocationObserver, ApiListener<ArrayList<LatLng>> {
@@ -77,16 +71,19 @@ public class GameActivity extends AppCompatActivity implements
     private static final int FINAL_SCORE_TIMEOUT = 1;   // in seconds
     private static final boolean IMMORTAL = false;
     private static final boolean HAS_EVENTS = true;
-    private static final int KILL_SCORE = 500;
+    private static final int KILL_SCORE = 2000;
+    private static final int WALL_BREAKER_COST = 500;
 
     // Location thresholds
     private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(20);
     private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(100);
-    private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(10);
-    private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(30);
-    private static final double IGNORE_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(100);
+    private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(30);
+    private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(50);
+    private static final double IGNORE_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(50);
     private static final double WALL_DELAY_DISTANCE = LatLngConversion.meterToLatLngDistance(300);
-    private static final double WARNING_DISTANCE_TO_WALL = LatLngConversion.meterToLatLngDistance(300);
+    // Only this one is in meter because the distance from the center is calculated in meters
+    // instead of in latlng distance
+    private static final double WARNING_DISTANCE_TO_WALL = 300;
 
     // Permission request ids
     private static final int PERMISSIONS_REQUEST_FINE_LOCATION = 0;
@@ -161,7 +158,14 @@ public class GameActivity extends AppCompatActivity implements
         travelledDistance += score;
 
         TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
-        distanceView.setText(String.valueOf((int)travelledDistance));
+        distanceView.setText(String.valueOf(Math.floor(travelledDistance)));
+    }
+
+    public void addScore(double score) {
+        travelledDistance += score;
+
+        TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
+        distanceView.setText(String.valueOf(Math.floor(travelledDistance)));
     }
 
     // endregion
@@ -175,6 +179,9 @@ public class GameActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         if (savedInstanceState != null) {
             // If the application closed accidentally the player is set to spectator mode
+            // At this point the game is corrupt and a lot of problems will arise
+            // If this happens to the host it is extremely problematic
+            // TODO make the host end the game if his game is corrupt
             GameSettings.loadFromBundle(savedInstanceState);
             GameSettings.setSpectate(true);
             Toast.makeText(this, getString(R.string.game_activity_closed), Toast.LENGTH_SHORT).show();
@@ -238,6 +245,10 @@ public class GameActivity extends AppCompatActivity implements
         gameUpdateHandler = new GameUpdateHandler(this, connection, map, context);
         gameEventHandler = new GameEventHandler(connection, this);
 
+        if (savedInstanceState != null)
+            // When the game is corrupt, you are considered dead.
+            gameUpdateHandler.sendDeathMessage("//", "A corrupted game");
+
         // Create the data server
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
@@ -249,6 +260,9 @@ public class GameActivity extends AppCompatActivity implements
 
         Button wallBreaker = (Button) findViewById(R.id.breakWallButton);
         wallBreaker.setVisibility(View.GONE);
+
+        LinearLayout travelledDistanceContainer = (LinearLayout) findViewById(R.id.travelledDistanceContainer);
+        travelledDistanceContainer.setVisibility(View.GONE);
 
         TextView travelledDistance = (TextView) findViewById(R.id.travelledDistance);
         travelledDistance.setVisibility(View.GONE);
@@ -341,6 +355,9 @@ public class GameActivity extends AppCompatActivity implements
                 wallBreaker.setVisibility(View.VISIBLE);
             }
 
+            LinearLayout travelledDistanceContainer = (LinearLayout) findViewById(R.id.travelledDistanceContainer);
+            travelledDistanceContainer.setVisibility(View.VISIBLE);
+
             TextView travelledDistance = (TextView) findViewById(R.id.travelledDistance);
             travelledDistance.setVisibility(View.VISIBLE);
 
@@ -357,7 +374,10 @@ public class GameActivity extends AppCompatActivity implements
         // Set the initial location
         mapCenter = startPos;
         if (GameSettings.getMaxDistance() > 0)
-            map.drawBorder(mapCenter, GameSettings.getMaxDistance());
+            // Draw the border on the map
+            // The distance is GameSettings.getMaxDistance() - WARNING_DISTANCE_TO_WALL so that the
+            // player won't die right away after crossing the wall on the map.
+            map.drawBorder(mapCenter, GameSettings.getMaxDistanceInMeters() - WARNING_DISTANCE_TO_WALL);
 
         // Activate end game timer
         if (GameSettings.isOwner() && GameSettings.getTimeLimit()>=0) {
@@ -405,12 +425,12 @@ public class GameActivity extends AppCompatActivity implements
         // Log.d("VALUE", "Snapped Distance "+String.valueOf(snappedDistance));
 
         if (isAlive && mapCenter != null && GameSettings.getMaxDistance() > 0) {
-            if (LatLngConversion.getDistancePoints(mapCenter, newSnappedGpsLoc) > GameSettings.getMaxDistance()) {
+            if (LatLngConversion.getAccurateDistancePoints(mapCenter, newSnappedGpsLoc) > GameSettings.getMaxDistanceInMeters()) {
                 showNotification(getString(R.string.crossed_border), Toast.LENGTH_SHORT);
-                onDeath("", "");
+                onDeath("//", "Map Border");
             }
 
-            if (LatLngConversion.getDistancePoints(mapCenter, newSnappedGpsLoc) > GameSettings.getMaxDistance() - WARNING_DISTANCE_TO_WALL) {
+            if (LatLngConversion.getAccurateDistancePoints(mapCenter, newSnappedGpsLoc) > GameSettings.getMaxDistanceInMeters() - WARNING_DISTANCE_TO_WALL) {
                 showNotification(getString(R.string.close_to_border), Toast.LENGTH_SHORT);
             }
         }
@@ -436,12 +456,10 @@ public class GameActivity extends AppCompatActivity implements
                     // This checks if there has been a previous location update
                     distance = LatLngConversion.getDistancePoints(snappedGpsLoc, newSnappedGpsLoc);
                 }
-                travelledDistance += LatLngConversion.latLngDistanceToMeter(distance);
+
+                addScore(LatLngConversion.latLngDistanceToMeter(distance));
                 if (!creatingWall && travelledDistance >= WALL_DELAY_DISTANCE)
                     createWall();
-
-                TextView distanceView = (TextView) findViewById(R.id.travelledDistance);
-                distanceView.setText(String.valueOf(travelledDistance));
 
                 // Check if the player is to close to or has crossed a wall
                 // ---------------------------------------------------------
@@ -554,26 +572,31 @@ public class GameActivity extends AppCompatActivity implements
         if (!isAlive)
             return;
 
-        // Break the wall
-        ArrayList<Wall> walls = map.getWalls();
-        for (Wall wall : walls) {
-            ArrayList<Wall> newWalls = wall.splitWall(snappedGpsLoc, holeSize);
-            if (newWalls != null) {
-                // The wall has to be split
-                for (int i=0; i<newWalls.size(); i++) {
-                    Wall newWall = newWalls.get(i);
-                    if (newWall.getId().equals(wallId)) {
-                        // Remove the old wall
-                        map.removeMapItem(newWall.getId());
-                    }
+        if (travelledDistance > WALL_BREAKER_COST) {
+            addScore(-WALL_BREAKER_COST);
+            // Break the wall
+            ArrayList<Wall> walls = map.getWalls();
+            for (Wall wall : walls) {
+                ArrayList<Wall> newWalls = wall.splitWall(snappedGpsLoc, holeSize);
+                if (newWalls != null) {
+                    // The wall has to be split
+                    for (int i=0; i<newWalls.size(); i++) {
+                        Wall newWall = newWalls.get(i);
+                        if (newWall.getId().equals(wallId)) {
+                            // Remove the old wall
+                            map.removeMapItem(newWall.getId());
+                        }
 
-                    // Add the new wall to the game
-                    map.addMapItem(newWall);
-                    gameUpdateHandler.sendCreateWall(newWall.getOwnerId(), newWall.getId(), newWall.getPoints(), newWall.getColor());
+                        // Add the new wall to the game
+                        map.addMapItem(newWall);
+                        gameUpdateHandler.sendCreateWall(newWall.getOwnerId(), newWall.getId(), newWall.getPoints(), newWall.getColor());
+                    }
                 }
             }
+            showNotification(getString(R.string.wall_breaker_notification), Toast.LENGTH_SHORT);
+        } else {
+            showNotification(getString(R.string.no_wall_breaker_notification), Toast.LENGTH_SHORT);
         }
-        showNotification(getString(R.string.wall_breaker_notification), Toast.LENGTH_SHORT);
     }
 
     // endregion
@@ -666,7 +689,7 @@ public class GameActivity extends AppCompatActivity implements
                 winner = processFinalScores();
                 notifyEndGame(winner);
             }
-        }, FINAL_SCORE_TIMEOUT * 1000);  // TODO is this time correct?
+        }, FINAL_SCORE_TIMEOUT * 1000);
     }
 
     /**

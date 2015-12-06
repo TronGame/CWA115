@@ -37,7 +37,7 @@
         android:layout_alignParentRight="true">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@color/buttonBlue"
@@ -45,7 +45,8 @@
             android:paddingRight="2pt"
             android:paddingTop="2pt"
             android:paddingBottom="2pt"
-            android:layout_gravity="end">
+            android:layout_gravity="end"
+            android:id="@+id/travelledDistanceContainer">
 
             <TextView
                 android:id="@+id/travelledDistanceHead"
@@ -68,6 +69,10 @@
                 android:text="0.0"/>
 
         </LinearLayout>
+        
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="1dp" />
 
         <Button xmlns:android="http://schemas.android.com/apk/res/android"
             android:id="@+id/breakWallButton"

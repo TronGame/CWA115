@@ -24,7 +24,7 @@ import cwa115.trongame.Utils.Vector2D;
  */
 public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
 
-    static final private boolean SNAP_WALL = false; // TODO maybe set this to true
+    static final private boolean SNAP_WALL = false;
     static final private int LINE_WIDTH = 15;
 
     private String id;                      // The wall id
@@ -169,7 +169,6 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
         if (distance < minDistance) {return true; }
 
         // Has the player crossed the wall ?
-        // TODO: this may cause a problem if the player cycles around the end of a wall
         Vector2D pt1 = new Vector2D(current);
         Vector2D pt2 = new Vector2D(last);
         int end = points.size()-1;
@@ -268,7 +267,6 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
 
             if (i != points.size()-1) {
                 // Check if the current segment intersects with the hole boundary
-                // TODO when a point or a line is exactly at distance dist there might be problems (a large part of the wall will be removed)
                 Vector2D start = new Vector2D(points.get(i));
                 Vector2D end = new Vector2D(points.get(i + 1));
                 Line line = new Line(start, end);

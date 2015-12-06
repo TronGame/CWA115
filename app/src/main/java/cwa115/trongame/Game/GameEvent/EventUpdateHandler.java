@@ -46,7 +46,6 @@ public class EventUpdateHandler implements SocketIoHandler {
      */
     @Override
     public boolean onMessage(JSONObject message) {
-        // TODO check if messages come from the game host
         try {
             switch(message.getString(Protocol.MESSAGE_TYPE)) {
                 case Protocol.START_EVENT_MESSAGE:

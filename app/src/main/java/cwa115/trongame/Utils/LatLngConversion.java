@@ -1,5 +1,6 @@
 package cwa115.trongame.Utils;
 
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -41,10 +42,28 @@ public class LatLngConversion {
      * Returns the distance between a and b
      * @param a the first point
      * @param b the second point
-     * @return the distance
+     * @return the distance in latlng distance
      */
     public static double getDistancePoints(LatLng a, LatLng b) {
         return new Vector2D(a).subtract(new Vector2D(b)).getLength();
+    }
+
+    /**
+     * Returns the distance between a and b
+     * The calculation here happens more accurately making it better for calculating long distances
+     * @param a the first point
+     * @param b the second point
+     * @return the distance in meters
+     */
+    public static double getAccurateDistancePoints(LatLng a, LatLng b) {
+        float[] results = new float[1];
+        Location.distanceBetween(
+                a.latitude,
+                a.longitude,
+                b.latitude,
+                b.longitude,
+                results);
+        return (double)results[0];
     }
     // endregion
 

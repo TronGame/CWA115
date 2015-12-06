@@ -19,7 +19,7 @@ import cwa115.trongame.R;
  */
 public class BellEvent implements GameEvent {
     public static final int TIME = 60;                          // The time the event lasts in seconds
-    public static final double[] PRICES = {300, 200, 100};      // The scores that can be received by the winners
+    public static final double[] PRICES = {500, 300, 100};      // The scores that can be received by the winners
 
     // elements of the json
     public static final String BELL_COUNT = "bellCount";

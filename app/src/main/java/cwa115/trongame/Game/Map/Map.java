@@ -106,7 +106,7 @@ public class Map implements OnMapReadyCallback {
     public void drawBorder(LatLng center, double radius) {
         border = new CircleOptions();
         border.center(center);
-        border.radius(LatLngConversion.latLngDistanceToMeter(radius));
+        border.radius(radius);
         border.strokeColor(Color.BLUE);
         border.fillColor(Color.TRANSPARENT);
         border.strokeWidth(15);

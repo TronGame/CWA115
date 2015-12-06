@@ -11,6 +11,7 @@
     <string name="wall_on_notification">Wall creation enabled</string>
     <string name="wall_off_notification">Wall creation disabled</string>
     <string name="wall_breaker_notification">Wall breaker activated</string>
+    <string name="no_wall_breaker_notification">You haven\'t got enough score to activate wall breaker</string>
 
     <string name="wall_too_close">Very close to wall</string>
     <string name="wall_crossed">Crossed wall</string>

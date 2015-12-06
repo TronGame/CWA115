@@ -19,7 +19,7 @@ import cwa115.trongame.R;
  */
 public class KingOfHillEvent implements GameEvent {
     public static final int TIME = 180;                        // The time the event lasts in seconds
-    public static final double[] PRICES = {300, 200, 100};      // The scores that can be received by the winners
+    public static final double[] PRICES = {1000, 300, 200};      // The scores that can be received by the winners
 
     // elements of the json
     public static final String HEIGHT = "height";

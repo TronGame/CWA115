@@ -19,7 +19,7 @@ import cwa115.trongame.R;
 public class ShowOffEvent implements GameEvent {
 
     private static final int TIME = 120;
-    public static final double[] PRICES = {300, 200, 100};
+    public static final double[] PRICES = {750, 300, 100};
     private static final String ACCELERATION_FIELD = "acceleration";
     public static final String EVENT_TYPE = "show_off_event";
 

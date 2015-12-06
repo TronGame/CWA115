@@ -58,7 +58,7 @@ public class GameEventHandler {
             public void run() {
                 addPendingEvent(getEvent(eventType));
             }
-        }, time * 1000);  // TODO is this time correct?
+        }, time * 1000);
     }
 
     /**
@@ -92,7 +92,7 @@ public class GameEventHandler {
                 public void run() {
                     eventUpdateHandler.broadCastEventEnd(eventType);
                 }
-            }, event.getTime() * 1000);  // TODO is this time correct?
+            }, event.getTime() * 1000);
         }
     }
 
