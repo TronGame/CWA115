@@ -181,7 +181,11 @@ public class RoomActivity extends AppCompatActivity
                                         RoomListItem clickedItem = listOfPlayerNames.get(position);
                                         selectedPlayerName = clickedItem.getPlayerName();
                                         selectedPlayerId = clickedItem.getPlayerId();
-                                        showNoticeDialog();
+                                        if (selectedPlayerId == GameSettings.getUserId()) {
+                                            ownerKick();
+                                        } else {
+                                            showNoticeDialog();
+                                        }
                                     }
                                 });
                             }
@@ -191,6 +195,10 @@ public class RoomActivity extends AppCompatActivity
                     }
                 });
 
+    }
+
+    public void ownerKick() {
+        Toast.makeText(this, R.string.owner_kick, Toast.LENGTH_SHORT).show();
     }
 
     public void gameDeleted() {
