@@ -11,6 +11,9 @@
     <string name="add_friend">Add as friend</string>
     <string name="delete_friend">Delete friend</string>
     <string name="show_friend_list">Show Friend List</string>
+    <string name="days_hours_minutes">%1$d days %2$d hours %3$d minutes</string>
+    <string name="hours_minutes">%1$d hours %2$d minutes</string>
+    <string name="minutes">%1$d minutes</string>
 
     <string name="friends_list_title">Friends list</string>
     <string name="commit">Commit</string>

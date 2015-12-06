@@ -134,7 +134,17 @@ public class ProfileActivity extends AppCompatActivity {
         else
             facebookFlag.setVisibility(View.VISIBLE);
 
-        loadStats();
+        if(profile.getFriends()!=null && profile.getFriends().size()>0){
+            // Get last added friend name and most popular friend name:
+            int mostCommonPlays = 0;
+            long mostCommonPlaysFriendId = 0;
+            for(Friend friend: profile.getFriends()){
+                if(friend.getCommonPlays()>mostCommonPlays)
+                    mostCommonPlaysFriendId = friend.getId();
+            }
+            getFriendNamesAndLoadStats(profile.getFriends().get(0).getId(), mostCommonPlaysFriendId);
+        }else
+            loadStats("/", "/");// Load stats without friend names
     }
 
     private void updateFooterFlipper(){
@@ -166,24 +176,88 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-    private void loadStats(){
+    private void getFriendNamesAndLoadStats(long lastAddedFriendId, final long mostPopularFriendId){
+        dataServer.sendRequest(
+                ServerCommand.SHOW_ACCOUNT,
+                ImmutableMap.of("id", String.valueOf(lastAddedFriendId)),
+                new HttpConnector.Callback() {
+                    @Override
+                    public void handleResult(String data) {
+                        try{
+                            JSONObject result = new JSONObject(data);
+                            if(!result.has("error")){
+                                final String lastAddedFriendName = result.getString("name");
+                                dataServer.sendRequest(
+                                        ServerCommand.SHOW_ACCOUNT,
+                                        ImmutableMap.of("id", String.valueOf(mostPopularFriendId)),
+                                        new HttpConnector.Callback() {
+                                            @Override
+                                            public void handleResult(String data) {
+                                                try{
+                                                    JSONObject result = new JSONObject(data);
+                                                    if(!result.has("error"))
+                                                        loadStats(lastAddedFriendName, result.getString("name"));
+                                                    else{
+                                                        showToast("Error while trying to get most popular friend's name");
+                                                        loadStats(lastAddedFriendName, "/");
+                                                    }
+                                                }catch (JSONException e){
+                                                    showToast("Error while trying to get most popular friend's name");
+                                                    loadStats(lastAddedFriendName, "/");
+                                                }
+                                            }
+                                        }
+                                );
+                            }else{
+                                showToast("Error while trying to get last added friend's name");
+                                loadStats("/", "/");
+                            }
+                        }catch (JSONException e){
+                            showToast("Error while trying to get last added friend's name");
+                            loadStats("/","/");
+                        }
+                    }
+                }
+        );
+    }
+
+    private void loadStats(String lastAddedFriend, String mostPopularFriend){
+        int wins = profile.getWins();
+        int losses = profile.getLosses();
+        double totalPlays = wins+losses;
+        String winRatio = totalPlays==0 ? "" : " (" + Math.round((double)wins/totalPlays*100) + "%)";
+        String lossRatio = totalPlays==0 ? "" : " (" + Math.round((double)losses/totalPlays*100) + "%)";
+        int numberFriends = (profile.getFriends()==null) ? 0 : profile.getFriends().size();
         statsList = new ArrayList<>();
         statsList.add(new StatsListItem("Global Stats"));
-        statsList.add(new StatsListItem("Total wins","5 (33%)"));
-        statsList.add(new StatsListItem("Total losses","10 (66%)"));
-        statsList.add(new StatsListItem("Highscore","12345"));
-        statsList.add(new StatsListItem("Total play time","7 hours 18 minutes"));
+        statsList.add(new StatsListItem("Total wins",wins + winRatio));
+        statsList.add(new StatsListItem("Total losses",losses + lossRatio));
+        statsList.add(new StatsListItem("Highscore",String.valueOf(profile.getHighscore())));
+        statsList.add(new StatsListItem("Total play time",formatPlaytime(profile.getPlaytime())));
+        statsList.add(new StatsListItem("Social Stats"));
+        statsList.add(new StatsListItem("Most popular friend",mostPopularFriend));
+        statsList.add(new StatsListItem("Number of friends",String.valueOf(numberFriends)));
+        statsList.add(new StatsListItem("Last added friend",lastAddedFriend));// TODO: sort friends so last added one is the first in the list
         statsList.add(new StatsListItem("Achievements"));
         statsList.add(new StatsListItem("To be implemented",""));
-        statsList.add(new StatsListItem("Social Stats"));
-        statsList.add(new StatsListItem("Most popular friend","badass biker"));
-        statsList.add(new StatsListItem("Number of friends","0"));
-        statsList.add(new StatsListItem("Last added friend","God"));
-        statsList.add(new StatsListItem("Important note: this is a demo stats list!"));
 
         statsCustomAdapter = new StatsCustomAdapter(this, statsList);
         statsListView.setAdapter(statsCustomAdapter);
         statsCustomAdapter.notifyDataSetChanged();
+    }
+
+    private String formatPlaytime(int playtime){
+        int days = playtime / (24*60*60);
+        int rest = playtime % (24*60*60);
+        int hours = rest / (60*60);
+        rest %= 60*60;
+        int minutes = rest / 60;
+        if(days!=0)
+            return String.format(getString(R.string.days_hours_minutes), days, hours, minutes);
+        else if(hours!=0)
+            return String.format(getString(R.string.hours_minutes), hours, minutes);
+        else
+            return String.format(getString(R.string.minutes), minutes);
     }
 
     public void showFriendList(View v){
