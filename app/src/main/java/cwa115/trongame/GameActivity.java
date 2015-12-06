@@ -363,8 +363,6 @@ public class GameActivity extends AppCompatActivity implements
 
             TextView travelledDistanceHead = (TextView) findViewById(R.id.travelledDistanceHead);
             travelledDistanceHead.setVisibility(View.VISIBLE);
-        } else {
-            Toast.makeText(this, "Problem: Spectator is active", Toast.LENGTH_SHORT).show();
         }
 
         // Set start time (in order to measure total playtime)
