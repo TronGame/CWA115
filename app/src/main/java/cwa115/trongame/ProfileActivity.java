@@ -65,7 +65,6 @@ public class ProfileActivity extends AppCompatActivity {
         // Load profile to display
         Intent i = getIntent();
         Bundle data = i.getBundleExtra(DATA_EXTRA);
-        //data.setClassLoader(Profile.class.getClassLoader());
         profile = data.getParcelable(PROFILE_EXTRA);
 
         // Dataserver reference
@@ -200,45 +199,51 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void getFriendNamesAndLoadStats(long lastAddedFriendId, final long mostPopularFriendId){
-        dataServer.sendRequest(
-                ServerCommand.SHOW_ACCOUNT,
-                ImmutableMap.of("id", String.valueOf(lastAddedFriendId)),
-                new HttpConnector.Callback() {
+        Updater.loadProfile(
+                dataServer,
+                (int)lastAddedFriendId,
+                null,
+                new Updater.Callback() {
                     @Override
-                    public void handleResult(String data) {
-                        try{
-                            JSONObject result = new JSONObject(data);
-                            if(!result.has("error")){
-                                final String lastAddedFriendName = result.getString("name");
-                                dataServer.sendRequest(
-                                        ServerCommand.SHOW_ACCOUNT,
-                                        ImmutableMap.of("id", String.valueOf(mostPopularFriendId)),
-                                        new HttpConnector.Callback() {
-                                            @Override
-                                            public void handleResult(String data) {
-                                                try{
-                                                    JSONObject result = new JSONObject(data);
-                                                    if(!result.has("error"))
-                                                        loadStats(lastAddedFriendName, result.getString("name"));
-                                                    else{
-                                                        showToast("Error while trying to get most popular friend's name");
-                                                        loadStats(lastAddedFriendName, "/");
-                                                    }
-                                                }catch (JSONException e){
-                                                    showToast("Error while trying to get most popular friend's name");
-                                                    loadStats(lastAddedFriendName, "/");
-                                                }
-                                            }
-                                        }
-                                );
-                            }else{
-                                showToast("Error while trying to get last added friend's name");
-                                loadStats("/", "/");
-                            }
-                        }catch (JSONException e){
-                            showToast("Error while trying to get last added friend's name");
-                            loadStats("/","/");
-                        }
+                    public void onDataUpdated(Profile profile) {
+                        final String lastAddedFriendName = profile.getName()==null ? "/" : profile.getName();
+
+                        Updater.loadProfile(
+                                dataServer,
+                                (int) mostPopularFriendId,
+                                null,
+                                new Updater.Callback() {
+                                    @Override
+                                    public void onDataUpdated(Profile profile) {
+                                        String mostPopularFriendName = profile.getName()==null ? "/" : profile.getName();
+                                        loadStats(lastAddedFriendName, mostPopularFriendName);
+                                    }
+
+                                    @Override
+                                    public void onProfileNotFound() {
+                                        showToast("Most popular friend's profile not found");
+                                        loadStats(lastAddedFriendName, "/");
+                                    }
+
+                                    @Override
+                                    public void onError() {
+                                        showToast("Error while trying to get most popular friend's name");
+                                        loadStats(lastAddedFriendName, "/");
+                                    }
+                                }
+                        );
+                    }
+
+                    @Override
+                    public void onProfileNotFound() {
+                        showToast("Last added friend's profile not found");
+                        loadStats("/", "/");
+                    }
+
+                    @Override
+                    public void onError() {
+                        showToast("Error while trying to get last added friend's name");
+                        loadStats("/", "/");
                     }
                 }
         );
@@ -256,11 +261,13 @@ public class ProfileActivity extends AppCompatActivity {
         statsList.add(new StatsListItem("Total wins",wins + winRatio));
         statsList.add(new StatsListItem("Total losses",losses + lossRatio));
         statsList.add(new StatsListItem("Highscore",String.valueOf(profile.getHighscore())));
-        statsList.add(new StatsListItem("Total play time",formatPlaytime(profile.getPlaytime())));
-        statsList.add(new StatsListItem("Social Stats"));
-        statsList.add(new StatsListItem("Most popular friend",mostPopularFriend));
-        statsList.add(new StatsListItem("Number of friends",String.valueOf(numberFriends)));
-        statsList.add(new StatsListItem("Last added friend",lastAddedFriend));// TODO: sort friends so last added one is the first in the list
+        if(profile.getToken()!=null) { // Only if token is set, we have access to these stats
+            statsList.add(new StatsListItem("Total play time", formatPlaytime(profile.getPlaytime())));
+            statsList.add(new StatsListItem("Social Stats"));
+            statsList.add(new StatsListItem("Most popular friend", mostPopularFriend));
+            statsList.add(new StatsListItem("Number of friends", String.valueOf(numberFriends)));
+            statsList.add(new StatsListItem("Last added friend", lastAddedFriend));// TODO: sort friends so last added one is the first in the list
+        }
         statsList.add(new StatsListItem("Achievements"));
         statsList.add(new StatsListItem("To be implemented",""));
 

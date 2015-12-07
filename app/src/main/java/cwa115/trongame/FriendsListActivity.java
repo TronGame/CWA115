@@ -79,7 +79,7 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
         if(data.containsKey(COMMIT_TEXT_EXTRA))
             ((Button)findViewById(R.id.friends_list_commitButton)).setText(data.getString(COMMIT_TEXT_EXTRA));
         profile = data.getParcelable(PROFILE_EXTRA);
-        if(profile==null || profile.getId()==null)
+        if(profile==null || profile.getId()==null || profile.getToken()==null)
             finish();
 
         // Initialize server connection
@@ -138,35 +138,27 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
         final FriendList friends = profile.getFriends();
 
         for (final Friend friend : friends) {
-            // Get name of each friend
-            dataServer.sendRequest(
-                    ServerCommand.SHOW_ACCOUNT,
-                    ImmutableMap.of("id", String.valueOf(friend.getId())),
-                    new HttpConnector.Callback() {
+            // Get profile of each friend
+            Updater.loadProfile(
+                    dataServer,
+                    (int) friend.getId(),
+                    null,
+                    new Updater.Callback() {
                         @Override
-                        public void handleResult(String data) {
-                            try {
-                                JSONObject result = new JSONObject(data);
-                                long facebookId = result.optLong("facebookId",-1);
-                                Profile friendProfile = new Profile(
-                                        (int)friend.getId(),
-                                        null,
-                                        facebookId==-1 ? null : facebookId,
-                                        result.getString("name"),
-                                        result.getString("pictureUrl"),
-                                        result.getInt("wins"),
-                                        result.getInt("losses"),
-                                        result.getInt("highscore"),
-                                        null,
-                                        null
-                                );
-                                friendListItems.add(new FriendListItem(friend, friendProfile));
-                                if (friendListItems.size() == friends.size()) // All friend names are received
-                                    populateFriendsList();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                                showToast("JSONError while trying to get friend name.");
-                            }
+                        public void onDataUpdated(Profile friendProfile) {
+                            friendListItems.add(new FriendListItem(friend, friendProfile));
+                            if (friendListItems.size() == friends.size()) // All friend names are received
+                                populateFriendsList();
+                        }
+
+                        @Override
+                        public void onProfileNotFound() {
+                            showToast("Friend's profile not found.");
+                        }
+
+                        @Override
+                        public void onError() {
+                            showToast("Error while trying to get friend's data.");
                         }
                     }
             );

@@ -60,6 +60,9 @@ public class Profile implements Parcelable{
     public Profile(String Name, String PictureUrl, Long[] Friends){
         this(null, null, null, Name, PictureUrl, null, null, null, null, new FriendList(Arrays.asList(Friends)));
     }
+    public Profile(Integer Id, String Token){
+        this(Id, Token, null, null, null, null, null, null, null, null);
+    }
     public Profile(Integer Id, String Token, String Name, String PictureUrl, JSONArray Friends){
         this(Id, Token, null, Name, PictureUrl, null, null, null, null, new FriendList(Friends));
     }

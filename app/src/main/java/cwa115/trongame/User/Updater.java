@@ -71,9 +71,12 @@ public final class Updater {
     /***
      * This method downloads the latest userdata from the server and stores it locally.
      */
-    public static void updateProfile(HttpConnector dataServer, Profile profile, final Callback callback){
-        if(profile==null || profile.getId()==null)
+    public static void updateProfile(HttpConnector dataServer, final Profile profile, final Callback callback){
+        if(profile==null || profile.getId()==null){
+            if(callback!=null)
+                callback.onError();
             return;
+        }
         Map<String, String> query = profile.GetQuery(Profile.SERVER_ID_PARAM);
         if(profile.getToken()!=null)
             query.put(Profile.SERVER_TOKEN_PARAM, profile.getToken());
@@ -86,20 +89,28 @@ public final class Updater {
                         try {
                             JSONObject result = new JSONObject(data);
                             if (!result.has("error")) {
-                                Profile profile = new Profile(
-                                        null,
-                                        null,
-                                        null,
+                                long facebookId = result.optLong("facebookId",-1);
+                                int playtime = -1;
+                                FriendList friends = null;
+                                if(profile.getToken()!=null){
+                                    playtime = result.getInt("playtime");
+                                    friends = new FriendList(result.getJSONArray("friends"));
+                                }
+
+                                Profile updatedProfile = new Profile(
+                                        profile.getId(),
+                                        profile.getToken(),
+                                        facebookId==-1 ? null : facebookId,
                                         result.getString("name"),
                                         result.getString("pictureUrl"),
                                         result.getInt("wins"),
                                         result.getInt("losses"),
                                         result.getInt("highscore"),
-                                        result.getInt("playtime"),
-                                        new FriendList(result.getJSONArray("friends"))
+                                        playtime==-1 ? null : playtime,
+                                        friends
                                 );
                                 if(callback!=null)
-                                    callback.onDataUpdated(profile);
+                                    callback.onDataUpdated(updatedProfile);
                             } else if(callback!=null)
                                 callback.onProfileNotFound();
                         } catch (JSONException e) {
@@ -108,5 +119,12 @@ public final class Updater {
                         }
                     }
                 });
+    }
+
+    /***
+     * This method downloads the latest userdata from the server and stores it locally.
+     */
+    public static void loadProfile(HttpConnector dataServer, int id, String token, final Callback callback){
+        updateProfile(dataServer, new Profile(id, token), callback);
     }
 }
