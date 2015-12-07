@@ -33,35 +33,35 @@
         android:layout_centerVertical="true"
         android:layout_alignLeft="@+id/readyButton"
         android:layout_alignStart="@+id/readyButton" />
-<LinearLayout
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:orientation="horizontal">
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
     <Button
-        android:layout_weight="1"
         android:padding="5dp"
         android:onClick="gameReady"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/default_readybutton"
         android:textColor="@color/basicBlack"
-        android:textSize="25sp"
+        android:textSize="20sp"
         android:background="@drawable/rounded_button_blue"
         android:layout_marginRight="15dp"
         android:id="@+id/readyButton"/>
 
     <Button
-        android:layout_weight="1"
         android:padding="5dp"
         android:onClick="inviteFriends"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/invite_friends"
         android:textColor="@color/basicBlack"
-        android:textSize="25sp"
+        android:textSize="20sp"
         android:background="@drawable/rounded_button_blue"
-        android:id="@+id/inviteButton" />
+        android:id="@+id/inviteButton"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
 
-</LinearLayout>
+</RelativeLayout>
 </LinearLayout>
