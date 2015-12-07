@@ -504,7 +504,7 @@ public class GameActivity extends AppCompatActivity implements
             gameUpdateHandler.sendMyLocation(gpsLoc);
 
             if (isAlive) {
-                // onDeath("", ""); TODO killPlayer?
+                onDeath("", ""); // TODO killPlayer?
                 // Show the "player to far from road" notification
                 showNotification(getString(R.string.road_too_far), Toast.LENGTH_SHORT);
             }
@@ -899,6 +899,7 @@ public class GameActivity extends AppCompatActivity implements
     /**
      * Is called when the application is paused
      */
+    @Override
     public void onPause() {
         super.onPause();
         locationListener.stopLocationUpdate();      // Pauses the lcoation listener
@@ -911,6 +912,7 @@ public class GameActivity extends AppCompatActivity implements
     /**
      * Is called when the application is resumed
      */
+    @Override
     public void onResume() {
         super.onResume();
         locationListener.startLocationUpdate(); // Start the location listener again
@@ -918,6 +920,13 @@ public class GameActivity extends AppCompatActivity implements
             sensorDataObservable.Resume();          // Resume the sensor observer
             frequencyListener.run();
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (gameEventHandler != null)
+            gameEventHandler.stop();
     }
 
     // endregion    

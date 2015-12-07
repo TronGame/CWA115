@@ -38,6 +38,7 @@ public class GameEventHandler {
     private GameEvent currentEvent;                         // The currently running event
     private ArrayList<JSONObject> results;                  // The results of the current event
 
+    private boolean isRunning = true;
 
     public GameEventHandler (SocketIoConnection connection, GameActivity gameActivity) {
         this.gameActivity = gameActivity;
@@ -56,9 +57,14 @@ public class GameEventHandler {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                addPendingEvent(getEvent(eventType));
+                if (isRunning)
+                    addPendingEvent(getEvent(eventType));
             }
         }, time * 1000);
+    }
+
+    public void stop() {
+        isRunning = false;
     }
 
     /**
@@ -90,7 +96,8 @@ public class GameEventHandler {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    eventUpdateHandler.broadCastEventEnd(eventType);
+                    if (isRunning)
+                        eventUpdateHandler.broadCastEventEnd(eventType);
                 }
             }, event.getTime() * 1000);
         }
@@ -149,7 +156,8 @@ public class GameEventHandler {
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            processResults();
+                            if (isRunning)
+                                processResults();
                         }
                     }, RESULT_TIMEOUT * 1000);
                 } else {
