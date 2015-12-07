@@ -375,7 +375,7 @@ public class GameActivity extends AppCompatActivity implements
             // Draw the border on the map
             // The distance is GameSettings.getMaxDistance() - WARNING_DISTANCE_TO_WALL so that the
             // player won't die right away after crossing the wall on the map.
-            map.drawBorder(mapCenter, GameSettings.getMaxDistanceInMeters() - WARNING_DISTANCE_TO_WALL);
+            map.drawBorder(mapCenter, GameSettings.getMaxDistanceInMeters());
 
         // Activate end game timer
         if (GameSettings.isOwner() && GameSettings.getTimeLimit()>=0) {
