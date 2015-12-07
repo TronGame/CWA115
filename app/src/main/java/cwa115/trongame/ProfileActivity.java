@@ -82,6 +82,7 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
 
+        footerFlipper.setVisibility(View.GONE);
         Updater.updateProfile(
                 dataServer,
                 profile,
@@ -196,6 +197,7 @@ public class ProfileActivity extends AppCompatActivity {
                 footerFlipper.setDisplayedChild(VIEW_PENDING_FRIEND);// Player is a pending friend
                 break;
         }
+        footerFlipper.setVisibility(View.VISIBLE);
     }
 
     private void getFriendNamesAndLoadStats(long lastAddedFriendId, final long mostPopularFriendId){

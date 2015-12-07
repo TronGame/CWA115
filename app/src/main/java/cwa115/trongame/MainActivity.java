@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean accountRegistered;
 
     private ViewFlipper loginViewFlipper;
-    private LinearLayout profileControlFooter;
+    private RelativeLayout profileControlFooter;
     private Button mainButton;
     private TextView loginWelcomeTextView;
     private ProgressDialog progressDialog;
@@ -104,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
         // Create reference to important UI-elements
         loginViewFlipper = (ViewFlipper)findViewById(R.id.login_view_flipper);
         mainButton = (Button)findViewById(R.id.main_button);
-        profileControlFooter = (LinearLayout)findViewById(R.id.profileControlFooter);
+        profileControlFooter = (RelativeLayout)findViewById(R.id.profileControlFooter);
         loginWelcomeTextView = (TextView)findViewById(R.id.login_welcome_textview);
         profilePicture = (ImageView)findViewById(R.id.mainActivityProfilePicture);
 

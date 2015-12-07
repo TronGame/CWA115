@@ -118,7 +118,7 @@ public class NotificationService extends Service {
         try{
             Log.d(TAG, "SHOW_INVITES result");
             JSONObject result = new JSONObject(data);
-            if(!result.has("error")) {
+            if(!result.has("error") && result.optBoolean("invites",true)) {// If token is wrong (which may happen when account is deleted), invites will be false
                 JSONArray invites = result.getJSONArray("invites");
                 totalGameInvites = invites.length();
                 if(totalGameInvites==0) gameInvitesFinished();// Make sure gameInvitesFinished is called even when there are no invites

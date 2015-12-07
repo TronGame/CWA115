@@ -188,12 +188,12 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
     }
 
     public void commitButtonPressed(View v){
-        List<Long> selectedIds = new ArrayList<>();
+        ArrayList<Integer> selectedIds = new ArrayList<>();
         for(FriendListItem item : friendListItems){
             if(item.isSelected())
-                selectedIds.add(item.getPlayer().getId());
+                selectedIds.add((int)item.getPlayer().getId());
         }
-        commit(Longs.toArray(selectedIds));
+        commit(selectedIds);
     }
 
     private void showToast(String text) {
@@ -207,7 +207,7 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
         setResult(RESULT_CANCELED);
         finish();
     }
-    private void commit(long[] selectedIds){
+    private void commit(ArrayList<Integer> selectedIds){
         Intent data = new Intent();
         data.putExtra(SELECTED_IDS_EXTRA, selectedIds);
         setResult(RESULT_OK, data);

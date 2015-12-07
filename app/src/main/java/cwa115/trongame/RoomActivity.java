@@ -100,13 +100,13 @@ public class RoomActivity extends AppCompatActivity
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode==FRIEND_LIST_REQUEST_CODE) {
             if (resultCode == RESULT_OK) {
-                long[] selectedIds = data.getLongArrayExtra(FriendsListActivity.SELECTED_IDS_EXTRA);
+                ArrayList<Integer> selectedIds = data.getIntegerArrayListExtra(FriendsListActivity.SELECTED_IDS_EXTRA);
                 dataServer.sendRequest(
                         ServerCommand.ADD_INVITE,
                         ImmutableMap.of(
                                 "id", String.valueOf(GameSettings.getUserId()),
                                 "token", GameSettings.getPlayerToken(),
-                                "friends", new JSONArray(Arrays.asList(selectedIds)).toString(),
+                                "friends", new JSONArray(selectedIds).toString(),
                                 "gameId", String.valueOf(GameSettings.getGameId())),
                         new HttpConnector.Callback() {
                             @Override
