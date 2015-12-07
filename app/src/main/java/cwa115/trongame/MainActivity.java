@@ -128,6 +128,8 @@ public class MainActivity extends AppCompatActivity {
         // Logs 'install' and 'app activate' App Events.
         AppEventsLogger.activateApp(this);
 
+        //TODO: start NotificationService
+
         // Update UI
         if(!isInternetEnabled())
             buildAlertMessageNoInternet();// No internet connection
@@ -217,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
         progressDialog.dismiss();
 
         // Store userdata in GameSettings
-        DrawableManager.InitializeCache(5);
+        DrawableManager.InitializeCache(10);
 
         // Update UI
         loginViewFlipper.setDisplayedChild(LOGIN_WELCOME);// Show welcome screen
@@ -225,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
         mainButton.setText(getString(R.string.start));
         mainButton.setTextSize(60);
         profileControlFooter.setVisibility(View.VISIBLE);
-        if(localProfile.getPictureUrl()==null)
+        if(localProfile.getPictureUrl()==null || localProfile.getPictureUrl().equals(""))
             profilePicture.setImageResource(R.mipmap.default_profile_picture);
         else
             DrawableManager.cache.fetchDrawableAsync(localProfile.getPictureUrl(), profilePicture);

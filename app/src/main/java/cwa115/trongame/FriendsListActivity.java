@@ -79,6 +79,8 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
         if(data.containsKey(COMMIT_TEXT_EXTRA))
             ((Button)findViewById(R.id.friends_list_commitButton)).setText(data.getString(COMMIT_TEXT_EXTRA));
         profile = data.getParcelable(PROFILE_EXTRA);
+        if(profile==null || profile.getId()==null)
+            finish();
 
         // Initialize server connection
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
@@ -92,28 +94,29 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
     protected void onResume(){
         super.onResume();
 
-        if(profile.getFriends()!=null)
-            buildFriendsList();
-        else {
-            // Make server request to get friends:
-            dataServer.sendRequest(
-                    ServerCommand.SHOW_ACCOUNT,
-                    profile.GetQuery(Profile.SERVER_ID_PARAM),
-                    new HttpConnector.Callback() {
-                        @Override
-                        public void handleResult(String data) {
-                            try {
-                                JSONObject result = new JSONObject(data);
-                                profile.setFriends(new FriendList(result.getJSONArray("friends")));
-                                buildFriendsList();
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                                showToast("Couldn't get friend data from server.");
-                                cancel();
-                            }
-                        }
-                    });
-        }
+        Updater.updateProfile(
+                dataServer,
+                profile,
+                new Updater.Callback() {
+                    @Override
+                    public void onDataUpdated(Profile updatedProfile) {
+                        profile = updatedProfile;
+                        if(profile.getFriends()!=null)
+                            buildFriendsList();
+                    }
+
+                    @Override
+                    public void onProfileNotFound() {
+                        finish();
+                    }
+
+                    @Override
+                    public void onError() {
+                        showToast("Could not load last friends data.");
+                        if(profile.getFriends()!=null)
+                            buildFriendsList();// Try to load friends with old data
+                    }
+                });
     }
 
     @Override

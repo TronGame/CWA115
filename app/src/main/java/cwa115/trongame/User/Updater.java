@@ -3,8 +3,12 @@ package cwa115.trongame.User;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.google.android.gms.games.Game;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Map;
 
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Network.Server.HttpConnector;
@@ -19,7 +23,7 @@ public final class Updater {
     private Updater(){ }
 
     public interface Callback{
-        public void onDataUpdated();
+        public void onDataUpdated(Profile profile);
         public void onProfileNotFound();
         public void onError();
     }
@@ -39,7 +43,7 @@ public final class Updater {
                         try {
                             JSONObject result = new JSONObject(data);
                             if (!result.has("error")) {
-                                new Profile(
+                                Profile profile = new Profile(
                                         null,
                                         null,
                                         null,
@@ -50,9 +54,52 @@ public final class Updater {
                                         result.getInt("highscore"),
                                         result.getInt("playtime"),
                                         new FriendList(result.getJSONArray("friends"))
-                                ).Store(settings);
+                                );
+                                profile.Store(settings);
                                 if(callback!=null)
-                                    callback.onDataUpdated();
+                                    callback.onDataUpdated(profile);
+                            } else if(callback!=null)
+                                callback.onProfileNotFound();
+                        } catch (JSONException e) {
+                            if(callback!=null)
+                                callback.onError();
+                        }
+                    }
+                });
+    }
+
+    /***
+     * This method downloads the latest userdata from the server and stores it locally.
+     */
+    public static void updateProfile(HttpConnector dataServer, Profile profile, final Callback callback){
+        if(profile==null || profile.getId()==null)
+            return;
+        Map<String, String> query = profile.GetQuery(Profile.SERVER_ID_PARAM);
+        if(profile.getToken()!=null)
+            query.put(Profile.SERVER_TOKEN_PARAM, profile.getToken());
+        dataServer.sendRequest(
+                ServerCommand.SHOW_ACCOUNT,
+                query,
+                new HttpConnector.Callback() {
+                    @Override
+                    public void handleResult(String data) {
+                        try {
+                            JSONObject result = new JSONObject(data);
+                            if (!result.has("error")) {
+                                Profile profile = new Profile(
+                                        null,
+                                        null,
+                                        null,
+                                        result.getString("name"),
+                                        result.getString("pictureUrl"),
+                                        result.getInt("wins"),
+                                        result.getInt("losses"),
+                                        result.getInt("highscore"),
+                                        result.getInt("playtime"),
+                                        new FriendList(result.getJSONArray("friends"))
+                                );
+                                if(callback!=null)
+                                    callback.onDataUpdated(profile);
                             } else if(callback!=null)
                                 callback.onProfileNotFound();
                         } catch (JSONException e) {

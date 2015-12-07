@@ -83,7 +83,7 @@ public class ScoreBoardActivity extends AppCompatActivity {
                 scoreboardList.setClickable(true);
                 scoreboardList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
-                        ScoreListItem clickedItem = (ScoreListItem) scoreList.get(position);
+                        ScoreListItem clickedItem = scoreList.get(position);
 
                         Bundle data = new Bundle();
                         data.putParcelable(ProfileActivity.PROFILE_EXTRA, clickedItem.getProfile());

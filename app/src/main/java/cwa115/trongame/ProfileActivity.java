@@ -28,6 +28,7 @@ import cwa115.trongame.Network.Server.HttpConnector;
 import cwa115.trongame.Network.Server.ServerCommand;
 import cwa115.trongame.User.Friend;
 import cwa115.trongame.User.Profile;
+import cwa115.trongame.User.Updater;
 import cwa115.trongame.Utils.DrawableManager;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -76,13 +77,33 @@ public class ProfileActivity extends AppCompatActivity {
         usernameTextView = (TextView)findViewById(R.id.userNameTextView);
         footerFlipper = (ViewFlipper)findViewById(R.id.footer_flipper);
         statsListView = (ListView)findViewById(R.id.statsListView);
-
-        loadProfile();
     }
 
     @Override
     protected void onResume(){
         super.onResume();
+
+        Updater.updateProfile(
+                dataServer,
+                profile,
+                new Updater.Callback() {
+                    @Override
+                    public void onDataUpdated(Profile updatedProfile) {
+                        profile = updatedProfile;
+                        loadProfile();
+                    }
+
+                    @Override
+                    public void onProfileNotFound() {
+                        finish();
+                    }
+
+                    @Override
+                    public void onError() {
+                        showToast("Could not load last profile data.");
+                        loadProfile();// Try to load profile with old data
+                    }
+                });
     }
 
     @Override
