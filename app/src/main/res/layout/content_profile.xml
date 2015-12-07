@@ -57,41 +57,101 @@
 
     </ListView>
 
-    <LinearLayout
+    <!----><ViewFlipper
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:id="@+id/friendFooter">
+        android:id="@+id/footer_flipper"><!---->
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/friend_text"
-            android:text="@string/friends_message"
-            android:textSize="20sp"
-            android:layout_gravity="center_vertical"
-            android:layout_marginRight="10dp"/>
+            android:orientation="horizontal">
 
-        <Button
-            android:layout_width="wrap_content"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:id="@+id/friend_pending_text"
+                android:text="@string/friends_pending_inviter_message"
+                android:textSize="20sp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="10dp"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/accept_icon"
+                android:layout_marginRight="5dp"
+                android:id="@+id/accept_friend_request"
+                android:onClick="acceptFriendRequest"/>
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@mipmap/reject_icon"
+                android:id="@+id/reject_friend_request"
+                android:onClick="rejectFriendRequest"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/friend_button"
-            android:text="@string/add_friend"
-            android:textSize="15sp"
-            android:padding="10dp"
-            android:background="@drawable/rounded_button_blue"/>
+            android:orientation="horizontal">
 
-    </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/friend_text"
+                android:text="@string/friends_message"
+                android:textSize="20sp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginRight="10dp"/>
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/show_friend_list"
-        android:textSize="15sp"
-        android:padding="10dp"
-        android:background="@drawable/rounded_button_blue"
-        android:layout_gravity="center_horizontal"
-        android:id="@+id/friendListButton"
-        android:onClick="showFriendList"/>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/friend_button"
+                android:text="@string/add_friend"
+                android:textSize="15sp"
+                android:padding="10dp"
+                android:background="@drawable/rounded_button_blue"
+                android:onClick="friendButtonPressed"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/show_friend_list"
+                android:textSize="15sp"
+                android:padding="10dp"
+                android:background="@drawable/rounded_button_blue"
+                android:layout_marginRight="20dp"
+                android:id="@+id/friendListButton"
+                android:onClick="showFriendList"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/delete_account"
+                android:textSize="15sp"
+                android:padding="10dp"
+                android:background="@drawable/rounded_button_blue"
+                android:id="@+id/profileRemoveButton"
+                android:onClick="deleteAccount"/>
+
+        </LinearLayout>
+
+    <!--Delete following hyphen to view all layouts: -->
+    </ViewFlipper>
+    <!---->
 
 </LinearLayout>
