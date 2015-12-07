@@ -54,6 +54,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:gravity="center_vertical"
             >
             <TextView
                 android:layout_width="wrap_content"
@@ -64,7 +65,8 @@
                 android:textSize="22sp"
                 android:layout_centerVertical="true"
                 android:layout_toLeftOf="@+id/spectatorCheckboxView"
-                android:layout_toStartOf="@+id/spectatorCheckboxView" />
+                android:layout_toStartOf="@+id/spectatorCheckboxView"
+                />
             <CheckBox
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
