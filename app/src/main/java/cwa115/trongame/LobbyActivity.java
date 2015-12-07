@@ -229,7 +229,4 @@ public class LobbyActivity extends AppCompatActivity {
         }
     }
 
-    public void showScoreBoard(View view) {
-        startActivity(new Intent(this, ScoreBoardActivity.class));
-    }
 }

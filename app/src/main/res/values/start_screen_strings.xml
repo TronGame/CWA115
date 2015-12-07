@@ -46,7 +46,7 @@
     <string name="hostingError">You can\'t host a game in spectator mode</string>
     <string name="to_many_players">There are to many players to start the game</string>
     <string name="to_few_players">There need to be at least two players to start the game</string>
-    <string name="max_distance">Max distance (meter)</string>
+    <string name="max_distance">Max distance (m)</string>
     <string name="game_deleted">The Game was deleted</string>
     <string name="owner_kick">You can\'t kick yourself</string>
 </resources>
