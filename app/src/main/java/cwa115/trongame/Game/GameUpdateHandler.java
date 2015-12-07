@@ -382,7 +382,7 @@ public class GameUpdateHandler implements SocketIoHandler {
         }
 
         // Send the message over the socket
-        socket.sendMessage(deathMessage, Protocol.UPDATE_POSITION_MESSAGE);
+        socket.sendMessage(deathMessage, Protocol.PLAYER_DEAD_MESSAGE);
     }
 
     /**
