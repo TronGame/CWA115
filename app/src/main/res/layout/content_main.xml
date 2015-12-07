@@ -127,7 +127,7 @@ c
             android:layout_gravity="center_horizontal"
             android:orientation="horizontal"
             android:id="@+id/profileControlFooter"
-            android:visibility="gone">
+            android:visibility="visible">
 
             <Button
                 android:layout_width="wrap_content"
@@ -137,17 +137,19 @@ c
                 android:onClick="showProfile"
                 android:id="@+id/profile_button"
                 android:padding="10sp"
-                android:layout_marginRight="15dp" />
+                android:layout_marginRight="15dp"
+                android:textSize="15sp"/>
 
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/delete_account"
+                android:text="@string/showScoreboard"
+                android:onClick="showScoreBoard"
+                android:id="@+id/hostButton"
+                android:padding="10dp"
+                android:textSize="15sp"
                 android:background="@drawable/rounded_button_blue"
-                android:onClick="resetAccountSettings"
-                android:id="@+id/delete_button"
-                android:padding="10sp"
-                android:layout_gravity="center_horizontal" />
+                android:gravity="center"/>
 
         </LinearLayout>
 

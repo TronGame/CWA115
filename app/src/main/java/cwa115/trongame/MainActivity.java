@@ -619,4 +619,8 @@ public class MainActivity extends AppCompatActivity {
         alert.show();
     }
     //endregion
+    public void showScoreBoard(View view) {
+        startActivity(new Intent(this, ScoreBoardActivity.class));
+    }
+
 }

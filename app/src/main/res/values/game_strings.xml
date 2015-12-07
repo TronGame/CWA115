@@ -11,13 +11,13 @@
     <string name="wall_on_notification">Wall creation enabled</string>
     <string name="wall_off_notification">Wall creation disabled</string>
     <string name="wall_breaker_notification">Wall breaker activated</string>
-    <string name="no_wall_breaker_notification">You haven\'t got enough score to activate wall breaker</string>
+    <string name="no_wall_breaker_notification">You don\'t have enough score to activate wall breaker</string>
 
     <string name="wall_too_close">Very close to wall</string>
     <string name="wall_crossed">Crossed wall</string>
     <string name="road_too_far">Too far from road</string>
 
-    <string name="distance_count_text">Travelled Distance</string>
+    <string name="distance_count_text">Score</string>
 
     <string name="king_of_hill_text">Get to the highest spot in %time minutes!</string>
     <string name="show_off_text">Do as many tricks as possible in the next %time minutes!</string>
