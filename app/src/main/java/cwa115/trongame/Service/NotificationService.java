@@ -314,7 +314,8 @@ public class NotificationService extends Service {
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("New game invite")
                 .setContentText(inviterName + " invited you to join his game.")
-                .setAutoCancel(true);
+                .setAutoCancel(true)
+                .setVibrate(new long[]{50,300,50,150,50,150});// Long-Short-Short
 
         // The stack builder object will contain an artificial back stack for the
         // started Activity.
@@ -351,7 +352,8 @@ public class NotificationService extends Service {
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("New friend invite")
                 .setContentText(friendName + " sent you a friend request.")
-                .setAutoCancel(true);
+                .setAutoCancel(true)
+                .setVibrate(new long[]{50,300,50,150,50,150});// Long-Short-Short
 
         // The stack builder object will contain an artificial back stack for the
         // started Activity.
