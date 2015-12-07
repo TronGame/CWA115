@@ -52,6 +52,7 @@ public class GameUpdateHandler implements SocketIoHandler {
         public static final String PLAYER_KILLER_NAME = "playerKillerName";
 
         public static final String START_LOCATION = "startLocation";
+        public static final String BORDER_SIZE = "borderSize";
 
         public static final String WALL_ID = "wallId";
         public static final String WALL_OWNER_ID = "wallOwnerId";
@@ -519,6 +520,8 @@ public class GameUpdateHandler implements SocketIoHandler {
         try {
             startGameMessage.put(Protocol.PLAYER_ID, GameSettings.getPlayerId());
             startGameMessage.put(Protocol.START_LOCATION, LatLngConversion.getJSONFromPoint(position));
+            // Send border size for panel
+            startGameMessage.put(Protocol.BORDER_SIZE, GameSettings.getMaxDistanceInMeters());
         } catch (JSONException e) {
             e.printStackTrace();
         }
