@@ -162,8 +162,10 @@ public class LobbyActivity extends AppCompatActivity {
                 );
                 listOfRooms.add(item);
                 roomIds.put(newRoom.getString("name"),newRoom.getInt("id"));
-                if(gameToJoin==newRoom.getInt("id"))
+                if(gameToJoin==newRoom.getInt("id")) {
                     joinGame(item);
+                    gameToJoin = -1;// Reset gameToJoin so when we return to lobby we don't join it again
+                }
             }
         }catch (JSONException e){
             e.printStackTrace();

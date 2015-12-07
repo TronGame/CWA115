@@ -123,7 +123,7 @@ public class NotificationService extends Service {
                 totalGameInvites = invites.length();
                 if(totalGameInvites==0) gameInvitesFinished();// Make sure gameInvitesFinished is called even when there are no invites
                 for (int i = 0; i < totalGameInvites; i++) {
-                    JSONObject invite = invites.getJSONObject(i);
+                    JSONObject invite = new JSONObject(invites.getString(i));
                     final int inviteId = invite.getInt("inviteId");
                     final int inviterId = invite.getInt("inviterId");
                     final int gameId = invite.getInt("gameId");
@@ -313,7 +313,7 @@ public class NotificationService extends Service {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("New game invite")
-                .setContentText("invited you to join his game.")
+                .setContentText(inviterName + " invited you to join his game.")
                 .setAutoCancel(true);
 
         // The stack builder object will contain an artificial back stack for the
