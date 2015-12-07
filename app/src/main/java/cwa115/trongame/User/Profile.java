@@ -63,6 +63,9 @@ public class Profile implements Parcelable{
     public Profile(Integer Id, String Token, String Name, String PictureUrl, JSONArray Friends){
         this(Id, Token, null, Name, PictureUrl, null, null, null, null, new FriendList(Friends));
     }
+    public Profile(Integer Id, String Token, String Name, String PictureUrl, Long[] Friends){
+        this(Id, Token, null, Name, PictureUrl, null, null, null, null, new FriendList(Arrays.asList(Friends)));
+    }
     public Profile(Integer Id, String Token, Long FacebookId, String Name, String PictureUrl,
                    Integer Wins, Integer Losses, Integer Highscore, Integer Playtime, FriendList Friends){
         this.Id = Id;

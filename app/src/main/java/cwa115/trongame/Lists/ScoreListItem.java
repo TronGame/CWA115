@@ -8,7 +8,7 @@ public class ScoreListItem {
 
     public ScoreListItem(int id, int wins, String name, String pictureUrl) {
         gamesWon = wins;
-        player = new Profile(name, pictureUrl, new Long[0]);
+        player = new Profile(id, null, name, pictureUrl, new Long[0]);
     }
 
     public String getPlayerName() {

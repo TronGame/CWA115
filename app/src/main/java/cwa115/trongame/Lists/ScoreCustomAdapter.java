@@ -48,7 +48,7 @@ public class ScoreCustomAdapter extends BaseAdapter {
         TextView playerWins = (TextView) convertView.findViewById(R.id.scorePlayerWins);
         playerWins.setText(Integer.toString(entry.getGamesWon()));
         ImageView profilePicture = (ImageView) convertView.findViewById(R.id.scoreBoardPicture);
-        if(entry.getPlayerPictureUrl()==null)
+        if(entry.getPlayerPictureUrl()==null || entry.getPlayerPictureUrl().equals(""))
             profilePicture.setImageResource(R.mipmap.default_profile_picture);
         else
             DrawableManager.cache.fetchDrawableAsync(entry.getPlayerPictureUrl(), profilePicture);

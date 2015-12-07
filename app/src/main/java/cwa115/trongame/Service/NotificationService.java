@@ -212,11 +212,11 @@ public class NotificationService extends Service {
             JSONObject result = new JSONObject(data);
             if (!result.has("error")) {
                 FriendList friendList = new FriendList(result.getJSONArray("friends"));
-                totalFriendInvites = friendList.size();
-                if(totalFriendInvites==0) friendInvitesFinished(); // Make sure service stops itself even when there are no friend invites
+                totalFriendInvites = 0;
                 for(Friend friend : friendList){
                     if(friend.isInviter() && friend.isPending()){
                         // get friend's name to show notification:
+                        totalFriendInvites++;
                         final long friendId = friend.getId();
                         dataServer.sendRequest(
                                 ServerCommand.SHOW_ACCOUNT,
@@ -240,6 +240,7 @@ public class NotificationService extends Service {
                         );
                     }
                 }
+                if(totalFriendInvites==0) friendInvitesFinished(); // Make sure service stops itself even when there are no friend invites
             } else {
                 Log.e(TAG, "Server error while receiving friendInvites.");
                 friendInvitesFinished();

@@ -373,6 +373,7 @@ public class RoomActivity extends AppCompatActivity
         Bundle data = new Bundle();
         data.putString(FriendsListActivity.TITLE_EXTRA,"Select friends to invite:");
         data.putBoolean(FriendsListActivity.SELECTABLE_EXTRA, true);
+        data.putString(FriendsListActivity.COMMIT_TEXT_EXTRA, "Send invite");
         data.putParcelable(FriendsListActivity.PROFILE_EXTRA, GameSettings.getProfile());
 
         Intent intent = new Intent(this, FriendsListActivity.class);

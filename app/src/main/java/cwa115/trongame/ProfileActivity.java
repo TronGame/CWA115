@@ -136,13 +136,15 @@ public class ProfileActivity extends AppCompatActivity {
 
         if(profile.getFriends()!=null && profile.getFriends().size()>0){
             // Get last added friend name and most popular friend name:
-            int mostCommonPlays = 0;
-            long mostCommonPlaysFriendId = 0;
-            for(Friend friend: profile.getFriends()){
+            Friend firstFriend = profile.getFriends().get(0);
+            int mostCommonPlays = firstFriend.getCommonPlays();
+            long mostCommonPlaysFriendId = firstFriend.getId();
+            for(Friend friend : profile.getFriends()){
                 if(friend.getCommonPlays()>mostCommonPlays)
                     mostCommonPlaysFriendId = friend.getId();
             }
-            getFriendNamesAndLoadStats(profile.getFriends().get(0).getId(), mostCommonPlaysFriendId);
+            // First friend is last added friend
+            getFriendNamesAndLoadStats(firstFriend.getId(), mostCommonPlaysFriendId);
         }else
             loadStats("/", "/");// Load stats without friend names
     }
