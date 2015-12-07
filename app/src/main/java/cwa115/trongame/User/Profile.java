@@ -8,11 +8,16 @@ import com.google.common.collect.Lists;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import cwa115.trongame.Lists.FriendListAdapter;
+import cwa115.trongame.Network.Server.HttpConnector;
+import cwa115.trongame.Network.Server.ServerCommand;
 
 /**
  * Created by Bram on 28-11-2015.
@@ -47,6 +52,12 @@ public class Profile implements Parcelable{
     private Long FacebookId;
     private String Token, Name, PictureUrl;
     private FriendList Friends;
+
+    public interface Callback{
+        public void onProfileLoaded(Profile profile);
+        public void onProfileNotFound(int id, String token);
+        public void onError(Exception e);
+    }
 
     public Profile(){
         this(null, null, null, null, null, null, null, null, null, null);
@@ -172,6 +183,60 @@ public class Profile implements Parcelable{
         Integer Highscore = (highscore==-1) ? null : highscore;
         Integer Playtime = (playtime==-1) ? null : playtime;
         return new Profile(Id, Token, FacebookId, Name, PictureUrl, Wins, Losses, Highscore, Playtime, Friends);
+    }
+
+    public static void Load(HttpConnector dataServer, final int id, final String token, final Callback callback){
+        Map<String, String> query = new HashMap<>();
+        query.put(SERVER_ID_PARAM, String.valueOf(id));
+        if(token!=null)
+            query.put(Profile.SERVER_TOKEN_PARAM, token);
+        dataServer.sendRequest(
+                ServerCommand.SHOW_ACCOUNT,
+                query,
+                new HttpConnector.Callback() {
+                    @Override
+                    public void handleResult(String data) {
+                        try {
+                            JSONObject result = new JSONObject(data);
+                            if (!result.has("error")) {
+                                long facebookId = result.optLong("facebookId",-1);
+                                int playtime = -1;
+                                FriendList friends = null;
+                                if(token!=null){
+                                    playtime = result.getInt("playtime");
+                                    friends = new FriendList(result.getJSONArray("friends"));
+                                }
+
+                                Profile updatedProfile = new Profile(
+                                        id,
+                                        token,
+                                        facebookId==-1 ? null : facebookId,
+                                        result.getString("name"),
+                                        result.getString("pictureUrl"),
+                                        result.getInt("wins"),
+                                        result.getInt("losses"),
+                                        result.getInt("highscore"),
+                                        playtime==-1 ? null : playtime,
+                                        friends
+                                );
+                                if(callback!=null)
+                                    callback.onProfileLoaded(updatedProfile);
+                            } else if(callback!=null)
+                                callback.onProfileNotFound(id, token);
+                        } catch (JSONException e) {
+                            if(callback!=null)
+                                callback.onError(e);
+                        }
+                    }
+                });
+    }
+
+    public static void Update(HttpConnector dataServer, Profile profile, Callback callback){
+        if(profile==null || profile.getId()==null){
+            if(callback!=null)
+                callback.onError(new NullPointerException("profile or profile.getId() can not be null"));
+        }else
+            Load(dataServer, profile.getId(), profile.getToken(), callback);
     }
 
     public static void Delete(SharedPreferences settings){

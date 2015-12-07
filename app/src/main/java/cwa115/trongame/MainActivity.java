@@ -48,6 +48,7 @@ import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Network.FacebookRequest;
 import cwa115.trongame.Network.Server.HttpConnector;
 import cwa115.trongame.Network.Server.ServerCommand;
+import cwa115.trongame.Service.AppReceiver;
 import cwa115.trongame.User.FriendList;
 import cwa115.trongame.User.Profile;
 import cwa115.trongame.Utils.DrawableManager;
@@ -133,7 +134,12 @@ public class MainActivity extends AppCompatActivity {
         // Update UI
         if(!isInternetEnabled())
             buildAlertMessageNoInternet();// No internet connection
-        else
+        else{
+            // Make sure to start service when app is launched, because when internet has been
+            // available all the time, AppReceiver won't have received any broadcasts, so make
+            // sure user still gets his notifications now
+            AppReceiver.scheduleService(this);
+        }
             updateUI();
     }
     //endregion

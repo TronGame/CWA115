@@ -16,7 +16,7 @@ import cwa115.trongame.Network.Server.ServerCommand;
 import cwa115.trongame.R;
 
 /**
- * Created by Bram on 7-12-2015.
+ * Updater class will be removed very soon, all methods are now available as static methods in Profile class
  */
 public final class Updater {
 
