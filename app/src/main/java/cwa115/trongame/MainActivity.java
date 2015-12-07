@@ -139,8 +139,8 @@ public class MainActivity extends AppCompatActivity {
             // available all the time, AppReceiver won't have received any broadcasts, so make
             // sure user still gets his notifications now
             AppReceiver.scheduleService(this);
-        }
             updateUI();
+        }
     }
     //endregion
 
