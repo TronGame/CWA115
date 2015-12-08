@@ -129,8 +129,6 @@ public class MainActivity extends AppCompatActivity {
         // Logs 'install' and 'app activate' App Events.
         AppEventsLogger.activateApp(this);
 
-        //TODO: start NotificationService
-
         // Update UI
         if(!isInternetEnabled())
             buildAlertMessageNoInternet();// No internet connection
@@ -186,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
         Profile localProfile = Profile.Load(settings);
         if (localProfile.getId()!=null && localProfile.getToken()!=null) {
             showWelcomeView(true, true);
-            progressDialog = ProgressDialog.show(this, "Updating profile","Please wait...",true,false);
+            progressDialog = ProgressDialog.show(this, getString(R.string.updating_profile),getString(R.string.please_wait),true,false);
         }else {
             showLoginView();
         }
@@ -380,41 +378,28 @@ public class MainActivity extends AppCompatActivity {
      * @param localProfile Profile of the user whose data will be downloaded
      */
     private void updateServerUserData(Profile localProfile, final boolean updateServerAfterwards, final boolean updateFacebookAfterwards){
-        dataServer.sendRequest(
-                ServerCommand.SHOW_ACCOUNT,
-                localProfile.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM),
-                new HttpConnector.Callback() {
-                    @Override
-                    public void handleResult(String data) {
-                        try {
-                            JSONObject result = new JSONObject(data);
-                            if (!result.has("error")) {
-                                new Profile(
-                                        null,
-                                        null,
-                                        null,
-                                        result.getString("name"),
-                                        result.getString("pictureUrl"),
-                                        result.getInt("wins"),
-                                        result.getInt("losses"),
-                                        result.getInt("highscore"),
-                                        result.getInt("playtime"),
-                                        new FriendList(result.getJSONArray("friends"))
-                                ).Store(settings);
-                                showWelcomeView(updateServerAfterwards, updateFacebookAfterwards);// Update UI
-                            } else {
-                                // User was not found on server
-                                showToast(R.string.profile_not_found);
-                                progressDialog.dismiss();
-                                // Completely remove the account and settings
-                                resetAccountSettings(null);
-                            }
-                        } catch (JSONException e) {
-                            showToast(R.string.update_failed);
-                            progressDialog.dismiss();
-                        }
-                    }
-                });
+        Profile.Load(dataServer, localProfile.getId(), localProfile.getToken(), new Profile.LoadCallback() {
+            @Override
+            public void onProfileLoaded(Profile profile) {
+                profile.Store(settings);
+                showWelcomeView(updateServerAfterwards, updateFacebookAfterwards);// Update UI
+            }
+
+            @Override
+            public void onProfileNotFound(int id, String token) {
+                // User was not found on server
+                showToast(R.string.profile_not_found);
+                progressDialog.dismiss();
+                // Completely remove the account and settings
+                resetAccountSettings(null);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                showToast(R.string.update_failed);
+                progressDialog.dismiss();
+            }
+        });
     }
 
     /**
@@ -479,26 +464,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteAccount(Profile profile) {
-        dataServer.sendRequest(
-                ServerCommand.DELETE_ACCOUNT,
-                profile.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM),
-                new HttpConnector.Callback() {
-                    @Override
-                    public void handleResult(String data) {
-                        try {
-                            JSONObject result = new JSONObject(data);
-                            String success = result.getString("success");
-                            if (success.equals("true")) {
-                                showToast(R.string.account_deleted);
-                                showLoginView();
-                            } else
-                                showToast(R.string.delete_failed);
+        Profile.Delete(dataServer, profile, new Profile.DeleteCallback() {
+            @Override
+            public void onProfileDeleted() {
+                showToast(R.string.account_deleted);
+                showLoginView();
+            }
 
-                        } catch (JSONException e) {
-                            showToast(R.string.delete_failed);
-                        }
-                    }
-                });
+            @Override
+            public void onProfileNotFound(int id, String token) {
+                showToast(R.string.delete_failed);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                e.printStackTrace();
+                showToast(R.string.delete_failed);
+            }
+        });
     }
 
     //region Button Press Events
@@ -509,7 +492,7 @@ public class MainActivity extends AppCompatActivity {
     public void mainButtonPressed(View view) {
         EditText nameBox = (EditText) findViewById(R.id.name_entry);
         if(!accountRegistered) {
-            progressDialog = ProgressDialog.show(this, "Creating account", "Please wait...", true, false);
+            progressDialog = ProgressDialog.show(this, getString(R.string.creating_account), getString(R.string.please_wait), true, false);
             registerAccount(new Profile(nameBox.getText().toString()));// Account not registered => register is pressed => Register
         }else{
             // Check if gps is enabled

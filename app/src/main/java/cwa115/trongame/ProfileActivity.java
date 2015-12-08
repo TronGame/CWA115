@@ -7,7 +7,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,7 +27,6 @@ import cwa115.trongame.Network.Server.HttpConnector;
 import cwa115.trongame.Network.Server.ServerCommand;
 import cwa115.trongame.User.Friend;
 import cwa115.trongame.User.Profile;
-import cwa115.trongame.User.Updater;
 import cwa115.trongame.Utils.DrawableManager;
 
 public class ProfileActivity extends AppCompatActivity {
@@ -83,23 +81,23 @@ public class ProfileActivity extends AppCompatActivity {
         super.onResume();
 
         footerFlipper.setVisibility(View.GONE);
-        Updater.updateProfile(
+        Profile.Load(
                 dataServer,
                 profile,
-                new Updater.Callback() {
+                new Profile.LoadCallback() {
                     @Override
-                    public void onDataUpdated(Profile updatedProfile) {
+                    public void onProfileLoaded(Profile updatedProfile) {
                         profile = updatedProfile;
                         loadProfile();
                     }
 
                     @Override
-                    public void onProfileNotFound() {
+                    public void onProfileNotFound(int id, String token) {
                         finish();
                     }
 
                     @Override
-                    public void onError() {
+                    public void onError(Exception e) {
                         showToast("Could not load last profile data.");
                         loadProfile();// Try to load profile with old data
                     }
@@ -128,8 +126,8 @@ public class ProfileActivity extends AppCompatActivity {
         }else
             usernameTextView.setText(profile.getName());
 
-        if(profile.getId()!=null && profile.getToken()!=null) // Assume a valid id and token is set
-            currentState = OWN_PROFILE_STATE;// So user views his own profile
+        if(profile.getId()==GameSettings.getUserId())
+            currentState = OWN_PROFILE_STATE;// User views his own profile
         else if(GameSettings.getFriends()!=null && GameSettings.getFriends().ToIdList().contains((long)profile.getId())){
             Friend friend = GameSettings.getFriends().get(GameSettings.getFriends().ToIdList().indexOf((long)profile.getId()));
             if(friend.isPending()){
@@ -201,34 +199,34 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void getFriendNamesAndLoadStats(long lastAddedFriendId, final long mostPopularFriendId){
-        Updater.loadProfile(
+        Profile.Load(
                 dataServer,
-                (int)lastAddedFriendId,
+                (int) lastAddedFriendId,
                 null,
-                new Updater.Callback() {
+                new Profile.LoadCallback() {
                     @Override
-                    public void onDataUpdated(Profile profile) {
-                        final String lastAddedFriendName = profile.getName()==null ? "/" : profile.getName();
+                    public void onProfileLoaded(Profile profile) {
+                        final String lastAddedFriendName = profile.getName() == null ? "/" : profile.getName();
 
-                        Updater.loadProfile(
+                        Profile.Load(
                                 dataServer,
                                 (int) mostPopularFriendId,
                                 null,
-                                new Updater.Callback() {
+                                new Profile.LoadCallback() {
                                     @Override
-                                    public void onDataUpdated(Profile profile) {
-                                        String mostPopularFriendName = profile.getName()==null ? "/" : profile.getName();
+                                    public void onProfileLoaded(Profile profile) {
+                                        String mostPopularFriendName = profile.getName() == null ? "/" : profile.getName();
                                         loadStats(lastAddedFriendName, mostPopularFriendName);
                                     }
 
                                     @Override
-                                    public void onProfileNotFound() {
+                                    public void onProfileNotFound(int id, String token) {
                                         showToast("Most popular friend's profile not found");
                                         loadStats(lastAddedFriendName, "/");
                                     }
 
                                     @Override
-                                    public void onError() {
+                                    public void onError(Exception e) {
                                         showToast("Error while trying to get most popular friend's name");
                                         loadStats(lastAddedFriendName, "/");
                                     }
@@ -237,13 +235,13 @@ public class ProfileActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onProfileNotFound() {
+                    public void onProfileNotFound(int id, String token) {
                         showToast("Last added friend's profile not found");
                         loadStats("/", "/");
                     }
 
                     @Override
-                    public void onError() {
+                    public void onError(Exception e) {
                         showToast("Error while trying to get last added friend's name");
                         loadStats("/", "/");
                     }

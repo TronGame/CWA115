@@ -23,6 +23,9 @@
     <string name="gps_disabled_message">Your GPS seems to be disabled, do you want to enable it?</string>
     <string name="show_profile">Show profile</string>
     <string name="internet_unavailable_message">You don\'t seem to be connected to the internet, do you want to connect?</string>
+    <string name="please_wait">Please wait&#8230;</string>
+    <string name="creating_account">Creating account</string>
+    <string name="updating_profile">Updating profile</string>
 
     <!-- LobbyActivity -->
     <string name="title_activity_lobby">LobbyActivity</string>

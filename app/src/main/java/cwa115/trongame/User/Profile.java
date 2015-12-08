@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.InvalidParameterException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -53,8 +54,13 @@ public class Profile implements Parcelable{
     private String Token, Name, PictureUrl;
     private FriendList Friends;
 
-    public interface Callback{
+    public interface LoadCallback{
         public void onProfileLoaded(Profile profile);
+        public void onProfileNotFound(int id, String token);
+        public void onError(Exception e);
+    }
+    public interface DeleteCallback{
+        public void onProfileDeleted();
         public void onProfileNotFound(int id, String token);
         public void onError(Exception e);
     }
@@ -185,7 +191,7 @@ public class Profile implements Parcelable{
         return new Profile(Id, Token, FacebookId, Name, PictureUrl, Wins, Losses, Highscore, Playtime, Friends);
     }
 
-    public static void Load(HttpConnector dataServer, final int id, final String token, final Callback callback){
+    public static void Load(HttpConnector dataServer, final int id, final String token, final LoadCallback callback){
         Map<String, String> query = new HashMap<>();
         query.put(SERVER_ID_PARAM, String.valueOf(id));
         if(token!=null)
@@ -231,7 +237,7 @@ public class Profile implements Parcelable{
                 });
     }
 
-    public static void Update(HttpConnector dataServer, Profile profile, Callback callback){
+    public static void Load(HttpConnector dataServer, Profile profile, LoadCallback callback){
         if(profile==null || profile.getId()==null){
             if(callback!=null)
                 callback.onError(new NullPointerException("profile or profile.getId() can not be null"));
@@ -252,6 +258,33 @@ public class Profile implements Parcelable{
         editor.remove(ACCOUNT_HIGHSCORE_KEY);
         editor.remove(ACCOUNT_PLAYTIME_KEY);
         editor.apply();
+    }
+
+    public static void Delete(HttpConnector dataServer, final Profile profile, final DeleteCallback callback){
+        dataServer.sendRequest(
+                ServerCommand.DELETE_ACCOUNT,
+                profile.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM),
+                new HttpConnector.Callback() {
+                    @Override
+                    public void handleResult(String data) {
+                        try {
+                            JSONObject result = new JSONObject(data);
+                            if(!result.has("error")) {
+                                String success = result.getString("success");
+                                if(callback!=null) {
+                                    if (success.equals("true")) {
+                                        callback.onProfileDeleted();
+                                    } else
+                                        callback.onError(new InvalidParameterException("Wrong token given."));
+                                }
+                            }else if(callback!=null)
+                                callback.onProfileNotFound(profile.getId(), profile.getToken());
+
+                        } catch (JSONException e) {
+                            if(callback!=null) callback.onError(e);
+                        }
+                    }
+                });
     }
 
     public static Profile GetUpdatedData(Profile oldProfile, Profile newProfile){
