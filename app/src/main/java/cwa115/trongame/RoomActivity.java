@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
@@ -114,10 +115,10 @@ public class RoomActivity extends AppCompatActivity
                                 try{
                                     JSONObject result = new JSONObject(data);
                                     if(result.getBoolean("success"))
-                                        showToast("Friends invited.");
+                                        showToast(R.string.friends_invited);
                                 }catch (JSONException e){
                                     e.printStackTrace();
-                                    showToast("Could not invite friends.");
+                                    showToast(R.string.friends_invite_error);
                                 }
                             }
                         });
@@ -362,11 +363,11 @@ public class RoomActivity extends AppCompatActivity
     }
 
     public void onToManyPlayers() {
-        Toast.makeText(this, R.string.to_many_players, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.too_many_players, Toast.LENGTH_SHORT).show();
     }
 
     public void onToFewPlayers() {
-        Toast.makeText(this, R.string.to_few_players, Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.too_little_players, Toast.LENGTH_SHORT).show();
     }
 
     public void inviteFriends(View v){
@@ -409,8 +410,8 @@ public class RoomActivity extends AppCompatActivity
         startActivity(new Intent(this, GameActivity.class));
     }
 
-    private void showToast(String message){
-        Toast.makeText(this,message,Toast.LENGTH_SHORT).show();
+    private void showToast(@StringRes int resId){
+        Toast.makeText(this,resId,Toast.LENGTH_SHORT).show();
     }
 
 }

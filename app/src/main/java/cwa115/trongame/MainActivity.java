@@ -267,14 +267,14 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onCancel() {
-                Log.d("FACEBOOK_LOGIN", "Login canceled");
-                showToast("Login canceled");
+                Log.d("FACEBOOK_LOGIN", "Login cancelled");
+                showToast(R.string.login_canceled);
             }
 
             @Override
             public void onError(FacebookException error) {
                 Log.e("FACEBOOK_LOGIN", "Login error: " + error.toString());
-                showToast("Login error");
+                showToast(R.string.login_error);
             }
         });
     }
@@ -404,7 +404,7 @@ public class MainActivity extends AppCompatActivity {
                                 showWelcomeView(updateServerAfterwards, updateFacebookAfterwards);// Update UI
                             } else {
                                 // User was not found on server
-                                showToast("Profile not found.");
+                                showToast(R.string.profile_not_found);
                                 progressDialog.dismiss();
                                 // Completely remove the account and settings
                                 resetAccountSettings(null);
@@ -562,22 +562,14 @@ public class MainActivity extends AppCompatActivity {
 
     /***
      * Shows a Toast with the specified text.
-     * @param text The text to display inside the Toast.
-     */
-    private void showToast(String text){
-        Toast.makeText(
-                getBaseContext(),
-                text,
-                Toast.LENGTH_SHORT
-        ).show();
-    }
-
-    /***
-     * Shows a Toast with the specified text.
      * @param resId The resourceId of the text to display inside the Toast.
      */
     private void showToast(@StringRes int resId){
-        showToast(getString(resId));
+        Toast.makeText(
+                getBaseContext(),
+                resId,
+                Toast.LENGTH_SHORT
+        ).show();
     }
 
     // Source from http://stackoverflow.com/questions/843675/how-do-i-find-out-if-the-gps-of-an-android-device-is-enabled
