@@ -34,7 +34,7 @@ public class ShowOffEvent implements GameEvent {
     }
 
     public void startEvent(GameActivity gameActivity) {
-
+        gameActivity.resetAcceleration();
     }
 
 

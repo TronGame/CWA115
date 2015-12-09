@@ -82,8 +82,9 @@ public class GameActivity extends AppCompatActivity implements
     private static final int WALL_BREAKER_COST = 500;
 
     // Location thresholds
+    private static final double IGNORE_ACCURACY = 70; // This should be equal or less to the largest value of the measured distances
     private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(20);
-    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(100);
+    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(70);
     private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(30);
     private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(50);
     private static final double IGNORE_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(50);
@@ -114,6 +115,7 @@ public class GameActivity extends AppCompatActivity implements
 
     // Sensor data
     private double acceleration;                        // Cumulative acceleration
+    private int accelerationCount;                      // Amount of acceleration measurements
     private boolean isBellRinging;                      // Indicates the state of the bell
     private int bellCount;                              // Stores the amount of times a bell was detected
     private int turns;                                  // Stores the amount of turns
@@ -143,8 +145,11 @@ public class GameActivity extends AppCompatActivity implements
         return height;
     }
 
+    /**
+     * @return the average acceleration since the last reset
+     */
     public double getAcceleration() {
-        return acceleration;
+        return acceleration / accelerationCount;
     }
 
     public int getTurns(){ return turns;}
@@ -152,6 +157,14 @@ public class GameActivity extends AppCompatActivity implements
     public void resetTurns(){
         turns = 0;
         sensorDataObservable.resetSensorData(SensorFlag.GYROSCOPE);
+    }
+
+    /**
+     * Resets the cumulative acceleration and the measurement count.
+     */
+    public void resetAcceleration() {
+        acceleration = 0;
+        accelerationCount = 0;
     }
 
     public int getBellCount() {
@@ -221,6 +234,7 @@ public class GameActivity extends AppCompatActivity implements
         // -----------------------------------------------------------------------------------------
         // Initialize sensorDataObservable and proximityObserver
         acceleration = 0;
+        accelerationCount = 0;
         turns = 0;
         sensorDataObservable = new SensorDataObservable(this);
         isBellRinging = false;
@@ -355,6 +369,7 @@ public class GameActivity extends AppCompatActivity implements
                 if(data instanceof HorizontalAccelerationDataHolder) {
                     HorizontalAccelerationDataHolder holder = (HorizontalAccelerationDataHolder) data;
                     acceleration += holder.getAccelerationMagnitude();
+                    accelerationCount += 1;
                 }
                 if(currentEvent!=null && currentEvent instanceof ShowOffEvent){
                     ((TextView)findViewById(R.id.eventValue)).setText(getString(R.string.show_off_event_text).replaceAll("%value",""+acceleration));
@@ -422,8 +437,10 @@ public class GameActivity extends AppCompatActivity implements
 
         // Set start time (in order to measure total playtime)
         startTime = System.currentTimeMillis();
-        // Set the amount of players that are alive
-        playersAliveCount = GameSettings.getPlayersInGame().size();
+        if (GameSettings.isOwner())
+            // Set the amount of players that are alive
+            playersAliveCount = GameSettings.getPlayersInGame().size();
+
         // Set the initial location
         mapCenter = startPos;
         if (GameSettings.getMaxDistance() > 0)
@@ -559,9 +576,9 @@ public class GameActivity extends AppCompatActivity implements
             gameUpdateHandler.sendMyLocation(gpsLoc);
 
             if (isAlive) {
-                // onDeath("", ""); TODO killPlayer?
                 // Show the "player to far from road" notification
                 showNotification(getString(R.string.road_too_far), Toast.LENGTH_SHORT);
+                onDeath("", "");
             }
         }
 
@@ -666,6 +683,14 @@ public class GameActivity extends AppCompatActivity implements
         if (IMMORTAL)
             return;
 
+        if (GameSettings.isOwner()) {
+            // There is one less player alive now
+            playersAliveCount -= 1;
+            // If there is only one player left : end the game
+            if (playersAliveCount <= 1)
+                endGame();
+        }
+
         // Hide all wall controls
         Button breakWallButton = (Button) findViewById(R.id.breakWallButton);
         breakWallButton.setVisibility(View.GONE);
@@ -688,11 +713,13 @@ public class GameActivity extends AppCompatActivity implements
      * @param killerName The name of the killer
      */
     public void playerDied(String playerName, String killerId, String killerName) {
-        // There is one less player alive now
-        playersAliveCount -= 1;
-        // If there is only one player left : end the game
-        if (!IMMORTAL && GameSettings.isOwner() &&playersAliveCount <= 1)
-            endGame();
+        if (GameSettings.isOwner()) {
+            // There is one less player alive now
+            playersAliveCount -= 1;
+            // If there is only one player left : end the game
+            if (!IMMORTAL && playersAliveCount <= 1)
+                endGame();
+        }
 
         if (killerId.equals("")) {
             // The player died because he went to far from the road
@@ -954,6 +981,7 @@ public class GameActivity extends AppCompatActivity implements
     /**
      * Is called when the application is paused
      */
+    @Override
     public void onPause() {
         super.onPause();
         locationListener.stopLocationUpdate();      // Pauses the lcoation listener
@@ -967,6 +995,7 @@ public class GameActivity extends AppCompatActivity implements
     /**
      * Is called when the application is resumed
      */
+    @Override
     public void onResume() {
         super.onResume();
         locationListener.startLocationUpdate(); // Start the location listener again
@@ -975,6 +1004,13 @@ public class GameActivity extends AppCompatActivity implements
             sensorDataObservable.Resume();          // Resume the sensor observer
             frequencyListener.run();
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (gameEventHandler != null)
+            gameEventHandler.stop();
     }
 
     // endregion    
@@ -989,6 +1025,9 @@ public class GameActivity extends AppCompatActivity implements
      */
     @Override
     public void updateLocation(Location location) {
+        if (location.getAccuracy() >= IGNORE_ACCURACY)
+            return;
+
         // Store the new location in a LatLng object
         LatLng newGpsLoc = new LatLng(location.getLatitude(), location.getLongitude());
         // Calculate the distance between the new location and the last location
