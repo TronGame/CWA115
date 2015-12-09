@@ -50,11 +50,6 @@ public class BellEvent implements GameEvent {
         return gameActivity.getString(R.string.bell_notification_text).replaceAll("%time", ""+TIME/60);
     }
 
-    @Override
-    public String getEventValue(GameActivity gameActivity, double score){
-        return gameActivity.getString(R.string.bell_event_text).replaceAll("%value", ""+score);
-    }
-
     public void startEvent(GameActivity gameActivity) {
         gameActivity.setBellCount(0);
     }

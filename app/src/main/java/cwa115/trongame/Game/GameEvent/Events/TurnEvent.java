@@ -44,11 +44,6 @@ public class TurnEvent implements GameEvent {
     }
 
     @Override
-    public String getEventValue(GameActivity gameActivity, double score){
-        return gameActivity.getString(R.string.turn_event_text).replaceAll("%value", ""+score);
-    }
-
-    @Override
     public JSONObject collectData(GameActivity gameActivity) {
         JSONObject eventMessage = new JSONObject();
         try {

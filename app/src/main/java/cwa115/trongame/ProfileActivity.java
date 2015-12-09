@@ -33,6 +33,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     public final static String DATA_EXTRA = "profileActivity_dataExtra";
     public final static String PROFILE_EXTRA = "profileActivity_profileExtra";
+    public final static String EDITABLE_EXTRA = "profileActivity_editableExtra";
     public final static String DELETE_ACCOUNT_EXTRA = "profileActivity_deleteAccountExtra";
 
     private final static int VIEW_PENDING_FRIEND = 0;
@@ -49,7 +50,7 @@ public class ProfileActivity extends AppCompatActivity {
     private List<StatsListItem> statsList;
     private StatsCustomAdapter statsCustomAdapter;
     private int currentState;
-    private boolean shouldExitSafely;
+    private boolean shouldExitSafely, editable;
 
     private ImageView profileImageView, facebookFlag;
     private TextView usernameTextView;
@@ -65,6 +66,7 @@ public class ProfileActivity extends AppCompatActivity {
         Intent i = getIntent();
         Bundle data = i.getBundleExtra(DATA_EXTRA);
         profile = data.getParcelable(PROFILE_EXTRA);
+        editable = data.getBoolean(EDITABLE_EXTRA, false);
         shouldExitSafely = data.getBoolean(RoomActivity.FROM_ROOMACTIVITY_EXTRA, false);
 
         // Dataserver reference
@@ -81,6 +83,14 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onResume(){
         super.onResume();
+
+        if(profile.getId()==null){
+            finish();
+            return;
+        }
+
+        if(profile.getId()==GameSettings.getUserId())
+            profile = GameSettings.getProfile();// User watches his own profile
 
         footerFlipper.setVisibility(View.GONE);
         Profile.Load(
@@ -128,11 +138,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void loadProfile(){
-        if(profile.getName()==null || profile.getId()==null){
-            finish();
-            return;
-        }else
-            usernameTextView.setText(profile.getName());
+        usernameTextView.setText(profile.getName());
 
         if(profile.getId()==GameSettings.getUserId())
             currentState = OWN_PROFILE_STATE;// User views his own profile
@@ -151,7 +157,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         updateFooterFlipper();
 
-        if(profile.getPictureUrl()==null)
+        if(profile.getPictureUrl()==null || profile.getPictureUrl().equals(""))
             profileImageView.setImageResource(R.mipmap.default_profile_picture);
         else
             DrawableManager.cache.fetchDrawableAsync(profile.getPictureUrl(), profileImageView);
@@ -180,6 +186,8 @@ public class ProfileActivity extends AppCompatActivity {
         switch(currentState){
             case OWN_PROFILE_STATE:
                 footerFlipper.setDisplayedChild(VIEW_OWN_PROFILE);
+                if(!editable)
+                    findViewById(R.id.profileRemoveButton).setVisibility(View.GONE);
                 break;
             case STRANGER_PROFILE_STATE:
                 footerFlipper.setDisplayedChild(VIEW_FRIEND_OR_STRANGER);
@@ -277,7 +285,7 @@ public class ProfileActivity extends AppCompatActivity {
             statsList.add(new StatsListItem("Last added friend", lastAddedFriend));// TODO: sort friends so last added one is the first in the list
         }
         statsList.add(new StatsListItem("Achievements"));
-        statsList.add(new StatsListItem("To be implemented",""));
+        statsList.add(new StatsListItem("Coming soon...",""));
 
         statsCustomAdapter = new StatsCustomAdapter(this, statsList);
         statsListView.setAdapter(statsCustomAdapter);

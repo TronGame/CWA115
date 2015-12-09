@@ -506,6 +506,7 @@ public class MainActivity extends AppCompatActivity {
     public void showProfile(View view){
         Bundle data = new Bundle();
         data.putParcelable(ProfileActivity.PROFILE_EXTRA, GameSettings.getProfile());
+        data.putBoolean(ProfileActivity.EDITABLE_EXTRA, true);
 
         Intent intent = new Intent(this, ProfileActivity.class);
         intent.putExtra(ProfileActivity.DATA_EXTRA, data);

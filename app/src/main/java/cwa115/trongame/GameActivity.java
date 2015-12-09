@@ -18,6 +18,7 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -186,6 +187,7 @@ public class GameActivity extends AppCompatActivity implements
     public void setCurrentEvent(GameEvent event){
         this.currentEvent = event;
         findViewById(R.id.eventContainer).setVisibility(View.VISIBLE);
+        ((TextView)findViewById(R.id.eventValue)).setText("0.0");
     }
     public void stopCurrentEvent(){
         this.currentEvent = null;
@@ -294,6 +296,8 @@ public class GameActivity extends AppCompatActivity implements
 
         TextView travelledDistanceHead = (TextView) findViewById(R.id.travelledDistanceHead);
         travelledDistanceHead.setVisibility(View.GONE);
+
+        findViewById(R.id.eventContainer).setVisibility(View.GONE);
     }
 
     public void onStartGame(View view) {
@@ -953,6 +957,7 @@ public class GameActivity extends AppCompatActivity implements
     public void onPause() {
         super.onPause();
         locationListener.stopLocationUpdate();      // Pauses the lcoation listener
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);// Disable screen lock on
         if (isAlive) {
             frequencyListener.pause();
             sensorDataObservable.Pause();           // Pauses the sensor observer
@@ -965,6 +970,7 @@ public class GameActivity extends AppCompatActivity implements
     public void onResume() {
         super.onResume();
         locationListener.startLocationUpdate(); // Start the location listener again
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);// Keep screen on
         if (isAlive) {
             sensorDataObservable.Resume();          // Resume the sensor observer
             frequencyListener.run();

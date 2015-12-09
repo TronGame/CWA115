@@ -50,11 +50,6 @@ public class KingOfHillEvent implements GameEvent {
         return gameActivity.getString(R.string.king_of_hill_notification_text).replaceAll("%time", ""+TIME/60);
     }
 
-    @Override
-    public String getEventValue(GameActivity gameActivity, double score){
-        return gameActivity.getString(R.string.king_of_hill_event_text).replaceAll("%value", ""+score);
-    }
-
     public void startEvent(GameActivity gameActivity) {
 
     }
