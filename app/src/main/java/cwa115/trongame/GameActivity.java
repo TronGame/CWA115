@@ -75,8 +75,9 @@ public class GameActivity extends AppCompatActivity implements
     private static final int WALL_BREAKER_COST = 500;
 
     // Location thresholds
+    private static final double IGNORE_ACCURACY = 70; // This should be equal or less to the largest value of the measured distances
     private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(20);
-    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(100);
+    private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(70);
     private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(30);
     private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(50);
     private static final double IGNORE_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(50);
@@ -941,6 +942,9 @@ public class GameActivity extends AppCompatActivity implements
      */
     @Override
     public void updateLocation(Location location) {
+        if (location.getAccuracy() >= IGNORE_ACCURACY)
+            return;
+
         // Store the new location in a LatLng object
         LatLng newGpsLoc = new LatLng(location.getLatitude(), location.getLongitude());
         // Calculate the distance between the new location and the last location
