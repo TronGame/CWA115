@@ -26,9 +26,10 @@ public class HorizontalAccelerationDataHolder extends SensorDataHolder { // Hori
 
         float[] newValues = newSensorEvent.values;
 
-        // Magnitude without Z component
+        // Magnitude
+        // Z component also includes gravity but this should be ok
         accelerationMagnitude = Math.sqrt(
-                Math.pow(newValues[0], 2) + Math.pow(newValues[1], 2)
+                Math.pow(newValues[0], 2) + Math.pow(newValues[1], 2) + Math.pow(newValues[2], 2)
         );
         return (lastSensorData[0] > ACCELEROMETER_X_LIMIT && newValues[0] < -ACCELEROMETER_X_LIMIT && lastSensorData[2] > ACCELEROMETER_Z_LIMIT && newValues[2] < ACCELEROMETER_Z_LIMIT) ||
                 (lastSensorData[0] < -ACCELEROMETER_X_LIMIT && newValues[0] > ACCELEROMETER_X_LIMIT && lastSensorData[2] < -ACCELEROMETER_Z_LIMIT && newValues[2] > ACCELEROMETER_Z_LIMIT);

@@ -108,6 +108,7 @@ public class GameActivity extends AppCompatActivity implements
 
     // Sensor data
     private double acceleration;                        // Cumulative acceleration
+    private int accelerationCount;                      // Amount of acceleration measurements
     private boolean isBellRinging;                      // Indicates the state of the bell
     private int bellCount;                              // Stores the amount of times a bell was detected
 
@@ -135,8 +136,19 @@ public class GameActivity extends AppCompatActivity implements
         return height;
     }
 
+    /**
+     * @return the average acceleration since the last reset
+     */
     public double getAcceleration() {
-        return acceleration;
+        return acceleration / accelerationCount;
+    }
+
+    /**
+     * Resets the cumulative acceleration and the measurement count.
+     */
+    public void resetAcceleration() {
+        acceleration = 0;
+        accelerationCount = 0;
     }
 
     public int getBellCount() {
@@ -196,6 +208,7 @@ public class GameActivity extends AppCompatActivity implements
         // -----------------------------------------------------------------------------------------
         // Initialize sensorDataObservable and proximityObserver
         acceleration = 0;
+        accelerationCount = 0;
         sensorDataObservable = new SensorDataObservable(this);
         isBellRinging = false;
 
@@ -326,6 +339,7 @@ public class GameActivity extends AppCompatActivity implements
                 if(data instanceof HorizontalAccelerationDataHolder) {
                     HorizontalAccelerationDataHolder holder = (HorizontalAccelerationDataHolder) data;
                     acceleration += holder.getAccelerationMagnitude();
+                    accelerationCount += 1;
                 }
             }
 
