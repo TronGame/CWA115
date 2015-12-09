@@ -48,6 +48,7 @@ import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Network.FacebookRequest;
 import cwa115.trongame.Network.Server.HttpConnector;
 import cwa115.trongame.Network.Server.ServerCommand;
+import cwa115.trongame.Service.AppReceiver;
 import cwa115.trongame.User.FriendList;
 import cwa115.trongame.User.Profile;
 import cwa115.trongame.Utils.DrawableManager;
@@ -128,13 +129,16 @@ public class MainActivity extends AppCompatActivity {
         // Logs 'install' and 'app activate' App Events.
         AppEventsLogger.activateApp(this);
 
-        //TODO: start NotificationService
-
         // Update UI
         if(!isInternetEnabled())
             buildAlertMessageNoInternet();// No internet connection
-        else
+        else{
+            // Make sure to start service when app is launched, because when internet has been
+            // available all the time, AppReceiver won't have received any broadcasts, so make
+            // sure user still gets his notifications now
+            AppReceiver.scheduleService(this);
             updateUI();
+        }
     }
     //endregion
 
@@ -180,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
         Profile localProfile = Profile.Load(settings);
         if (localProfile.getId()!=null && localProfile.getToken()!=null) {
             showWelcomeView(true, true);
-            progressDialog = ProgressDialog.show(this, "Updating profile","Please wait...",true,false);
+            progressDialog = ProgressDialog.show(this, getString(R.string.updating_profile),getString(R.string.please_wait),true,false);
         }else {
             showLoginView();
         }
@@ -261,14 +265,14 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onCancel() {
-                Log.d("FACEBOOK_LOGIN", "Login canceled");
-                showToast("Login canceled");
+                Log.d("FACEBOOK_LOGIN", "Login cancelled");
+                showToast(R.string.login_canceled);
             }
 
             @Override
             public void onError(FacebookException error) {
                 Log.e("FACEBOOK_LOGIN", "Login error: " + error.toString());
-                showToast("Login error");
+                showToast(R.string.login_error);
             }
         });
     }
@@ -374,41 +378,28 @@ public class MainActivity extends AppCompatActivity {
      * @param localProfile Profile of the user whose data will be downloaded
      */
     private void updateServerUserData(Profile localProfile, final boolean updateServerAfterwards, final boolean updateFacebookAfterwards){
-        dataServer.sendRequest(
-                ServerCommand.SHOW_ACCOUNT,
-                localProfile.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM),
-                new HttpConnector.Callback() {
-                    @Override
-                    public void handleResult(String data) {
-                        try {
-                            JSONObject result = new JSONObject(data);
-                            if (!result.has("error")) {
-                                new Profile(
-                                        null,
-                                        null,
-                                        null,
-                                        result.getString("name"),
-                                        result.getString("pictureUrl"),
-                                        result.getInt("wins"),
-                                        result.getInt("losses"),
-                                        result.getInt("highscore"),
-                                        result.getInt("playtime"),
-                                        new FriendList(result.getJSONArray("friends"))
-                                ).Store(settings);
-                                showWelcomeView(updateServerAfterwards, updateFacebookAfterwards);// Update UI
-                            } else {
-                                // User was not found on server
-                                showToast("Profile not found.");
-                                progressDialog.dismiss();
-                                // Completely remove the account and settings
-                                resetAccountSettings(null);
-                            }
-                        } catch (JSONException e) {
-                            showToast(R.string.update_failed);
-                            progressDialog.dismiss();
-                        }
-                    }
-                });
+        Profile.Load(dataServer, localProfile.getId(), localProfile.getToken(), new Profile.LoadCallback() {
+            @Override
+            public void onProfileLoaded(Profile profile) {
+                profile.Store(settings);
+                showWelcomeView(updateServerAfterwards, updateFacebookAfterwards);// Update UI
+            }
+
+            @Override
+            public void onProfileNotFound(int id, String token) {
+                // User was not found on server
+                showToast(R.string.profile_not_found);
+                progressDialog.dismiss();
+                // Completely remove the account and settings
+                resetAccountSettings(null);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                showToast(R.string.update_failed);
+                progressDialog.dismiss();
+            }
+        });
     }
 
     /**
@@ -473,26 +464,24 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deleteAccount(Profile profile) {
-        dataServer.sendRequest(
-                ServerCommand.DELETE_ACCOUNT,
-                profile.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM),
-                new HttpConnector.Callback() {
-                    @Override
-                    public void handleResult(String data) {
-                        try {
-                            JSONObject result = new JSONObject(data);
-                            String success = result.getString("success");
-                            if (success.equals("true")) {
-                                showToast(R.string.account_deleted);
-                                showLoginView();
-                            } else
-                                showToast(R.string.delete_failed);
+        Profile.Delete(dataServer, profile, new Profile.DeleteCallback() {
+            @Override
+            public void onProfileDeleted() {
+                showToast(R.string.account_deleted);
+                showLoginView();
+            }
 
-                        } catch (JSONException e) {
-                            showToast(R.string.delete_failed);
-                        }
-                    }
-                });
+            @Override
+            public void onProfileNotFound(int id, String token) {
+                showToast(R.string.delete_failed);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                e.printStackTrace();
+                showToast(R.string.delete_failed);
+            }
+        });
     }
 
     //region Button Press Events
@@ -503,7 +492,7 @@ public class MainActivity extends AppCompatActivity {
     public void mainButtonPressed(View view) {
         EditText nameBox = (EditText) findViewById(R.id.name_entry);
         if(!accountRegistered) {
-            progressDialog = ProgressDialog.show(this, "Creating account", "Please wait...", true, false);
+            progressDialog = ProgressDialog.show(this, getString(R.string.creating_account), getString(R.string.please_wait), true, false);
             registerAccount(new Profile(nameBox.getText().toString()));// Account not registered => register is pressed => Register
         }else{
             // Check if gps is enabled
@@ -556,22 +545,14 @@ public class MainActivity extends AppCompatActivity {
 
     /***
      * Shows a Toast with the specified text.
-     * @param text The text to display inside the Toast.
-     */
-    private void showToast(String text){
-        Toast.makeText(
-                getBaseContext(),
-                text,
-                Toast.LENGTH_SHORT
-        ).show();
-    }
-
-    /***
-     * Shows a Toast with the specified text.
      * @param resId The resourceId of the text to display inside the Toast.
      */
     private void showToast(@StringRes int resId){
-        showToast(getString(resId));
+        Toast.makeText(
+                getBaseContext(),
+                resId,
+                Toast.LENGTH_SHORT
+        ).show();
     }
 
     // Source from http://stackoverflow.com/questions/843675/how-do-i-find-out-if-the-gps-of-an-android-device-is-enabled

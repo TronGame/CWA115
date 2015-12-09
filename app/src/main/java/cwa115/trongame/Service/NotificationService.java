@@ -102,28 +102,44 @@ public class NotificationService extends Service {
                     }
                 }
         );
-        Log.d(TAG, "Send SHOW_ACCOUNT server request.");
-        dataServer.sendRequest(
-                ServerCommand.SHOW_ACCOUNT,
-                profile.GetQuery(Profile.SERVER_ID_PARAM, Profile.SERVER_TOKEN_PARAM),
-                new HttpConnector.Callback() {
-                    @Override
-                    public void handleResult(String data) {
-                        handleShowAccount(data);
-                    }
-                });
+        Log.d(TAG, "Load user profile from server.");
+        Profile.Load(dataServer, profile, new Profile.LoadCallback() {
+            @Override
+            public void onProfileLoaded(Profile profile) {
+                Log.d(TAG, "User profile loaded.");
+                FriendList friendList = profile.getFriends();
+                if(friendList!=null && friendList.size()>0)
+                    handleProfileLoaded(friendList);
+                else{
+                    Log.d(TAG, "User has no friends.");
+                    friendInvitesFinished();
+                }
+            }
+
+            @Override
+            public void onProfileNotFound(int id, String token) {
+                Log.e(TAG, "User profile could not be found.");
+                friendInvitesFinished();
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e(TAG, "Error while loading user profile.");
+                friendInvitesFinished();
+            }
+        });
     }
 
     private void handleShowInvites(String data){
         try{
             Log.d(TAG, "SHOW_INVITES result");
             JSONObject result = new JSONObject(data);
-            if(!result.has("error")) {
+            if(!result.has("error") && result.optBoolean("invites",true)) {// If token is wrong (which may happen when account is deleted), invites will be false
                 JSONArray invites = result.getJSONArray("invites");
                 totalGameInvites = invites.length();
                 if(totalGameInvites==0) gameInvitesFinished();// Make sure gameInvitesFinished is called even when there are no invites
                 for (int i = 0; i < totalGameInvites; i++) {
-                    JSONObject invite = invites.getJSONObject(i);
+                    JSONObject invite = new JSONObject(invites.getString(i));
                     final int inviteId = invite.getInt("inviteId");
                     final int inviterId = invite.getInt("inviterId");
                     final int gameId = invite.getInt("gameId");
@@ -155,30 +171,26 @@ public class NotificationService extends Service {
             JSONObject result = new JSONObject(data);
             if (!result.has("error")){
                 // Game exists, get inviter's name to show notification:
-                dataServer.sendRequest(
-                        ServerCommand.SHOW_ACCOUNT,
-                        ImmutableMap.of("id", String.valueOf(inviterId)),
-                        new HttpConnector.Callback() {
-                            @Override
-                            public void handleResult(String data) {
-                                Log.d(TAG, "SHOW_ACCOUNT result of invite[" + inviteId + "]");
-                                try {
-                                    JSONObject result = new JSONObject(data);
-                                    if (!result.has("error")) {
-                                        showGameInviteNotification(inviteId, result.getString("name"), gameId);
-                                        // Delete invite so it isn't shown again
-                                        deleteInvite(inviteId);
-                                    } else {
-                                        Log.e(TAG, "Server error while receiving inviter's name.");
-                                        gameInviteFinished();
-                                    }
-                                } catch (JSONException e) {
-                                    Log.e(TAG, "JSON error while receiving inviter's name.");
-                                    gameInviteFinished();
-                                }
-                            }
-                        }
-                );
+                Profile.Load(dataServer, inviterId, null, new Profile.LoadCallback() {
+                    @Override
+                    public void onProfileLoaded(Profile inviterProfile) {
+                        showGameInviteNotification(inviteId, inviterProfile.getName(), gameId);
+                        // Delete invite so it isn't shown again
+                        deleteInvite(inviteId);
+                    }
+
+                    @Override
+                    public void onProfileNotFound(int id, String token) {
+                        Log.e(TAG, "Inviter's profile could not be found.");
+                        gameInviteFinished();
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error while receiving inviter's name.");
+                        gameInviteFinished();
+                    }
+                });
             }else{
                 // Game doesn't exist anymore => delete invite
                 deleteInvite(inviteId);
@@ -206,49 +218,39 @@ public class NotificationService extends Service {
         );
     }
 
-    private void handleShowAccount(String data){
-        try {
-            Log.d(TAG, "SHOW_ACCOUNT result");
-            JSONObject result = new JSONObject(data);
-            if (!result.has("error")) {
-                FriendList friendList = new FriendList(result.getJSONArray("friends"));
-                totalFriendInvites = 0;
-                for(Friend friend : friendList){
-                    if(friend.isInviter() && friend.isPending()){
-                        // get friend's name to show notification:
-                        totalFriendInvites++;
-                        final long friendId = friend.getId();
-                        dataServer.sendRequest(
-                                ServerCommand.SHOW_ACCOUNT,
-                                ImmutableMap.of("id", String.valueOf(friendId)),
-                                new HttpConnector.Callback() {
-                                    @Override
-                                    public void handleResult(String data) {
-                                        try{
-                                            JSONObject result = new JSONObject(data);
-                                            if(!result.has("error")){
-                                                showFriendInviteNotification(friendId, result.getString("name"));
-                                            }else{
-                                                Log.e(TAG, "Server error while receiving friend's name.");
-                                            }
-                                        }catch (JSONException e){
-                                            Log.e(TAG, "JSON error while receiving friend's name.");
-                                        }
-                                        friendInviteFinished();
-                                    }
-                                }
-                        );
+    private void handleProfileLoaded(FriendList friendList) {
+        totalFriendInvites = 0;
+        for (Friend friend : friendList) {
+            if (friend.isInviter() && friend.isPending()) {
+                // get friend's name to show notification:
+                totalFriendInvites++;
+                final int friendId = (int)friend.getId();
+                Profile.Load(dataServer, friendId, null, new Profile.LoadCallback() {
+                    @Override
+                    public void onProfileLoaded(Profile profile) {
+                        Log.d(TAG, "Friend with id " + friendId + " successfully loaded.");
+                        showFriendInviteNotification(friendId, profile.getName());
+                        friendInviteFinished();
                     }
-                }
-                if(totalFriendInvites==0) friendInvitesFinished(); // Make sure service stops itself even when there are no friend invites
-            } else {
-                Log.e(TAG, "Server error while receiving friendInvites.");
-                friendInvitesFinished();
+
+                    @Override
+                    public void onProfileNotFound(int id, String token) {
+                        Log.e(TAG, "Friend with id " + id + " could not be found.");
+                        friendInviteFinished();
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e(TAG, "Error while trying to load friend with id " + friendId);
+                        e.printStackTrace();
+                        friendInviteFinished();
+                    }
+                });
             }
-        } catch (JSONException e) {
-            Log.e(TAG, "JSON error while receiving friendInvites.");
-            friendInvitesFinished();
         }
+        if (totalFriendInvites == 0)
+            friendInvitesFinished(); // Make sure service stops itself even when there are no friend invites
+
     }
 
     /**
@@ -313,8 +315,9 @@ public class NotificationService extends Service {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("New game invite")
-                .setContentText("invited you to join his game.")
-                .setAutoCancel(true);
+                .setContentText(inviterName + " invited you to join his game.")
+                .setAutoCancel(true)
+                .setVibrate(new long[]{50,300,50,150,50,150});// Long-Short-Short
 
         // The stack builder object will contain an artificial back stack for the
         // started Activity.
@@ -351,7 +354,8 @@ public class NotificationService extends Service {
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("New friend invite")
                 .setContentText(friendName + " sent you a friend request.")
-                .setAutoCancel(true);
+                .setAutoCancel(true)
+                .setVibrate(new long[]{50,300,50,150,50,150});// Long-Short-Short
 
         // The stack builder object will contain an artificial back stack for the
         // started Activity.

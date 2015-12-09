@@ -27,6 +27,10 @@ public class AppReceiver extends BroadcastReceiver {
         // "this" whenever we need to pass a reference to the current context.
         // Thankfully, Android will supply a valid Context as the first parameter
         Log.d(TAG, "intent received");
+        scheduleService(context);
+    }
+
+    public static void scheduleService(Context context){
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent i = new Intent(context, NotificationService.class);
         PendingIntent pi = PendingIntent.getService(context, 0, i, 0);

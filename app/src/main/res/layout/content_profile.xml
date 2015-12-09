@@ -45,7 +45,8 @@
             android:id="@+id/facebookFlag"
             android:layout_gravity="center_vertical"
             android:contentDescription="@string/facebook_logo"
-            android:src="@mipmap/fb_icon"/>
+            android:src="@mipmap/fb_icon"
+            android:visibility="gone"/>
 
     </LinearLayout>
 
@@ -57,10 +58,12 @@
 
     </ListView>
 
-    <!----><ViewFlipper
+    <!---->
+    <ViewFlipper
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/footer_flipper"><!---->
+        android:id="@+id/footer_flipper"
+        android:visibility="gone"><!---->
 
         <LinearLayout
             android:layout_width="match_parent"

@@ -1,11 +1,45 @@
 <resources>
     <string name="app_name">TronGame</string>
     <string name="action_settings">Settings</string>
+
+    <!-- MainActivity -->
     <string name="enter_name">Enter your name</string>
     <string name="start">START</string>
     <string name="register">REGISTER</string>
     <string name="hosting_name">Game name</string>
+    <string name="update_failed">Could not update userdata.</string>
+    <string name="profile_not_found">Profile not found.</string>
+    <string name="welcome_message">Welcome back %1$s!</string>
+    <string name="delete_account">Delete account</string>
+    <string name="or">OR</string>
+    <string name="accept_popup">Yes</string>
+    <string name="decline_popup">No</string>
+    <string name="account_created">Account created.</string>
+    <string name="register_failed">"Could not register account.</string>
+    <string name="account_deleted">Account deleted.</string>
+    <string name="login_error">Login error.</string>
+    <string name="login_canceled">Login canceled.</string>
+    <string name="showScoreboard">Scoreboard</string>
+    <string name="gps_disabled_message">Your GPS seems to be disabled, do you want to enable it?</string>
+    <string name="show_profile">Show profile</string>
+    <string name="internet_unavailable_message">You don\'t seem to be connected to the internet, do you want to connect?</string>
+    <string name="please_wait">Please wait&#8230;</string>
+    <string name="creating_account">Creating account</string>
+    <string name="updating_profile">Updating profile</string>
+
+    <!-- LobbyActivity -->
     <string name="title_activity_lobby">LobbyActivity</string>
+    <string name="games_available">Games available</string>
+    <string name="default_roomname">Default roomname</string>
+    <string name="default_readybutton">Start game</string>
+    <string name="delete_failed">"Could not delete account.</string>
+    <string name="hosting_failed">Could not create new game.</string>
+    <string name="playerKickSucceed">The player was successfully kicked</string>
+    <string name="playerKickFail">The player could not be kicked</string>
+    <string name="leave_game">Leave</string>
+    <string name="joinging_message">Joining %1$s</string>
+
+    <!-- HostingActivity -->
     <string name="title_activity_hosting">HostingActivity</string>
     <string name="title_activity_room">RoomActivity</string>
     <string name="number_of_players">Number of players</string>
@@ -13,40 +47,25 @@
     <string name="Unlimited_walls">Unlimited walls</string>
     <string name="item">Items</string>
     <string name="item_wall_breaker">Wall breaker</string>
-    <string name="games_available">Games available</string>
-    <string name="default_roomname">Default roomname</string>
-    <string name="default_readybutton">Start game</string>
-    <string name="account_created">Account created.</string>
-    <string name="register_failed">"Could not register account.</string>
-    <string name="account_deleted">Account deleted.</string>
-    <string name="delete_failed">"Could not delete account.</string>
-    <string name="hosting_failed">Could not create new game.</string>
-    <string name="update_failed">Could not update userdata.</string>
-    <string name="welcome_message">Welcome back %1$s!</string>
-    <string name="delete_account">Delete account</string>
-    <string name="or">OR</string>
-    <string name="accept_popup">Yes</string>
-    <string name="decline_popup">No</string>
-    <string name="playerKickSucceed">The player was successfully kicked</string>
-    <string name="playerKickFail">The player could not be kicked</string>
-    <string name="leave_game">Leave</string>
     <string name="timeLimit">Time limit (min.)</string>
-    <string name="kickRequest">Do you want to kick %1$s ?</string>
+    <string name="max_distance">Max distance (m)</string>
     <string name="unlimited">unlimited</string>
+
+    <!-- RoomActivity -->
+    <string name="kickRequest">Do you want to kick %1$s ?</string>
+    <string name="spectator">Spectator</string>
+    <string name="invite_friends">Invite friends</string>
+    <string name="friends_invited">Friends invited.</string>
+    <string name="friends_invite_error">Could not invite friends.</string>
+    <string name="hostingError">You can\'t host a game in spectator mode</string>
+    <string name="too_many_players">There are too many players to start the game</string>
+    <string name="too_little_players">There need to be at least two players to start the game</string>
+    <string name="game_deleted">The Game was deleted</string>
+    <string name="owner_kick">You can\'t kick yourself</string>
+
+    <!-- ScoreBoardActivity -->
     <string name="title_activity_score_board">ScoreBoardActivity</string>
-    <string name="showScoreboard">Scoreboard</string>
-    <string name="gps_disabled_message">Your GPS seems to be disabled, do you want to enable it?</string>
-    <string name="show_profile">Show profile</string>
-    <string name="internet_unavailable_message">You don\'t seem to be connected to the internet, do you want to connect?</string>
     <string name="scoreboardTitle">Scoreboard</string>
     <string name="name">Name</string>
     <string name="gamesWon">Games Won</string>
-    <string name="spectator">Spectator</string>
-    <string name="invite_friends">Invite friends</string>
-    <string name="hostingError">You can\'t host a game in spectator mode</string>
-    <string name="to_many_players">There are to many players to start the game</string>
-    <string name="to_few_players">There need to be at least two players to start the game</string>
-    <string name="max_distance">Max distance (m)</string>
-    <string name="game_deleted">The Game was deleted</string>
-    <string name="owner_kick">You can\'t kick yourself</string>
 </resources>

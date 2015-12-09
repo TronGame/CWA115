@@ -13,7 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.primitives.Longs;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,7 +28,6 @@ import cwa115.trongame.Network.Server.ServerCommand;
 import cwa115.trongame.User.Friend;
 import cwa115.trongame.User.FriendList;
 import cwa115.trongame.User.Profile;
-import cwa115.trongame.User.Updater;
 import cwa115.trongame.Utils.DrawableManager;
 
 public class FriendsListActivity extends AppCompatActivity implements FriendListAdapter.Callback {
@@ -43,7 +41,7 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
     public final static String FROM_NOTIFICATION_EXTRA = "friendsListActivity_fromNotificationExtra";
 
     private HttpConnector dataServer;
-    private boolean selectable;
+    private boolean selectable, shouldExitSafely;
     private Profile profile;
     private List<FriendListItem> friendListItems;
     private FriendListAdapter adapter;
@@ -82,6 +80,8 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
         if(profile==null || profile.getId()==null || profile.getToken()==null)
             finish();
 
+        shouldExitSafely = data.getBoolean(RoomActivity.FROM_ROOMACTIVITY_EXTRA, false);
+
         // Initialize server connection
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
 
@@ -94,26 +94,27 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
     protected void onResume(){
         super.onResume();
 
-        Updater.updateProfile(
+        Profile.Load(
                 dataServer,
                 profile,
-                new Updater.Callback() {
+                new Profile.LoadCallback() {
                     @Override
-                    public void onDataUpdated(Profile updatedProfile) {
+                    public void onProfileLoaded(Profile updatedProfile) {
                         profile = updatedProfile;
-                        if(profile.getFriends()!=null)
+                        if (profile.getFriends() != null)
                             buildFriendsList();
+                        // TODO: show message that no friends are available
                     }
 
                     @Override
-                    public void onProfileNotFound() {
+                    public void onProfileNotFound(int id, String token) {
                         finish();
                     }
 
                     @Override
-                    public void onError() {
+                    public void onError(Exception e) {
                         showToast("Could not load last friends data.");
-                        if(profile.getFriends()!=null)
+                        if (profile.getFriends() != null)
                             buildFriendsList();// Try to load friends with old data
                     }
                 });
@@ -122,11 +123,18 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
     @Override
     protected void onPause(){
         super.onPause();
+        if(shouldExitSafely){
+            // We are leaving the entire application (probably user pressed home button) OR GameActivity is launched:
+            //RoomActivity.StaticSafeExit(dataServer);
+            RoomActivity.roomUpdater.cancel();// Cancel updater before proceeding
+        }
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // We are going back without leaving the entire application, so RoomActivity will handle the safeExit
+            shouldExitSafely = false;
             cancel();
             return true;
         }
@@ -139,25 +147,25 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
 
         for (final Friend friend : friends) {
             // Get profile of each friend
-            Updater.loadProfile(
+            Profile.Load(
                     dataServer,
                     (int) friend.getId(),
                     null,
-                    new Updater.Callback() {
+                    new Profile.LoadCallback() {
                         @Override
-                        public void onDataUpdated(Profile friendProfile) {
+                        public void onProfileLoaded(Profile friendProfile) {
                             friendListItems.add(new FriendListItem(friend, friendProfile));
                             if (friendListItems.size() == friends.size()) // All friend names are received
                                 populateFriendsList();
                         }
 
                         @Override
-                        public void onProfileNotFound() {
+                        public void onProfileNotFound(int id, String token) {
                             showToast("Friend's profile not found.");
                         }
 
                         @Override
-                        public void onError() {
+                        public void onError(Exception e) {
                             showToast("Error while trying to get friend's data.");
                         }
                     }
@@ -188,12 +196,12 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
     }
 
     public void commitButtonPressed(View v){
-        List<Long> selectedIds = new ArrayList<>();
+        ArrayList<Integer> selectedIds = new ArrayList<>();
         for(FriendListItem item : friendListItems){
             if(item.isSelected())
-                selectedIds.add(item.getPlayer().getId());
+                selectedIds.add((int)item.getPlayer().getId());
         }
-        commit(Longs.toArray(selectedIds));
+        commit(selectedIds);
     }
 
     private void showToast(String text) {
@@ -207,7 +215,7 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
         setResult(RESULT_CANCELED);
         finish();
     }
-    private void commit(long[] selectedIds){
+    private void commit(ArrayList<Integer> selectedIds){
         Intent data = new Intent();
         data.putExtra(SELECTED_IDS_EXTRA, selectedIds);
         setResult(RESULT_OK, data);

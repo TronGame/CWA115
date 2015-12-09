@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.annotation.StringRes;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -134,7 +135,7 @@ public class LobbyActivity extends AppCompatActivity {
             startActivity(new Intent(this, HostingActivity.class));
         }
         else {
-            showToast(getString(R.string.hostingError));
+            showToast(R.string.hostingError);
         }
     }
 
@@ -162,8 +163,10 @@ public class LobbyActivity extends AppCompatActivity {
                 );
                 listOfRooms.add(item);
                 roomIds.put(newRoom.getString("name"),newRoom.getInt("id"));
-                if(gameToJoin==newRoom.getInt("id"))
+                if(gameToJoin==newRoom.getInt("id")) {
                     joinGame(item);
+                    gameToJoin = -1;// Reset gameToJoin so when we return to lobby we don't join it again
+                }
             }
         }catch (JSONException e){
             e.printStackTrace();
@@ -185,9 +188,13 @@ public class LobbyActivity extends AppCompatActivity {
 
     }
 
-    private void showToast(String text) {
+    private void showToast(@StringRes int resId, Object... args) {
+        String text = getString(resId);
+        if(args.length>0)
+            text = String.format(text, args);
         Toast.makeText(
-                getBaseContext(), text,
+                this,
+                text,
                 Toast.LENGTH_SHORT
         ).show();
     }
@@ -203,7 +210,7 @@ public class LobbyActivity extends AppCompatActivity {
         GameSettings.setMaxDistance(item.getMaxDist());
         GameSettings.setMaxPlayers(item.getPlayersAsInteger());
         GameSettings.setSpectate(checkBoxView.isChecked());
-        showToast("Joining " + gameName);
+        showToast(R.string.joinging_message, gameName);
 
         if (!GameSettings.getSpectate()) {
             Map<String, String> query = ImmutableMap.of(

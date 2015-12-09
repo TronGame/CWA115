@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
     <TextView
         android:paddingLeft="@dimen/room_row_padding"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layout_gravity="center_vertical"
         android:textSize="20sp"
+        android:text="test"
         android:id="@+id/roomPlayerName"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/kick_player"
+        android:layout_margin="5dp"
+        android:visibility="gone"
+        android:src="@mipmap/reject_icon"/>
 </LinearLayout>

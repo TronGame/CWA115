@@ -20,16 +20,16 @@ public class Line {
         return start.subtract(end).getLength();
     }
 
-    public double getRico() {
+    public double getSlope() {
         return (end.y - start.y) / (end.x - start.x);
     }
 
     public double getYIntercept() {
-        return start.y - getRico()*start.x;
+        return start.y - getSlope()*start.x;
     }
 
     public double getY(double x) {
-        return getRico()*x + getYIntercept();
+        return getSlope()*x + getYIntercept();
     }
 
     public Vector2D getIntersect(Line other) {
@@ -38,14 +38,14 @@ public class Line {
 
         double xCo;
         double yCo;
-        if (Double.isInfinite(getRico())) {
+        if (Double.isInfinite(getSlope())) {
             xCo = start.x;
             yCo = other.getY(xCo);
-        } else if (Double.isInfinite(other.getRico())) {
+        } else if (Double.isInfinite(other.getSlope())) {
             xCo = other.start.x;
             yCo = getY(xCo);
         } else {
-            xCo = -(getYIntercept() - other.getYIntercept()) / (getRico() - other.getRico());
+            xCo = -(getYIntercept() - other.getYIntercept()) / (getSlope() - other.getSlope());
             yCo = getY(xCo);
         }
         return new Vector2D(xCo, yCo);
@@ -55,7 +55,7 @@ public class Line {
         if (!isDefined())
             return new Vector2D[0];
 
-        double r = getRico();
+        double r = getSlope();
         double q = getYIntercept();
 
         if (distanceTo(pt) >= dist) {
@@ -98,7 +98,7 @@ public class Line {
     }
 
     public double distanceTo(Vector2D pt) {
-        double a = getRico();
+        double a = getSlope();
         double b = -1;
         double c = getYIntercept();
 
@@ -110,7 +110,7 @@ public class Line {
     }
 
     public Vector2D getClosestPoint(Vector2D pt) {
-        double a = getRico();
+        double a = getSlope();
         double b = -1;
         double c = getYIntercept();
 
