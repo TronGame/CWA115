@@ -40,7 +40,12 @@ public class ShowOffEvent implements GameEvent {
 
     @Override
     public String getNotification(GameActivity gameActivity) {
-        return gameActivity.getString(R.string.show_off_text).replaceAll("%time", ""+TIME/60);
+        return gameActivity.getString(R.string.show_off_notification_text).replaceAll("%time", ""+TIME/60);
+    }
+
+    @Override
+    public String getEventValue(GameActivity gameActivity, double score){
+        return gameActivity.getString(R.string.show_off_event_text).replaceAll("%value", ""+score);
     }
 
     @Override

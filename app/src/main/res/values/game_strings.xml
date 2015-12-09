@@ -18,10 +18,17 @@
     <string name="road_too_far">Too far from road</string>
 
     <string name="distance_count_text">Score</string>
+    <string name="event_text">Event</string>
 
-    <string name="king_of_hill_text">Get to the highest spot in %time minutes!</string>
-    <string name="show_off_text">Do as many tricks as possible in the next %time minutes!</string>
-    <string name="bell_event_text">Ring your bell as much as possible in the next %time minutes!</string>
+    <string name="turn_notification_text">Turn your steering wheel as much as possible in the next %time seconds!</string>
+    <string name="king_of_hill_notification_text">Get to the highest spot in %time minutes!</string>
+    <string name="show_off_notification_text">Do as many tricks as possible in the next %time minutes!</string>
+    <string name="bell_notification_text">Ring your bell as much as possible in the next %time minutes!</string>
+
+    <string name="turn_event_text">%value turns</string>
+    <string name="king_of_hill_event_text">height: %value</string>
+    <string name="show_off_event_text">%value</string>
+    <string name="bell_event_text">%value rings</string>
 
     <string name="event_won_text">You have won a price in the last event.</string>
     <string name="score_received_text">Added %score points</string>

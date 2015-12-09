@@ -40,6 +40,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:background="@color/buttonBlue"
+            android:layout_marginBottom="5dp"
             android:paddingLeft="2pt"
             android:paddingRight="2pt"
             android:paddingTop="2pt"
@@ -60,6 +61,43 @@
 
             <TextView
                 android:id="@+id/travelledDistance"
+                android:layout_width="match_parent"
+                android:layout_gravity="end"
+                android:gravity="center"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:padding="1pt"
+                android:layout_height="12pt"
+                android:text="0.0"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/buttonBlue"
+            android:layout_marginBottom="5dp"
+            android:paddingLeft="2pt"
+            android:paddingRight="2pt"
+            android:paddingTop="2pt"
+            android:paddingBottom="2pt"
+            android:layout_gravity="end"
+            android:id="@+id/eventContainer">
+
+            <TextView
+                android:id="@+id/eventHead"
+                android:layout_width="match_parent"
+                android:layout_gravity="end"
+                android:textStyle="bold"
+                android:textSize="17sp"
+                android:gravity="center"
+                android:padding="1pt"
+                android:layout_height="12pt"
+                android:text="@string/event_text"/>
+
+            <TextView
+                android:id="@+id/eventValue"
                 android:layout_width="match_parent"
                 android:layout_gravity="end"
                 android:gravity="center"

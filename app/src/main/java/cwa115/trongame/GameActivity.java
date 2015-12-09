@@ -38,11 +38,17 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import cwa115.trongame.Game.GameEvent.Events.BellEvent;
+import cwa115.trongame.Game.GameEvent.Events.GameEvent;
+import cwa115.trongame.Game.GameEvent.Events.KingOfHillEvent;
+import cwa115.trongame.Game.GameEvent.Events.ShowOffEvent;
+import cwa115.trongame.Game.GameEvent.Events.TurnEvent;
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Game.GameUpdateHandler;
 import cwa115.trongame.Game.GameEvent.GameEventHandler;
 import cwa115.trongame.Network.OldApi.ApiListener;
 import cwa115.trongame.Network.GoogleMapsApi.SnappedPointHandler;
+import cwa115.trongame.Sensor.Gyroscope.GyroscopeDataHolder;
 import cwa115.trongame.Sensor.Location.CustomLocationListener;
 import cwa115.trongame.Sensor.Location.LocationObserver;
 import cwa115.trongame.Game.Map.Map;
@@ -109,6 +115,8 @@ public class GameActivity extends AppCompatActivity implements
     private double acceleration;                        // Cumulative acceleration
     private boolean isBellRinging;                      // Indicates the state of the bell
     private int bellCount;                              // Stores the amount of times a bell was detected
+    private int turns;                                  // Stores the amount of turns
+    private GameEvent currentEvent;                     // Stores the current event
 
     // Wall data
     private double holeSize = LatLngConversion.meterToLatLngDistance(50);
@@ -136,6 +144,13 @@ public class GameActivity extends AppCompatActivity implements
 
     public double getAcceleration() {
         return acceleration;
+    }
+
+    public int getTurns(){ return turns;}
+
+    public void resetTurns(){
+        turns = 0;
+        sensorDataObservable.resetSensorData(SensorFlag.GYROSCOPE);
     }
 
     public int getBellCount() {
@@ -168,6 +183,15 @@ public class GameActivity extends AppCompatActivity implements
         distanceView.setText(String.valueOf(Math.floor(travelledDistance)));
     }
 
+    public void setCurrentEvent(GameEvent event){
+        this.currentEvent = event;
+        findViewById(R.id.eventContainer).setVisibility(View.VISIBLE);
+    }
+    public void stopCurrentEvent(){
+        this.currentEvent = null;
+        findViewById(R.id.eventContainer).setVisibility(View.GONE);
+    }
+
     // endregion
 
     // endregion
@@ -195,6 +219,7 @@ public class GameActivity extends AppCompatActivity implements
         // -----------------------------------------------------------------------------------------
         // Initialize sensorDataObservable and proximityObserver
         acceleration = 0;
+        turns = 0;
         sensorDataObservable = new SensorDataObservable(this);
         isBellRinging = false;
 
@@ -296,6 +321,7 @@ public class GameActivity extends AppCompatActivity implements
                 if (observable != sensorDataObservable)
                     return;
 
+                sensorDataObservable.resetSensorData(SensorFlag.PROXIMITY);// This was moved from within SensorDataObservable
                 if (GameSettings.getCanBreakWall())
                     breakWall(null);       // Activiate break wall button
             }
@@ -326,6 +352,9 @@ public class GameActivity extends AppCompatActivity implements
                     HorizontalAccelerationDataHolder holder = (HorizontalAccelerationDataHolder) data;
                     acceleration += holder.getAccelerationMagnitude();
                 }
+                if(currentEvent!=null && currentEvent instanceof ShowOffEvent){
+                    ((TextView)findViewById(R.id.eventValue)).setText(getString(R.string.show_off_event_text).replaceAll("%value",""+acceleration));
+                }
             }
 
             /**
@@ -334,6 +363,28 @@ public class GameActivity extends AppCompatActivity implements
             @Override
             public int getCountLimit() {
                 return -1;
+            }
+        });
+        // Listen to gyroscope
+        sensorDataObservable.startSensorTracking(SensorFlag.GYROSCOPE, new SensorDataObserver() {
+            @Override
+            public void updateSensor(SensorDataObservable observable, Object data) {
+                // Check whether it was the proximity sensor that detected something
+                if (observable != sensorDataObservable)
+                    return;
+
+                if(data instanceof GyroscopeDataHolder) {
+                    GyroscopeDataHolder holder = (GyroscopeDataHolder) data;
+                    turns = holder.getCount();
+                }
+                if(currentEvent!=null && currentEvent instanceof TurnEvent){
+                    ((TextView)findViewById(R.id.eventValue)).setText(getString(R.string.turn_event_text).replaceAll("%value",""+turns));
+                }
+            }
+
+            @Override
+            public int getCountLimit() {
+                return 1;
             }
         });
 
@@ -946,6 +997,10 @@ public class GameActivity extends AppCompatActivity implements
             gpsLoc = newGpsLoc;
             height = location.getAltitude();
 
+            if(currentEvent!=null && currentEvent instanceof KingOfHillEvent){
+                ((TextView)findViewById(R.id.eventValue)).setText(getString(R.string.king_of_hill_event_text).replaceAll("%value",""+height));
+            }
+
             // Create a PendingResult object
             // This is used by the snappedPointHandler to snap the provided points to the road
             PendingResult<SnappedPoint[]> req = RoadsApi.snapToRoads(
@@ -970,6 +1025,10 @@ public class GameActivity extends AppCompatActivity implements
         isBellRinging = true;
         gameUpdateHandler.sendBellSound(GameSettings.getPlayerId());
         bellCount += 1;
+
+        if(currentEvent!=null && currentEvent instanceof BellEvent){
+            ((TextView)findViewById(R.id.eventValue)).setText(getString(R.string.bell_event_text).replaceAll("%value",""+bellCount));
+        }
 
         // After 3 seconds, disable the bell.
         new Handler().postDelayed(new Runnable() {

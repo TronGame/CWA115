@@ -27,6 +27,8 @@ public interface GameEvent {
      */
     public String getNotification(GameActivity gameActivity);
 
+    public String getEventValue(GameActivity gameActivity, double score);
+
     /**
      * Setup the event
      * @param gameActivity The game activity

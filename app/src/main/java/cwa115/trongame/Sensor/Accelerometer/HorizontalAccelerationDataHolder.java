@@ -20,7 +20,7 @@ public class HorizontalAccelerationDataHolder extends SensorDataHolder { // Hori
     }
 
     @Override
-    protected boolean isUsefulNewData(float[] lastSensorData, SensorEvent newSensorEvent) {
+    protected boolean isUsefulNewData(float[] lastSensorData, float[] lastUsefulSensorData, SensorEvent newSensorEvent) {
         if(lastSensorData == null) return true;
         if(newSensorEvent == null || newSensorEvent.values == null) return false;
 

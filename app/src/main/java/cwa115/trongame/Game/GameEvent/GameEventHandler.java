@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import cwa115.trongame.Game.GameEvent.Events.TurnEvent;
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.GameActivity;
 import cwa115.trongame.Game.GameEvent.Events.BellEvent;
@@ -29,7 +30,7 @@ public class GameEventHandler {
     private static final int MAX_EVENT_DELAY = 5*60;
 
     public static final String[] eventTypes = {
-            KingOfHillEvent.EVENT_TYPE, ShowOffEvent.EVENT_TYPE, BellEvent.EVENT_TYPE
+            KingOfHillEvent.EVENT_TYPE, ShowOffEvent.EVENT_TYPE, BellEvent.EVENT_TYPE, TurnEvent.EVENT_TYPE
     };
 
     private EventUpdateHandler eventUpdateHandler;          // Handles the socket functionality
@@ -74,6 +75,8 @@ public class GameEventHandler {
                 return new ShowOffEvent();
             case BellEvent.EVENT_TYPE:
                 return new BellEvent();
+            case TurnEvent.EVENT_TYPE:
+                return new TurnEvent();
             default:
                 return null;
         }
@@ -142,6 +145,7 @@ public class GameEventHandler {
                 if (gameActivity.isAlive) {
                     JSONObject result = currentEvent.collectData(gameActivity);
                     eventUpdateHandler.sendEventResult(GameSettings.getUserId(), result);
+                    gameActivity.stopCurrentEvent();
                 }
 
                 // The owner must process the results
@@ -176,6 +180,7 @@ public class GameEventHandler {
                 currentEvent = getEvent(eventType);
                 currentEvent.startEvent(gameActivity);
                 String notification = currentEvent.getNotification(gameActivity);
+                gameActivity.setCurrentEvent(currentEvent);
                 gameActivity.showNotification(notification, Toast.LENGTH_LONG);
             } else {
                 Toast.makeText(gameActivity, "Might be listening on wrong channel", Toast.LENGTH_SHORT).show();

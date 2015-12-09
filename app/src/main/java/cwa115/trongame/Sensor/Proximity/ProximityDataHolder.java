@@ -23,7 +23,7 @@ public class ProximityDataHolder extends SensorDataHolder {
     }
 
     @Override
-    protected boolean isUsefulNewData(float[] lastSensorData, SensorEvent newSensorEvent) {
+    protected boolean isUsefulNewData(float[] lastSensorData, float[] lastUsefulSensorData, SensorEvent newSensorEvent) {
         float[] newSensorData = newSensorEvent.values;
         //float proximityLimit = newSensorEvent.sensor.getMaximumRange() / 2;
 

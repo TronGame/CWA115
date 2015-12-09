@@ -47,7 +47,12 @@ public class BellEvent implements GameEvent {
      * @return The message that has to be showed on the screen
      */
     public String getNotification(GameActivity gameActivity) {
-        return gameActivity.getString(R.string.bell_event_text).replaceAll("%time", ""+TIME/60);
+        return gameActivity.getString(R.string.bell_notification_text).replaceAll("%time", ""+TIME/60);
+    }
+
+    @Override
+    public String getEventValue(GameActivity gameActivity, double score){
+        return gameActivity.getString(R.string.bell_event_text).replaceAll("%value", ""+score);
     }
 
     public void startEvent(GameActivity gameActivity) {

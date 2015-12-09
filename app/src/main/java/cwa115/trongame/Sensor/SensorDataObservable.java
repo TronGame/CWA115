@@ -171,7 +171,7 @@ public class SensorDataObservable implements SensorEventListener {// Not extendi
             for (SensorDataObserver o : observers.get(changedSensor)) {
                 if (o.getCountLimit() <= holder.getCount()) {
                     o.updateSensor(this, holder);// Update observers if limit is exceeded
-                    holder.reset();
+                    //holder.reset();
                 }
             }
         }

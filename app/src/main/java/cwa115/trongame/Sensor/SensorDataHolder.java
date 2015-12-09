@@ -9,6 +9,7 @@ public abstract class SensorDataHolder {
 
     //private DataQueue<float[]> lastData;
     private float[] lastData;
+    private float[] lastUsefulData;
     private int usefulDataCount;
 
     /*public SensorDataHolder(int dataSize){
@@ -25,8 +26,10 @@ public abstract class SensorDataHolder {
      * @return The (updated) value of usefulDataCount
      */
     public int pushNewData(SensorEvent sensorEvent){
-        if(isUsefulNewData(lastData, sensorEvent))
+        if(isUsefulNewData(lastData, lastUsefulData, sensorEvent)) {
             usefulDataCount++;
+            lastUsefulData = sensorEvent.values.clone();
+        }
         //lastData.offer(sensorEvent.values.clone());
         lastData = sensorEvent.values.clone();
         return usefulDataCount;
@@ -38,6 +41,7 @@ public abstract class SensorDataHolder {
     public void reset(){
         //lastData.clear();
         lastData = new float[3];
+        lastUsefulData = new float[3];
         clearUsefulDataCount();
     }
 
@@ -62,7 +66,7 @@ public abstract class SensorDataHolder {
      * @param newEvent SensorEvent containing the newly pushed sensorData and information
      * @return boolean determining whether the newSensorData is useful or not
      */
-    protected abstract boolean isUsefulNewData(float[] lastSensorData, SensorEvent newEvent);
+    protected abstract boolean isUsefulNewData(float[] lastSensorData, float[] lastUsefulSensorData, SensorEvent newEvent);
     //protected abstract boolean isUsefulNewData(DataQueue<float[]> lastSensorData, SensorEvent newEvent);
 
     /**
