@@ -41,7 +41,7 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
     public final static String FROM_NOTIFICATION_EXTRA = "friendsListActivity_fromNotificationExtra";
 
     private HttpConnector dataServer;
-    private boolean selectable;
+    private boolean selectable, shouldExitSafely;
     private Profile profile;
     private List<FriendListItem> friendListItems;
     private FriendListAdapter adapter;
@@ -79,6 +79,8 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
         profile = data.getParcelable(PROFILE_EXTRA);
         if(profile==null || profile.getId()==null || profile.getToken()==null)
             finish();
+
+        shouldExitSafely = data.getBoolean(RoomActivity.FROM_ROOMACTIVITY_EXTRA, false);
 
         // Initialize server connection
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
@@ -121,11 +123,18 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
     @Override
     protected void onPause(){
         super.onPause();
+        if(shouldExitSafely){
+            // We are leaving the entire application (probably user pressed home button) OR GameActivity is launched:
+            //RoomActivity.StaticSafeExit(dataServer);
+            RoomActivity.roomUpdater.cancel();// Cancel updater before proceeding
+        }
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // We are going back without leaving the entire application, so RoomActivity will handle the safeExit
+            shouldExitSafely = false;
             cancel();
             return true;
         }

@@ -49,6 +49,7 @@ public class ProfileActivity extends AppCompatActivity {
     private List<StatsListItem> statsList;
     private StatsCustomAdapter statsCustomAdapter;
     private int currentState;
+    private boolean shouldExitSafely;
 
     private ImageView profileImageView, facebookFlag;
     private TextView usernameTextView;
@@ -64,6 +65,7 @@ public class ProfileActivity extends AppCompatActivity {
         Intent i = getIntent();
         Bundle data = i.getBundleExtra(DATA_EXTRA);
         profile = data.getParcelable(PROFILE_EXTRA);
+        shouldExitSafely = data.getBoolean(RoomActivity.FROM_ROOMACTIVITY_EXTRA, false);
 
         // Dataserver reference
         dataServer = new HttpConnector(getString(R.string.dataserver_url));
@@ -107,12 +109,18 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onPause(){
         super.onPause();
+        if(shouldExitSafely){
+            // We are leaving the entire application (probably user pressed home button) OR GameActivity is launched:
+            //RoomActivity.StaticSafeExit(dataServer);
+            RoomActivity.roomUpdater.cancel();// Cancel updater before proceeding
+        }
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            // Do stuff
+            // We are going back without leaving the entire application, so RoomActivity will handle the safeExit
+            shouldExitSafely = false;
             finish();
             return true;
         }

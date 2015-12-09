@@ -8,6 +8,7 @@ import android.os.Message;
 import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
@@ -16,7 +17,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.games.Game;
 import com.google.common.collect.ImmutableMap;
 
 import org.json.JSONArray;
@@ -24,7 +24,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -35,19 +34,23 @@ import cwa115.trongame.Lists.RoomCustomAdapter;
 import cwa115.trongame.Lists.RoomListItem;
 import cwa115.trongame.Network.Server.HttpConnector;
 import cwa115.trongame.Network.Server.ServerCommand;
+import cwa115.trongame.User.Profile;
 import cwa115.trongame.Utils.PopUp;
 
 public class RoomActivity extends AppCompatActivity
         implements PopUp.NoticeDialogListener{
 
+    public final static String FROM_ROOMACTIVITY_EXTRA = "roomActivity_fromRoomActivityExtra";
+
     private final static int ROOM_LIST_REFRESH_TIME = 1000;
     private final static int FRIEND_LIST_REQUEST_CODE = 1;
+    private final static int PROFILE_REQUEST_CODE = 2;
 
     private HttpConnector dataServer;
-    private Timer roomUpdater;
+    public static Timer roomUpdater;
     private Handler roomHandler;
     private List<Integer> listOfColors;
-    private boolean hasStarted;
+    private boolean hasStarted, keepUpdating;
     private int selectedPlayerId;
     private String selectedPlayerName;
 
@@ -71,29 +74,33 @@ public class RoomActivity extends AppCompatActivity
         listOfColors = colorListMaker();
         roomUpdater = new Timer();
         hasStarted = false;
+        keepUpdating = false;
     }
 
 
     @Override
     protected void onResume(){
         super.onResume();
-        roomHandler = new Handler() {
-            public void handleMessage(Message msg) {
-                listPlayers();
-            }
-        };
+        if(roomHandler==null)
+            roomHandler = new Handler() {
+                public void handleMessage(Message msg) {
+                    listPlayers();
+                }
+            };
+        roomUpdater.cancel();
         roomUpdater = new Timer();
         roomUpdater.scheduleAtFixedRate(new TimerTask() {
-            public void run() {
-                roomHandler.sendMessage(new Message());
-            }
+                public void run() {
+                    roomHandler.sendMessage(new Message());
+                }
         }, 0, ROOM_LIST_REFRESH_TIME);
     }
 
     @Override
     protected void onPause(){
         super.onPause();
-        roomUpdater.cancel();
+        if(!keepUpdating)// Keep updating if we go to FriendsList or ProfileActivity
+            roomUpdater.cancel();
     }
 
     @Override
@@ -123,6 +130,9 @@ public class RoomActivity extends AppCompatActivity
                             }
                         });
             }
+            keepUpdating = false;
+        }else if(requestCode==PROFILE_REQUEST_CODE){
+            keepUpdating = false;
         }
     }
 
@@ -144,7 +154,7 @@ public class RoomActivity extends AppCompatActivity
     }
 
     public void listPlayers(){
-
+        Log.d("RoomActivity", "listPlayers called");
         dataServer.sendRequest(
                 ServerCommand.SHOW_GAME,
                 ImmutableMap.of("gameId", String.valueOf(GameSettings.getGameId())),
@@ -174,22 +184,35 @@ public class RoomActivity extends AppCompatActivity
                             }
 
                             ListView lobbyList = (ListView) findViewById(R.id.room_list);
-                            RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames);
+                            int ownerId = result.getInt("ownerId");
+                            RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames, ownerId, new RoomCustomAdapter.Callback() {
+                                @Override
+                                public void OnPlayerKick(int playerId, String playerName) {
+                                    selectedPlayerName = playerName;
+                                    selectedPlayerId = playerId;
+                                    if(playerId == GameSettings.getUserId())
+                                        ownerKick();// This won't happen anymore though
+                                    else
+                                        showNoticeDialog();
+                                }
+                            });
                             lobbyList.setAdapter(adapter);
-                            if (GameSettings.isOwner()) {
-                                lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                                    public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
-                                        RoomListItem clickedItem = listOfPlayerNames.get(position);
-                                        selectedPlayerName = clickedItem.getPlayerName();
-                                        selectedPlayerId = clickedItem.getPlayerId();
-                                        if (selectedPlayerId == GameSettings.getUserId()) {
-                                            ownerKick();
-                                        } else {
-                                            showNoticeDialog();
-                                        }
-                                    }
-                                });
-                            }
+                            lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                                public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
+                                    RoomListItem clickedItem = listOfPlayerNames.get(position);
+                                    selectedPlayerName = clickedItem.getPlayerName();
+
+                                    keepUpdating = true;
+                                    Bundle data = new Bundle();
+                                    data.putParcelable(ProfileActivity.PROFILE_EXTRA, new Profile(clickedItem.getPlayerId(), null));
+                                    data.putBoolean(FROM_ROOMACTIVITY_EXTRA, true);
+
+                                    Intent intent = new Intent(getBaseContext(), ProfileActivity.class);
+                                    intent.putExtra(ProfileActivity.DATA_EXTRA, data);
+
+                                    startActivityForResult(intent, PROFILE_REQUEST_CODE);
+                                }
+                            });
                         } catch (JSONException e) {
                             gameDeleted();
                         }
@@ -207,7 +230,11 @@ public class RoomActivity extends AppCompatActivity
         safeExit(); // Probably game was deleted
     }
 
-    public void safeExit() {
+    public void safeExit(){
+        StaticSafeExit(dataServer);
+        finish();
+    }
+    public static void StaticSafeExit(HttpConnector dataServer) {
         GameSettings.setGameId(0);
         GameSettings.setGameName(null);
         GameSettings.setGameToken(null);
@@ -254,7 +281,6 @@ public class RoomActivity extends AppCompatActivity
                 }
             });
         }
-        finish();
     }
 
     public List<Integer> colorListMaker() {
@@ -326,9 +352,9 @@ public class RoomActivity extends AppCompatActivity
                             JSONArray players = result.getJSONArray("players");
 
                             if (players.length() > GameSettings.getMaxPlayers()) {
-                                onToManyPlayers();
+                                onTooManyPlayers();
                             // } else if (players.length() < 2) {
-                            //     onToFewPlayers(); TODO uncomment this
+                            //     onTooLittlePlayers(); TODO uncomment this
                             } else {
                                 ArrayList<Integer> listOfPlayerIds = new ArrayList<>();
                                 for (int i = 0; i < players.length(); i++) {
@@ -362,11 +388,11 @@ public class RoomActivity extends AppCompatActivity
                 });
     }
 
-    public void onToManyPlayers() {
+    public void onTooManyPlayers() {
         Toast.makeText(this, R.string.too_many_players, Toast.LENGTH_SHORT).show();
     }
 
-    public void onToFewPlayers() {
+    public void onTooLittlePlayers() {
         Toast.makeText(this, R.string.too_little_players, Toast.LENGTH_SHORT).show();
     }
 
@@ -380,6 +406,7 @@ public class RoomActivity extends AppCompatActivity
         Intent intent = new Intent(this, FriendsListActivity.class);
         intent.putExtra(FriendsListActivity.DATA_EXTRA, data);
 
+        keepUpdating = true;
         startActivityForResult(intent, FRIEND_LIST_REQUEST_CODE);
     }
 
