@@ -368,8 +368,10 @@ public class GameActivity extends AppCompatActivity implements
 
         // Set start time (in order to measure total playtime)
         startTime = System.currentTimeMillis();
-        // Set the amount of players that are alive
-        playersAliveCount = GameSettings.getPlayersInGame().size();
+        if (GameSettings.isOwner())
+            // Set the amount of players that are alive
+            playersAliveCount = GameSettings.getPlayersInGame().size();
+
         // Set the initial location
         mapCenter = startPos;
         if (GameSettings.getMaxDistance() > 0)
@@ -505,9 +507,9 @@ public class GameActivity extends AppCompatActivity implements
             gameUpdateHandler.sendMyLocation(gpsLoc);
 
             if (isAlive) {
-                onDeath("", ""); // TODO killPlayer?
                 // Show the "player to far from road" notification
                 showNotification(getString(R.string.road_too_far), Toast.LENGTH_SHORT);
+                onDeath("", "");
             }
         }
 
@@ -612,6 +614,14 @@ public class GameActivity extends AppCompatActivity implements
         if (IMMORTAL)
             return;
 
+        if (GameSettings.isOwner()) {
+            // There is one less player alive now
+            playersAliveCount -= 1;
+            // If there is only one player left : end the game
+            if (playersAliveCount <= 1)
+                endGame();
+        }
+
         // Hide all wall controls
         Button breakWallButton = (Button) findViewById(R.id.breakWallButton);
         breakWallButton.setVisibility(View.GONE);
@@ -634,11 +644,13 @@ public class GameActivity extends AppCompatActivity implements
      * @param killerName The name of the killer
      */
     public void playerDied(String playerName, String killerId, String killerName) {
-        // There is one less player alive now
-        playersAliveCount -= 1;
-        // If there is only one player left : end the game
-        if (!IMMORTAL && GameSettings.isOwner() &&playersAliveCount <= 1)
-            endGame();
+        if (GameSettings.isOwner()) {
+            // There is one less player alive now
+            playersAliveCount -= 1;
+            // If there is only one player left : end the game
+            if (!IMMORTAL && playersAliveCount <= 1)
+                endGame();
+        }
 
         if (killerId.equals("")) {
             // The player died because he went to far from the road
