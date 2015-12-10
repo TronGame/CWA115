@@ -813,7 +813,7 @@ public class GameActivity extends AppCompatActivity implements
                     ImmutableMap.of(
                             "id", GameSettings.getPlayerId(),
                             "token", GameSettings.getPlayerToken(),
-                            "highscore", String.valueOf(Math.round(playerScores.get(GameSettings.getPlayerId())))),
+                            "highscore", String.valueOf(Math.round(travelledDistance))),
                     new HttpConnector.Callback() {
                         @Override
                         public void handleResult(String data) {

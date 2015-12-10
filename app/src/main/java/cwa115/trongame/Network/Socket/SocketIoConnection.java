@@ -4,6 +4,7 @@ package cwa115.trongame.Network.Socket;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -103,6 +104,7 @@ public class SocketIoConnection implements Handler.Callback {
     public boolean handleMessage(Message msg) {
         try {
             JSONObject message = new JSONObject(msg.getData().getString(BUNDLE_MESSAGE_KEY));
+            Log.d("Socket", message.toString());
             for (SocketIoHandler socketIoHandler: onReceiveHandlers)
                 socketIoHandler.onMessage(message);
             return true;
