@@ -47,7 +47,7 @@ import cwa115.trongame.Game.GameEvent.Events.TurnEvent;
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Game.GameUpdateHandler;
 import cwa115.trongame.Game.GameEvent.GameEventHandler;
-import cwa115.trongame.Network.OldApi.ApiListener;
+import cwa115.trongame.Network.GoogleMapsApi.ApiListener;
 import cwa115.trongame.Network.GoogleMapsApi.SnappedPointHandler;
 import cwa115.trongame.Sensor.Gyroscope.GyroscopeDataHolder;
 import cwa115.trongame.Sensor.Location.CustomLocationListener;
