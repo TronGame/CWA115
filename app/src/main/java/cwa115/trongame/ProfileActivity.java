@@ -49,8 +49,9 @@ public class ProfileActivity extends AppCompatActivity {
     private Profile profile;
     private List<StatsListItem> statsList;
     private StatsCustomAdapter statsCustomAdapter;
-    private int currentState;
+    private int currentState, numberFriends;
     private boolean shouldExitSafely, editable;
+    private String lastAddedFriendName, mostPopularFriendName;
 
     private ImageView profileImageView, facebookFlag;
     private TextView usernameTextView;
@@ -138,6 +139,7 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void loadProfile(){
+        numberFriends = 0;
         usernameTextView.setText(profile.getName());
 
         if(profile.getId()==GameSettings.getUserId())
@@ -169,15 +171,24 @@ public class ProfileActivity extends AppCompatActivity {
 
         if(profile.getFriends()!=null && profile.getFriends().size()>0){
             // Get last added friend name and most popular friend name:
-            Friend firstFriend = profile.getFriends().get(0);
-            int mostCommonPlays = firstFriend.getCommonPlays();
-            long mostCommonPlaysFriendId = firstFriend.getId();
+            int mostCommonPlays = -1;
+            long mostCommonPlaysFriendId = -1;
+            long lastAddedFriendId = -1;
             for(Friend friend : profile.getFriends()){
-                if(friend.getCommonPlays()>mostCommonPlays)
-                    mostCommonPlaysFriendId = friend.getId();
+                if(!friend.isPending()) {
+                    if (lastAddedFriendId == -1)
+                        lastAddedFriendId = friend.getId();
+                    if (friend.getCommonPlays() > mostCommonPlays) {
+                        mostCommonPlaysFriendId = friend.getId();
+                        mostCommonPlays = friend.getCommonPlays();
+                    }
+                    numberFriends++;
+                }
             }
             // First friend is last added friend
-            getFriendNamesAndLoadStats(firstFriend.getId(), mostCommonPlaysFriendId);
+            lastAddedFriendName = null;
+            mostPopularFriendName = null;
+            getFriendNamesAndLoadStats(lastAddedFriendId, mostCommonPlaysFriendId);
         }else
             loadStats("/", "/");// Load stats without friend names
     }
@@ -215,54 +226,68 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void getFriendNamesAndLoadStats(long lastAddedFriendId, final long mostPopularFriendId){
-        Profile.Load(
-                dataServer,
-                (int) lastAddedFriendId,
-                null,
-                new Profile.LoadCallback() {
-                    @Override
-                    public void onProfileLoaded(Profile profile) {
-                        final String lastAddedFriendName = profile.getName() == null ? "/" : profile.getName();
+        if(lastAddedFriendId!=-1) {
+            Profile.Load(
+                    dataServer,
+                    (int) lastAddedFriendId,
+                    null,
+                    new Profile.LoadCallback() {
+                        @Override
+                        public void onProfileLoaded(Profile profile) {
+                            lastAddedFriendName = profile.getName() == null ? "/" : profile.getName();
+                            if(mostPopularFriendName!=null)
+                                loadStats(lastAddedFriendName, mostPopularFriendName);
+                        }
 
-                        Profile.Load(
-                                dataServer,
-                                (int) mostPopularFriendId,
-                                null,
-                                new Profile.LoadCallback() {
-                                    @Override
-                                    public void onProfileLoaded(Profile profile) {
-                                        String mostPopularFriendName = profile.getName() == null ? "/" : profile.getName();
-                                        loadStats(lastAddedFriendName, mostPopularFriendName);
-                                    }
+                        @Override
+                        public void onProfileNotFound(int id, String token) {
+                            showToast("Last added friend's profile not found");
+                            lastAddedFriendName = "/";
+                            if(mostPopularFriendName!=null)
+                                loadStats("/", mostPopularFriendName);
+                        }
 
-                                    @Override
-                                    public void onProfileNotFound(int id, String token) {
-                                        showToast("Most popular friend's profile not found");
-                                        loadStats(lastAddedFriendName, "/");
-                                    }
-
-                                    @Override
-                                    public void onError(Exception e) {
-                                        showToast("Error while trying to get most popular friend's name");
-                                        loadStats(lastAddedFriendName, "/");
-                                    }
-                                }
-                        );
+                        @Override
+                        public void onError(Exception e) {
+                            showToast("Error while trying to get last added friend's name");
+                            lastAddedFriendName = "/";
+                            if(mostPopularFriendName!=null)
+                                loadStats("/", mostPopularFriendName);
+                        }
                     }
+            );
+        }
+        if(mostPopularFriendId!=-1){
+            Profile.Load(
+                    dataServer,
+                    (int) mostPopularFriendId,
+                    null,
+                    new Profile.LoadCallback() {
+                        @Override
+                        public void onProfileLoaded(Profile profile) {
+                            mostPopularFriendName = profile.getName() == null ? "/" : profile.getName();
+                            if(lastAddedFriendName!=null)
+                                loadStats(lastAddedFriendName, mostPopularFriendName);
+                        }
 
-                    @Override
-                    public void onProfileNotFound(int id, String token) {
-                        showToast("Last added friend's profile not found");
-                        loadStats("/", "/");
-                    }
+                        @Override
+                        public void onProfileNotFound(int id, String token) {
+                            showToast("Most popular friend's profile not found");
+                            mostPopularFriendName = "/";
+                            if(lastAddedFriendName!=null)
+                                loadStats(lastAddedFriendName, "/");
+                        }
 
-                    @Override
-                    public void onError(Exception e) {
-                        showToast("Error while trying to get last added friend's name");
-                        loadStats("/", "/");
+                        @Override
+                        public void onError(Exception e) {
+                            showToast("Error while trying to get most popular friend's name");
+                            mostPopularFriendName = "/";
+                            if(lastAddedFriendName!=null)
+                                loadStats(lastAddedFriendName, "/");
+                        }
                     }
-                }
-        );
+            );
+        }
     }
 
     private void loadStats(String lastAddedFriend, String mostPopularFriend){
@@ -271,7 +296,6 @@ public class ProfileActivity extends AppCompatActivity {
         double totalPlays = wins+losses;
         String winRatio = totalPlays==0 ? "" : " (" + Math.round((double)wins/totalPlays*100) + "%)";
         String lossRatio = totalPlays==0 ? "" : " (" + Math.round((double)losses/totalPlays*100) + "%)";
-        int numberFriends = (profile.getFriends()==null) ? 0 : profile.getFriends().size();
         statsList = new ArrayList<>();
         statsList.add(new StatsListItem("Global Stats"));
         statsList.add(new StatsListItem("Total wins",wins + winRatio));
@@ -282,7 +306,7 @@ public class ProfileActivity extends AppCompatActivity {
             statsList.add(new StatsListItem("Social Stats"));
             statsList.add(new StatsListItem("Most popular friend", mostPopularFriend));
             statsList.add(new StatsListItem("Number of friends", String.valueOf(numberFriends)));
-            statsList.add(new StatsListItem("Last added friend", lastAddedFriend));// TODO: sort friends so last added one is the first in the list
+            statsList.add(new StatsListItem("Last added friend", lastAddedFriend));
         }
         statsList.add(new StatsListItem("Achievements"));
         statsList.add(new StatsListItem("Coming soon...",""));
