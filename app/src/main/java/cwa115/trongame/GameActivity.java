@@ -24,7 +24,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.games.Game;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -39,30 +38,28 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import cwa115.trongame.Game.GameEvent.Events.BellEvent;
 import cwa115.trongame.Game.GameEvent.Events.GameEvent;
 import cwa115.trongame.Game.GameEvent.Events.KingOfHillEvent;
 import cwa115.trongame.Game.GameEvent.Events.ShowOffEvent;
 import cwa115.trongame.Game.GameEvent.Events.TurnEvent;
+import cwa115.trongame.Game.GameEvent.GameEventHandler;
 import cwa115.trongame.Game.GameSettings;
 import cwa115.trongame.Game.GameUpdateHandler;
-import cwa115.trongame.Game.GameEvent.GameEventHandler;
-import cwa115.trongame.Network.GoogleMapsApi.ApiListener;
-import cwa115.trongame.Network.GoogleMapsApi.SnappedPointHandler;
-import cwa115.trongame.Sensor.Gyroscope.GyroscopeDataHolder;
-import cwa115.trongame.Sensor.Location.CustomLocationListener;
-import cwa115.trongame.Sensor.Location.LocationObserver;
 import cwa115.trongame.Game.Map.Map;
 import cwa115.trongame.Game.Map.Player;
 import cwa115.trongame.Game.Map.Wall;
+import cwa115.trongame.Network.GoogleMapsApi.ApiListener;
+import cwa115.trongame.Network.GoogleMapsApi.SnappedPointHandler;
 import cwa115.trongame.Network.Server.HttpConnector;
 import cwa115.trongame.Network.Server.ServerCommand;
 import cwa115.trongame.Network.Socket.SocketIoConnection;
-import cwa115.trongame.Sensor.Frequency.FrequencyListener;
 import cwa115.trongame.Sensor.Accelerometer.HorizontalAccelerationDataHolder;
+import cwa115.trongame.Sensor.Frequency.FrequencyListener;
+import cwa115.trongame.Sensor.Gyroscope.GyroscopeDataHolder;
+import cwa115.trongame.Sensor.Location.CustomLocationListener;
+import cwa115.trongame.Sensor.Location.LocationObserver;
 import cwa115.trongame.Sensor.SensorDataObservable;
 import cwa115.trongame.Sensor.SensorDataObserver;
 import cwa115.trongame.Sensor.SensorFlag;
@@ -823,7 +820,8 @@ public class GameActivity extends AppCompatActivity implements
      * @param score The score of the player
      */
     public void storePlayerScore(String playerId, double score) {
-        playerScores.put(playerId, score);
+        if(playerScores != null) // Avoid crash when start button is pressed too soon
+            playerScores.put(playerId, score);
     }
 
     /**
