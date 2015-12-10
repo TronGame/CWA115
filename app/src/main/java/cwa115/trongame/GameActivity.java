@@ -807,7 +807,7 @@ public class GameActivity extends AppCompatActivity implements
 
     public void onEndGame() {
         // The host updates the high scores
-        if(playerScores.get(GameSettings.getPlayerId())>GameSettings.getProfile().getHighscore()){
+        if(travelledDistance>GameSettings.getProfile().getHighscore()){
             dataServer.sendRequest(
                     ServerCommand.SET_HIGHSCORE,
                     ImmutableMap.of(
