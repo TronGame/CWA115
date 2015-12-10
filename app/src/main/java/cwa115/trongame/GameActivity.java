@@ -956,9 +956,6 @@ public class GameActivity extends AppCompatActivity implements
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
 
-        // Stop the socket
-        connection.pause();
-
         // Close the GameActivity
         finish();
     }
@@ -1070,6 +1067,9 @@ public class GameActivity extends AppCompatActivity implements
         super.onStop();
         if (gameEventHandler != null)
             gameEventHandler.stop();
+
+        // Stop the socket
+        connection.pause();
     }
 
     // endregion    
