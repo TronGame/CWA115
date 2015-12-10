@@ -23,6 +23,7 @@ import cwa115.trongame.Network.Server.ServerCommand;
 public class HostingActivity extends AppCompatActivity {
 
     HttpConnector dataServer;
+    private boolean createdGame = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +33,10 @@ public class HostingActivity extends AppCompatActivity {
 
     }
     public void showRoomActivity(View view) {
+        if (createdGame)
+            return;
+        createdGame = true;
+
         EditText nameBox = (EditText) findViewById(R.id.game_name);
         final String gameName = nameBox.getText().toString();
         final int maxPlayers = getMaxPlayers();
