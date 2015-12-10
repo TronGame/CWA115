@@ -50,7 +50,7 @@ public class LobbyCustomAdapter extends BaseAdapter {
         host.setText(entry.getHost());
 
         TextView players = (TextView) convertView.findViewById(R.id.nb_players);
-        players.setText(entry.getPlayers());
+        players.setText(entry.getMaxPlayers());
 
         return convertView;
     }

@@ -157,6 +157,7 @@ public class LobbyActivity extends AppCompatActivity {
                         newRoom.getString("ownerName"),
                         newRoom.getInt("owner"),
                         newRoom.getInt("maxPlayers"),
+                        newRoom.getInt("playerCount"),
                         (newRoom.getInt("canBreakWall") == 1),
                         newRoom.getInt("timeLimit"),
                         newRoom.getDouble("maxDist")
@@ -200,6 +201,11 @@ public class LobbyActivity extends AppCompatActivity {
     }
 
     private void joinGame(LobbyListItem item){
+        if (item.getPlayerCount() > item.getMaxPlayersAsInteger()) {
+            Toast.makeText(this, getString(R.string.too_many_players), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String gameName = item.getGamename();
 
         GameSettings.setGameName(gameName);
@@ -208,7 +214,7 @@ public class LobbyActivity extends AppCompatActivity {
         GameSettings.setCanBreakWall(item.getCanBreakWall());
         GameSettings.setTimeLimit(item.getTimeLimit());
         GameSettings.setMaxDistance(item.getMaxDist());
-        GameSettings.setMaxPlayers(item.getPlayersAsInteger());
+        GameSettings.setMaxPlayers(item.getMaxPlayersAsInteger());
         GameSettings.setSpectate(checkBoxView.isChecked());
         showToast(R.string.joinging_message, gameName);
 

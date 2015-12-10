@@ -8,15 +8,17 @@ public class LobbyListItem {
     private boolean canBreakWalls;
     private int timeLimit;
     private double maxDist;
+    private int playerCount;
 
     // Constructor for the LobbyListItem class
-    public LobbyListItem(String name, String host, int hostId, int maxPlayers, boolean canBreakWalls, int timeLimit, double maxDist) {
+    public LobbyListItem(String name, String host, int hostId, int maxPlayers, int playerCount, boolean canBreakWalls, int timeLimit, double maxDist) {
         super();
         this.gamename = name;
         this.host = host;
         this.hostId = hostId;
         this.canBreakWalls = canBreakWalls;
         this.timeLimit = timeLimit;
+        this.playerCount = playerCount;
         this.players = maxPlayers;
         this.maxDist = maxDist;
     }
@@ -42,13 +44,13 @@ public class LobbyListItem {
     public void setHostId(int hostId) {
         this.hostId = hostId;
     }
-    public int getPlayersAsInteger() {
+    public int getMaxPlayersAsInteger() {
         return players;
     }
-    public String getPlayers() {
+    public String getMaxPlayers() {
         return Integer.toString(players);
     }
-    public void setPlayers(int players) {
+    public void setMaxPlayers(int players) {
         this.players = players;
     }
     public boolean getCanBreakWall() {return this.canBreakWalls;}
@@ -58,4 +60,5 @@ public class LobbyListItem {
     public double getMaxDist() {
         return maxDist;
     }
+    public int getPlayerCount() { return playerCount; }
 }
