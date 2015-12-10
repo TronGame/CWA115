@@ -331,16 +331,53 @@ public class Profile implements Parcelable{
     //endregion
 
     //region Getters
-    public Integer getId(){ return this.Id; }
-    public String getToken(){ return this.Token; }
-    public Long getFacebookId(){ return this.FacebookId; }
-    public String getName(){ return this.Name; }
-    public String getPictureUrl(){ return this.PictureUrl; }
-    public FriendList getFriends(){ return this.Friends; }
-    public Integer getWins(){ return this.Wins; }
-    public Integer getLosses(){ return this.Losses; }
-    public Integer getHighscore(){ return this.Highscore; }
-    public Integer getPlaytime(){ return this.Playtime; }
+    public Integer getId(){
+        return this.Id;
+    }
+
+    public String getToken(){
+        return this.Token;
+    }
+
+    public Long getFacebookId(){
+        return this.FacebookId;
+    }
+
+    public String getName(){
+        return this.Name;
+    }
+
+    public String getPictureUrl(){
+        return this.PictureUrl;
+    }
+
+    public FriendList getFriends(){
+        return this.Friends;
+    }
+
+    public Integer getWins(){
+        if (this.Wins == null)
+            return 0;
+        return this.Wins;
+    }
+
+    public Integer getLosses(){
+        if (this.Wins == null)
+            return 0;
+        return this.Losses;
+    }
+
+    public Integer getHighscore(){
+        if (this.Highscore == null)
+            return 0;
+        return this.Highscore;
+    }
+
+    public Integer getPlaytime(){
+        if (this.Playtime == null)
+            return 0;
+        return this.Playtime;
+    }
     //endregion
 
     //region Parcelling part
