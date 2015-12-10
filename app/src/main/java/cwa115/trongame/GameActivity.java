@@ -380,7 +380,7 @@ public class GameActivity extends AppCompatActivity implements
                     accelerationCount += 1;
                 }
                 if(currentEvent!=null && currentEvent instanceof ShowOffEvent){
-                    ((TextView)findViewById(R.id.eventValue)).setText(getString(R.string.show_off_event_text).replaceAll("%value",""+acceleration));
+                    ((TextView)findViewById(R.id.eventValue)).setText(getString(R.string.show_off_event_text).replaceAll("%value",""+Math.floor(acceleration)));
                 }
             }
 
@@ -405,7 +405,7 @@ public class GameActivity extends AppCompatActivity implements
                     turns = holder.getCount();
                 }
                 if(currentEvent!=null && currentEvent instanceof TurnEvent){
-                    ((TextView)findViewById(R.id.eventValue)).setText(getString(R.string.turn_event_text).replaceAll("%value",""+turns));
+                    ((TextView)findViewById(R.id.eventValue)).setText(getString(R.string.turn_event_text).replaceAll("%value",""+Math.floor(turns)));
                 }
             }
 
@@ -1063,8 +1063,9 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onDestroy() {
+        super.onDestroy();
+
         if (gameEventHandler != null)
             gameEventHandler.stop();
 
