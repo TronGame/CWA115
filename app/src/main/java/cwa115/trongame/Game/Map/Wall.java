@@ -12,7 +12,7 @@ import com.google.maps.model.SnappedPoint;
 import java.util.ArrayList;
 
 import cwa115.trongame.Game.GameSettings;
-import cwa115.trongame.Network.OldApi.ApiListener;
+import cwa115.trongame.Network.GoogleMapsApi.ApiListener;
 import cwa115.trongame.Network.GoogleMapsApi.SnappedPointHandler;
 import cwa115.trongame.Utils.LatLngConversion;
 import cwa115.trongame.Utils.Line;
