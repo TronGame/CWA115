@@ -15,7 +15,7 @@ import android.util.Log;
  */
 public class AppReceiver extends BroadcastReceiver {
 
-    private final static int REPEAT_MINUTES = 5;
+    private final static int REPEAT_MINUTES = 2;
     private final static int FIRE_DELAY_SECONDS = 30;
     private final static String TAG = "AppReceiver";
 
