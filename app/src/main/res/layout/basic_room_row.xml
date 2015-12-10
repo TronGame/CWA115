@@ -13,8 +13,8 @@
         android:id="@+id/roomPlayerName"/>
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:id="@+id/kick_player"
         android:layout_margin="5dp"
         android:visibility="gone"
