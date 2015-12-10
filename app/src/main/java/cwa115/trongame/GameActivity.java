@@ -24,6 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.games.Game;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -131,6 +132,7 @@ public class GameActivity extends AppCompatActivity implements
     // Game data
     private String winner;
     public boolean isAlive;
+    private boolean hasEnded;
     private int playersAliveCount;
     private HashMap<String, Double> playerScores;
 
@@ -493,6 +495,10 @@ public class GameActivity extends AppCompatActivity implements
         // Set the player to alive
         if (!GameSettings.getSpectate())
             isAlive = true;
+        else
+            isAlive = false;
+
+        hasEnded = false;
 
         showNotification(getString(R.string.game_started), Toast.LENGTH_SHORT);
     }
@@ -776,6 +782,10 @@ public class GameActivity extends AppCompatActivity implements
      * Is called by the host when either the time runs out or when there are no players left
      */
     public void endGame() {
+        if (hasEnded)
+            return;
+
+        hasEnded = true;
         // The host stores his own score and initializes all of the other scores to -1
         playerScores = new HashMap<>();
         for (Integer player : GameSettings.getPlayersInGame()) {
@@ -832,6 +842,13 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     public void onEndGame() {
+        if (!GameSettings.isOwner()) {
+            if (hasEnded)
+                return;
+
+            hasEnded = true;
+        }
+
         // The host updates the high scores
         if(travelledDistance>GameSettings.getProfile().getHighscore()){
             dataServer.sendRequest(
