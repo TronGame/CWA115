@@ -786,6 +786,7 @@ public class GameActivity extends AppCompatActivity implements
             return;
 
         hasEnded = true;
+
         // The host stores his own score and initializes all of the other scores to -1
         playerScores = new HashMap<>();
         for (Integer player : GameSettings.getPlayersInGame()) {
@@ -954,6 +955,9 @@ public class GameActivity extends AppCompatActivity implements
         Intent intent = new Intent(this, LobbyActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+
+        // Stop the socket
+        connection.pause();
 
         // Close the GameActivity
         finish();
