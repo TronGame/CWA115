@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
             callbackManager.onActivityResult(requestCode, resultCode, data);
         else if(requestCode==PROFILE_REQUEST_CODE) {
             if (resultCode == RESULT_OK && data.getBooleanExtra(ProfileActivity.DELETE_ACCOUNT_EXTRA, false)){
-                deleteAccount(GameSettings.getProfile());
+                resetAccountSettings(null);
             }
         }
     }

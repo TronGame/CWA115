@@ -38,6 +38,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import cwa115.trongame.Game.GameEvent.Events.BellEvent;
 import cwa115.trongame.Game.GameEvent.Events.GameEvent;
@@ -139,6 +141,9 @@ public class GameActivity extends AppCompatActivity implements
     private HttpConnector dataServer;
     // Timing
     private long startTime;
+    private long endTime;
+    private Handler countdown;
+    private Runnable countdownRunnable;
 
     // region Get Variables
     public double getHeight () {
@@ -312,6 +317,7 @@ public class GameActivity extends AppCompatActivity implements
         travelledDistanceHead.setVisibility(View.GONE);
 
         findViewById(R.id.eventContainer).setVisibility(View.GONE);
+        findViewById(R.id.countdown).setVisibility(View.GONE);
     }
 
     public void onStartGame(View view) {
@@ -450,14 +456,34 @@ public class GameActivity extends AppCompatActivity implements
             map.drawBorder(mapCenter, GameSettings.getMaxDistanceInMeters());
 
         // Activate end game timer
-        if (GameSettings.isOwner() && GameSettings.getTimeLimit()>=0) {
-            // End the game in FINAL_SCORE_TIMEOUT seconds
-            new Handler().postDelayed(new Runnable() {
+        if(GameSettings.getTimeLimit()>=0){
+            endTime = startTime + 1000 * GameSettings.getTimeLimit() * 60;
+            if(GameSettings.isOwner()){
+                // End the game in FINAL_SCORE_TIMEOUT seconds
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        endGame();
+                    }
+                }, 1000 * GameSettings.getTimeLimit() * 60);
+            }
+            // Update countdown
+            countdown = new Handler();
+            countdownRunnable = new Runnable() {
                 @Override
                 public void run() {
-                    endGame();
+                    TextView countdownText = (TextView)findViewById(R.id.countdown);
+                    if(endTime > System.currentTimeMillis()) {
+                        countdownText.setText(formatTime(endTime - System.currentTimeMillis()));
+                        countdown.postDelayed(this, 1000);
+                    }else{
+                        countdownText.setText(formatTime(0));
+                        countdownText.setVisibility(View.GONE);
+                    }
                 }
-            }, 1000 * GameSettings.getTimeLimit() * 60);
+            };
+            countdown.postDelayed(countdownRunnable, 1000);
+            findViewById(R.id.countdown).setVisibility(View.VISIBLE);
         }
 
         // Start the events
@@ -899,6 +925,12 @@ public class GameActivity extends AppCompatActivity implements
         GameSettings.setTimeLimit(-1);
         GameSettings.setLastPlayTime((System.currentTimeMillis()-startTime)/1000);
 
+        if(countdown!=null) {
+            countdown.removeCallbacks(countdownRunnable);
+            countdownRunnable = null;
+            countdown = null;
+        }
+
         // Start Lobby activity while destroying RoomActivity and HostActivity
         Intent intent = new Intent(this, LobbyActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -1121,5 +1153,17 @@ public class GameActivity extends AppCompatActivity implements
     }
 
     // endregion
+
+    public String formatTime(long milliseconds){
+        int hours = (int)(milliseconds / (1000*60*60));
+        int rest = (int)(milliseconds % (1000*60*60));
+        int minutes = rest / (1000*60);
+        rest %= 1000*60;
+        int seconds = rest / 1000;
+        String time = String.format("%02d",minutes) + ":" + String.format("%02d",seconds);
+        if(hours!=0)
+            time = String.format("%02d",hours) + ":" + time;
+        return time;
+    }
 
 }
