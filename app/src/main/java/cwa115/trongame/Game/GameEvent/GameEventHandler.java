@@ -1,6 +1,7 @@
 package cwa115.trongame.Game.GameEvent;
 
 import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 import org.json.JSONObject;
@@ -186,6 +187,10 @@ public class GameEventHandler {
                 if (GameSettings.isOwner())
                     results = new ArrayList<>();
                 currentEvent = getEvent(eventType);
+                if (currentEvent == null) {
+                    Log.e("PROBLEM", "unknown event type");
+                    return;
+                }
                 currentEvent.startEvent(gameActivity);
                 String notification = currentEvent.getNotification(gameActivity);
                 gameActivity.setCurrentEvent(currentEvent);
