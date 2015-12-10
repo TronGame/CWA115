@@ -201,7 +201,7 @@ public class LobbyActivity extends AppCompatActivity {
     }
 
     private void joinGame(LobbyListItem item){
-        if (!checkBoxView.isChecked() && item.getPlayerCount() > item.getMaxPlayersAsInteger()) {
+        if (!checkBoxView.isChecked() && item.getPlayerCount() >= item.getMaxPlayersAsInteger()) {
             Toast.makeText(this, getString(R.string.too_many_players), Toast.LENGTH_SHORT).show();
             return;
         }
