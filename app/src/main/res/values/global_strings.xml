@@ -3,4 +3,5 @@
     <string name="user_agent">"Mozilla/4.0 (compatible; MSIE 5.0;Windows98;DigExt)"</string>
     <string name="facebook_app_id">104025106629977</string>
     <string name="dataserver_url">http://trongame.ddns.net:8880/</string>
+    <string name="maps_api_key">AIzaSyCcliLvYYvPVU--8GLYWpzEinysz2lhWQI</string>
 </resources>
