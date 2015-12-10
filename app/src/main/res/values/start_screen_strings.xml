@@ -38,6 +38,7 @@
     <string name="playerKickFail">The player could not be kicked</string>
     <string name="leave_game">Leave</string>
     <string name="joinging_message">Joining %1$s</string>
+    <string name="too_many_players">This game is already full</string>
 
     <!-- HostingActivity -->
     <string name="title_activity_hosting">HostingActivity</string>
@@ -58,8 +59,6 @@
     <string name="friends_invited">Friends invited.</string>
     <string name="friends_invite_error">Could not invite friends.</string>
     <string name="hostingError">You can\'t host a game in spectator mode</string>
-    <string name="too_many_players">There are too many players to start the game</string>
-    <string name="too_little_players">There need to be at least two players to start the game</string>
     <string name="game_deleted">The Game was deleted</string>
     <string name="owner_kick">You can\'t kick yourself</string>
 
