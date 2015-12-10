@@ -26,7 +26,7 @@ import cwa115.trongame.R;
  */
 public class GameEventHandler {
     // The time the other players have to send in their results, in seconds
-    private static final int RESULT_TIMEOUT = 1;
+    private static final int RESULT_TIMEOUT = 3;
     private static final int MIN_EVENT_DELAY = 0;
     private static final int MAX_EVENT_DELAY = 5*60;
 
