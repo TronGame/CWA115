@@ -351,36 +351,29 @@ public class RoomActivity extends AppCompatActivity
                             JSONObject result = new JSONObject(data);
                             JSONArray players = result.getJSONArray("players");
 
-                            if (players.length() > GameSettings.getMaxPlayers()) {
-                                onTooManyPlayers();
-                            // } else if (players.length() < 2) {
-                            //     onTooLittlePlayers(); TODO uncomment this
-                            } else {
-                                ArrayList<Integer> listOfPlayerIds = new ArrayList<>();
-                                for (int i = 0; i < players.length(); i++) {
-                                    JSONObject player = players.getJSONObject(i);
-                                    int playerId = player.getInt("id");
-                                    listOfPlayerIds.add(playerId);
-                                    if (player.getInt("id") == GameSettings.getUserId())
-                                        GameSettings.setWallColor(listOfColors.get(i));
-                                    // If player is friend of current user, increase commonPlays
-                                    dataServer.sendRequest(
-                                            ServerCommand.INCREASE_COMMON_PLAYS,
-                                            ImmutableMap.of(
-                                                    "id", GameSettings.getPlayerId(),
-                                                    "token", GameSettings.getPlayerToken(),
-                                                    "friendId", String.valueOf(playerId)
-                                            ),
-                                            new HttpConnector.Callback() {
-                                                @Override
-                                                public void handleResult(String data) {
-                                                }
-                                            });
-                                }
-                                GameSettings.setPlayersInGame(listOfPlayerIds);
-                                startGame();
+                            ArrayList<Integer> listOfPlayerIds = new ArrayList<>();
+                            for (int i = 0; i < players.length(); i++) {
+                                JSONObject player = players.getJSONObject(i);
+                                int playerId = player.getInt("id");
+                                listOfPlayerIds.add(playerId);
+                                if (player.getInt("id") == GameSettings.getUserId())
+                                    GameSettings.setWallColor(listOfColors.get(i));
+                                // If player is friend of current user, increase commonPlays
+                                dataServer.sendRequest(
+                                        ServerCommand.INCREASE_COMMON_PLAYS,
+                                        ImmutableMap.of(
+                                                "id", GameSettings.getPlayerId(),
+                                                "token", GameSettings.getPlayerToken(),
+                                                "friendId", String.valueOf(playerId)
+                                        ),
+                                        new HttpConnector.Callback() {
+                                            @Override
+                                            public void handleResult(String data) {
+                                            }
+                                        });
                             }
-
+                            GameSettings.setPlayersInGame(listOfPlayerIds);
+                            startGame();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -390,10 +383,6 @@ public class RoomActivity extends AppCompatActivity
 
     public void onTooManyPlayers() {
         Toast.makeText(this, R.string.too_many_players, Toast.LENGTH_SHORT).show();
-    }
-
-    public void onTooLittlePlayers() {
-        Toast.makeText(this, R.string.too_little_players, Toast.LENGTH_SHORT).show();
     }
 
     public void inviteFriends(View v){
