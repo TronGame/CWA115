@@ -188,9 +188,12 @@ public class ProfileActivity extends AppCompatActivity {
             // First friend is last added friend
             lastAddedFriendName = null;
             mostPopularFriendName = null;
-            getFriendNamesAndLoadStats(lastAddedFriendId, mostCommonPlaysFriendId);
+            if(mostCommonPlays != -1 || mostCommonPlays != -1 || lastAddedFriendId != -1)
+                getFriendNamesAndLoadStats(lastAddedFriendId, mostCommonPlaysFriendId);
+            else
+                loadStats("/", "/"); // Load stats without friend names
         }else
-            loadStats("/", "/");// Load stats without friend names
+            loadStats("/", "/"); // Load stats without friend names
     }
 
     private void updateFooterFlipper(){
