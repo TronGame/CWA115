@@ -331,7 +331,8 @@ public class GameUpdateHandler implements SocketIoHandler {
             @Override
             public void run() {
                 Player me = (Player)map.getItemById(playerId);
-                me.resetMarker();
+                if(me != null)
+                    me.resetMarker();
             }
         }, 3000);
     }
