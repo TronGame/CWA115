@@ -207,7 +207,7 @@ public class GameActivity extends AppCompatActivity implements
     public void setCurrentEvent(GameEvent event){
         this.currentEvent = event;
         findViewById(R.id.eventContainer).setVisibility(View.VISIBLE);
-        ((TextView)findViewById(R.id.eventValue)).setText("0.0");
+        ((TextView)findViewById(R.id.eventValue)).setText("");
     }
     public void stopCurrentEvent(){
         this.currentEvent = null;
