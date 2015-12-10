@@ -13,6 +13,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -897,7 +898,11 @@ public class GameActivity extends AppCompatActivity implements
         });
 
         AlertDialog dialog = builder.create();
-        dialog.show();
+        try {
+            dialog.show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -953,6 +958,10 @@ public class GameActivity extends AppCompatActivity implements
         Intent intent = new Intent(this, LobbyActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+
+        // Pause the socket
+        Log.d("Socket", "quitting socket");
+        connection.pause();
 
         // Close the GameActivity
         finish();
@@ -1068,6 +1077,7 @@ public class GameActivity extends AppCompatActivity implements
             gameEventHandler.stop();
 
         // Stop the socket
+        Log.d("Socket", "quitting socket");
         connection.pause();
     }
 

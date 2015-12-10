@@ -116,6 +116,11 @@ public class SocketIoConnection implements Handler.Callback {
     }
 
     public void pause() {
-        socket.disconnect();
+        if (socket != null) {
+            socket.off();
+            socket.disconnect();
+            socket.close();
+            socket = null;
+        }
     }
 }
