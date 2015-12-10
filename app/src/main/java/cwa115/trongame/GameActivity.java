@@ -713,14 +713,6 @@ public class GameActivity extends AppCompatActivity implements
      * @param killerName The name of the killer
      */
     public void playerDied(String playerName, String killerId, String killerName) {
-        if (GameSettings.isOwner()) {
-            // There is one less player alive now
-            playersAliveCount -= 1;
-            // If there is only one player left : end the game
-            if (!IMMORTAL && playersAliveCount <= 1)
-                endGame();
-        }
-
         if (killerId.equals("")) {
             // The player died because he went to far from the road
             showNotification(
@@ -743,6 +735,14 @@ public class GameActivity extends AppCompatActivity implements
                         Toast.LENGTH_SHORT
                 );
             }
+        }
+
+        if (GameSettings.isOwner()) {
+            // There is one less player alive now
+            playersAliveCount -= 1;
+            // If there is only one player left : end the game
+            if (!IMMORTAL && playersAliveCount <= 1)
+                endGame();
         }
     }
 
@@ -805,11 +805,31 @@ public class GameActivity extends AppCompatActivity implements
         return winningPlayer;
     }
 
+    public void onEndGame() {
+        // The host updates the high scores
+        if(playerScores.get(GameSettings.getPlayerId())>GameSettings.getProfile().getHighscore()){
+            dataServer.sendRequest(
+                    ServerCommand.SET_HIGHSCORE,
+                    ImmutableMap.of(
+                            "id", GameSettings.getPlayerId(),
+                            "token", GameSettings.getPlayerToken(),
+                            "highscore", String.valueOf(Math.round(playerScores.get(GameSettings.getPlayerId())))),
+                    new HttpConnector.Callback() {
+                        @Override
+                        public void handleResult(String data) {
+                            showWinner();
+                        }
+                    }
+            );
+        }
+    }
+
     /**
      * Show the winner in a dialog box. (is called when the host has calculated the winner)
      * When the user presses ok the game ends
      */
     public void showWinner() {
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(getString(R.string.game_over_text));
 
@@ -858,29 +878,13 @@ public class GameActivity extends AppCompatActivity implements
                     JSONObject result = new JSONObject(data);
                     // TODO check for errors
                     // The host shows the winner here
-                    showWinner();
+                    onEndGame();
 
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
         });
-
-        // The host updates the high scores
-        if(playerScores.get(GameSettings.getPlayerId())>GameSettings.getProfile().getHighscore()){
-            dataServer.sendRequest(
-                    ServerCommand.SET_HIGHSCORE,
-                    ImmutableMap.of(
-                            "id", GameSettings.getPlayerId(),
-                            "token", GameSettings.getPlayerToken(),
-                            "highscore", String.valueOf(Math.round(playerScores.get(GameSettings.getPlayerId())))),
-                    new HttpConnector.Callback() {
-                        @Override
-                        public void handleResult(String data) {
-                        }
-                    }
-            );
-        }
     }
 
     /**

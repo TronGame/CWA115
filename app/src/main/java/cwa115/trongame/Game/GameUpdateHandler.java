@@ -312,7 +312,7 @@ public class GameUpdateHandler implements SocketIoHandler {
 
         if (GameSettings.getOwner() == Integer.valueOf(ownerId))
             gameActivity.setWinner(winner);
-            gameActivity.showWinner();
+            gameActivity.onEndGame();
     }
 
     /**
