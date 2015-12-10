@@ -77,7 +77,7 @@ public class GameActivity extends AppCompatActivity implements
     // region Variables
     // -----------------------------------------------------------------------------------------------------------------
     // General Settings
-    private static final int FINAL_SCORE_TIMEOUT = 1;   // in seconds
+    private static final int FINAL_SCORE_TIMEOUT = 5;   // in seconds
     private static final boolean IMMORTAL = false;
     private static final boolean HAS_EVENTS = true;
     private static final int KILL_SCORE = 2000;
