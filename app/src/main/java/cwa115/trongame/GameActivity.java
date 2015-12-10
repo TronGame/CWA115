@@ -457,8 +457,7 @@ public class GameActivity extends AppCompatActivity implements
 
         // Activate end game timer
         if(GameSettings.getTimeLimit()>=0){
-            endTime = startTime + 1000 * GameSettings.getTimeLimit() * 60;
-            if(GameSettings.isOwner()){
+            if(GameSettings.isOwner()) {
                 // End the game in FINAL_SCORE_TIMEOUT seconds
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -468,6 +467,7 @@ public class GameActivity extends AppCompatActivity implements
                 }, 1000 * GameSettings.getTimeLimit() * 60);
             }
             // Update countdown
+            endTime = startTime + 1000 * GameSettings.getTimeLimit() * 60;
             countdown = new Handler();
             countdownRunnable = new Runnable() {
                 @Override
@@ -847,6 +847,8 @@ public class GameActivity extends AppCompatActivity implements
                         }
                     }
             );
+        } else {
+            showWinner();
         }
     }
 
@@ -1079,7 +1081,7 @@ public class GameActivity extends AppCompatActivity implements
             height = location.getAltitude();
 
             if(currentEvent!=null && currentEvent instanceof KingOfHillEvent){
-                ((TextView)findViewById(R.id.eventValue)).setText(getString(R.string.king_of_hill_event_text).replaceAll("%value",""+height));
+                ((TextView)findViewById(R.id.eventValue)).setText(getString(R.string.king_of_hill_event_text).replaceAll("%value", "" + height));
             }
 
             // Create a PendingResult object
