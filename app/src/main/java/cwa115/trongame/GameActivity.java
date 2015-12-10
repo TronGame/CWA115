@@ -715,14 +715,6 @@ public class GameActivity extends AppCompatActivity implements
         if (IMMORTAL)
             return;
 
-        if (GameSettings.isOwner()) {
-            // There is one less player alive now
-            playersAliveCount -= 1;
-            // If there is only one player left : end the game
-            if (playersAliveCount <= 1)
-                endGame();
-        }
-
         // Hide all wall controls
         Button breakWallButton = (Button) findViewById(R.id.breakWallButton);
         breakWallButton.setVisibility(View.GONE);
@@ -734,6 +726,14 @@ public class GameActivity extends AppCompatActivity implements
         // Tell the applications that the player has died
         showNotification(getString(R.string.you_died_text), Toast.LENGTH_SHORT);
         gameUpdateHandler.sendDeathMessage(killerId, killerName);
+
+        if (GameSettings.isOwner()) {
+            // There is one less player alive now
+            playersAliveCount -= 1;
+            // If there is only one player left : end the game
+            if (playersAliveCount <= 1)
+                endGame();
+        }
 
         isAlive = false;
     }
