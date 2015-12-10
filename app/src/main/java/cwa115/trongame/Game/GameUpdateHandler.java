@@ -310,9 +310,10 @@ public class GameUpdateHandler implements SocketIoHandler {
         if (GameSettings.getPlayerId().equals(ownerId))
             return; // We sent this ourselves
 
-        if (GameSettings.getOwner() == Integer.valueOf(ownerId))
+        if (GameSettings.getOwner() == Integer.valueOf(ownerId)) {
             gameActivity.setWinner(winner);
             gameActivity.onEndGame();
+        }
     }
 
     /**
