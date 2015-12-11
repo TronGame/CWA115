@@ -123,7 +123,7 @@ public class GameActivity extends AppCompatActivity implements
     private GameEvent currentEvent;                     // Stores the current event
 
     // Wall data
-    private double holeSize = LatLngConversion.meterToLatLngDistance(50);
+    private double holeSize = LatLngConversion.meterToLatLngDistance(100);
     private boolean creatingWall = false;               // Is the player creating a wall
     private String wallId;                              // The Wall id
 
