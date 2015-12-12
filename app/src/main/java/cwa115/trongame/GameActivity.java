@@ -80,7 +80,7 @@ public class GameActivity extends AppCompatActivity implements
     private static final boolean IMMORTAL = false;
     private static final boolean HAS_EVENTS = true;
     private static final int KILL_SCORE = 2000;
-    private static final int WALL_BREAKER_COST = 0;
+    private static final int WALL_BREAKER_COST = 500;
 
     // Location thresholds
     private static final double IGNORE_ACCURACY = 70; // This should be equal or less to the largest value of the measured distances
