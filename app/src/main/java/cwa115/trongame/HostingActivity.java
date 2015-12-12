@@ -121,4 +121,10 @@ public class HostingActivity extends AppCompatActivity {
         else
             return Double.parseDouble(maxDist);
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        createdGame = false;
+    }
 }
