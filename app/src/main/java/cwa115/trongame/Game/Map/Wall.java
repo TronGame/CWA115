@@ -155,6 +155,10 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
     }
 
     public boolean hasCrossed(LatLng last, LatLng current, double minDistance, double ignorePointsDist, String playerId) {
+        if (points.size() <= 1) {
+            return false;
+        }
+
         boolean awayFromPlayer = !playerId.equals(ownerId);
         ArrayList<LatLng> points = new ArrayList<>(this.points);
         int n = points.size()-1;
@@ -166,7 +170,9 @@ public class Wall implements DrawableMapItem, ApiListener<ArrayList<LatLng>> {
             n-=1;
         }
         double distance = PolyLineUtils.getDistanceToLine(new Vector2D(current), points);
-        if (distance < minDistance) {return true; }
+        if (distance < minDistance) {
+            return true;
+        }
 
         // Has the player crossed the wall ?
         Vector2D pt1 = new Vector2D(current);

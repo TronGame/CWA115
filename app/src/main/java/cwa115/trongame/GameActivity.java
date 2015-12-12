@@ -86,7 +86,7 @@ public class GameActivity extends AppCompatActivity implements
     private static final double IGNORE_ACCURACY = 70; // This should be equal or less to the largest value of the measured distances
     private static final double LOCATION_THRESHOLD = LatLngConversion.meterToLatLngDistance(20);
     private static final double MAX_ROAD_DISTANCE = LatLngConversion.meterToLatLngDistance(70);
-    private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(30);
+    private static final double MIN_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(10);
     private static final double MIN_WALL_WARNING_DISTANCE = LatLngConversion.meterToLatLngDistance(70);
     private static final double IGNORE_WALL_DISTANCE = LatLngConversion.meterToLatLngDistance(50);
     private static final double WALL_DELAY_DISTANCE = LatLngConversion.meterToLatLngDistance(300);
@@ -123,7 +123,7 @@ public class GameActivity extends AppCompatActivity implements
     private GameEvent currentEvent;                     // Stores the current event
 
     // Wall data
-    private double holeSize = LatLngConversion.meterToLatLngDistance(100);
+    private double holeSize = LatLngConversion.meterToLatLngDistance(80);
     private boolean creatingWall = false;               // Is the player creating a wall
     private String wallId;                              // The Wall id
 
@@ -679,14 +679,10 @@ public class GameActivity extends AppCompatActivity implements
             for (Wall wall : originalWalls) {
                 ArrayList<Wall> newWalls = wall.splitWall(snappedGpsLoc, holeSize);
                 if (newWalls != null) {
+                    map.removeMapItem(wall.getId());
                     // The wall has to be split
                     for (int i=0; i<newWalls.size(); i++) {
                         Wall newWall = newWalls.get(i);
-                        if (newWall.getId().equals(wall.getId())) {
-                            // Remove the old wall
-                            map.removeMapItem(newWall.getId());
-                        }
-
                         // Add the new wall to the game
                         map.addMapItem(newWall);
                         gameUpdateHandler.sendCreateWall(newWall.getOwnerId(), newWall.getId(), newWall.getPoints(), newWall.getColor());
@@ -1132,6 +1128,8 @@ public class GameActivity extends AppCompatActivity implements
 
     public void handleBellDetected() {
         // TODO: avoid calling this when the map is not yet ready
+        if (hasEnded)
+            return;
 
         if(isBellRinging)
             return; // Wait for the bell to stop ringing

@@ -85,6 +85,7 @@ public class FrequencyListener {
         if (audio != null) {
             audio.stop();
             audio.release();
+            audio = null;
         }
     }
 
