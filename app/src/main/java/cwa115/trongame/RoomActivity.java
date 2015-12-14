@@ -106,7 +106,8 @@ public class RoomActivity extends AppCompatActivity
     @Override
     protected void onStop() {
         super.onStop();
-        safeExit();
+        if (!hasStarted)
+            StaticSafeExit(dataServer);
     }
 
     @Override

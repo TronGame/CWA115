@@ -40,6 +40,7 @@ public class HostingActivity extends AppCompatActivity {
 
         if (getMaxPlayers() > MAX_PLAYERS) {
             Toast.makeText(this, getString(R.string.over_max_players), Toast.LENGTH_SHORT).show();
+            return;
         }
 
         EditText nameBox = (EditText) findViewById(R.id.game_name);
