@@ -67,4 +67,5 @@
     <string name="scoreboardTitle">Scoreboard</string>
     <string name="name">Name</string>
     <string name="gamesWon">Games Won</string>
+    <string name="over_max_players">You can not set the maximum amount of players to a value higher than 100</string>
 </resources>

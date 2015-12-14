@@ -22,6 +22,7 @@ import cwa115.trongame.Network.Server.ServerCommand;
 
 public class HostingActivity extends AppCompatActivity {
 
+    public final static int MAX_PLAYERS = 100;
     HttpConnector dataServer;
     private boolean createdGame = false;
 
@@ -36,6 +37,10 @@ public class HostingActivity extends AppCompatActivity {
         if (createdGame)
             return;
         createdGame = true;
+
+        if (getMaxPlayers() > MAX_PLAYERS) {
+            Toast.makeText(this, getString(R.string.over_max_players), Toast.LENGTH_SHORT).show();
+        }
 
         EditText nameBox = (EditText) findViewById(R.id.game_name);
         final String gameName = nameBox.getText().toString();
