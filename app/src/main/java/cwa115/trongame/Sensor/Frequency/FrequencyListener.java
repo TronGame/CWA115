@@ -76,9 +76,13 @@ public class FrequencyListener {
         );
         Log.d("FrequencyListener", "Sample rate: " + Integer.toString(audio.getSampleRate()));
         Log.d("FrequencyListener", "State: " + Integer.toString(audio.getState()));
-        audio.setPositionNotificationPeriod(nbPoints / 2); // 1 short = 2 bytes
-        audio.setRecordPositionUpdateListener(measurementHandler, fourierHandler);
-        audio.startRecording();
+        try {
+            audio.setPositionNotificationPeriod(nbPoints / 2); // 1 short = 2 bytes
+            audio.setRecordPositionUpdateListener(measurementHandler, fourierHandler);
+            audio.startRecording();
+        } catch(Exception e) {
+            // Ignore
+        }
     }
 
     public void pause() {
