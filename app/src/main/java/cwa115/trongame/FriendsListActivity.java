@@ -174,6 +174,11 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
     }
 
     private void populateFriendsList(){
+        // Store the scroll position
+        View view = mainList.getChildAt(0);
+        int indexPosition = mainList.getFirstVisiblePosition();
+        int top = (view == null) ? 0 : (view.getTop() - mainList.getPaddingTop());
+
         adapter = new FriendListAdapter(this, friendListItems, selectable, this);
         mainList.setAdapter(adapter);
         adapter.notifyDataSetChanged();
@@ -193,6 +198,8 @@ public class FriendsListActivity extends AppCompatActivity implements FriendList
                 }
             });
         }
+
+        mainList.setSelectionFromTop(indexPosition, top);
     }
 
     public void commitButtonPressed(View v){

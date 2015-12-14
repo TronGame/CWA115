@@ -78,6 +78,12 @@ public class ScoreBoardActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 final ListView scoreboardList = (ListView) findViewById(R.id.score_list);
+
+                // Store the scroll position
+                View view = scoreboardList.getChildAt(0);
+                int indexPosition = scoreboardList.getFirstVisiblePosition();
+                int top = (view == null) ? 0 : (view.getTop() - scoreboardList.getPaddingTop());
+
                 ScoreCustomAdapter adapter = new ScoreCustomAdapter(ScoreBoardActivity.this, scoreList);
                 scoreboardList.setAdapter(adapter);
                 scoreboardList.setClickable(true);
@@ -95,6 +101,8 @@ public class ScoreBoardActivity extends AppCompatActivity {
                     }
                 });
 
+                // Reset the scroll position
+                scoreboardList.setSelectionFromTop(indexPosition, top);
             }
         });
     }

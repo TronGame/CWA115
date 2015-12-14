@@ -90,9 +90,9 @@ public class RoomActivity extends AppCompatActivity
         roomUpdater.cancel();
         roomUpdater = new Timer();
         roomUpdater.scheduleAtFixedRate(new TimerTask() {
-                public void run() {
-                    roomHandler.sendMessage(new Message());
-                }
+            public void run() {
+                roomHandler.sendMessage(new Message());
+            }
         }, 0, ROOM_LIST_REFRESH_TIME);
     }
 
@@ -101,13 +101,6 @@ public class RoomActivity extends AppCompatActivity
         super.onPause();
         if(!keepUpdating)// Keep updating if we go to FriendsList or ProfileActivity
             roomUpdater.cancel();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        if (!hasStarted)
-            StaticSafeExit(dataServer);
     }
 
     @Override
@@ -190,7 +183,13 @@ public class RoomActivity extends AppCompatActivity
                                 safeExit();
                             }
 
-                            ListView lobbyList = (ListView) findViewById(R.id.room_list);
+                            ListView playerList = (ListView) findViewById(R.id.room_list);
+
+                            // Store the scroll position
+                            View view = playerList.getChildAt(0);
+                            int indexPosition = playerList.getFirstVisiblePosition();
+                            int top = (view == null) ? 0 : (view.getTop() - playerList.getPaddingTop());
+
                             int ownerId = result.getInt("ownerId");
                             RoomCustomAdapter adapter = new RoomCustomAdapter(RoomActivity.this, listOfPlayerNames, ownerId, new RoomCustomAdapter.Callback() {
                                 @Override
@@ -203,8 +202,8 @@ public class RoomActivity extends AppCompatActivity
                                         showNoticeDialog();
                                 }
                             });
-                            lobbyList.setAdapter(adapter);
-                            lobbyList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            playerList.setAdapter(adapter);
+                            playerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                                 public void onItemClick(AdapterView<?> arg0, View view, int position, long index) {
                                     RoomListItem clickedItem = listOfPlayerNames.get(position);
                                     selectedPlayerName = clickedItem.getPlayerName();
@@ -220,6 +219,10 @@ public class RoomActivity extends AppCompatActivity
                                     startActivityForResult(intent, PROFILE_REQUEST_CODE);
                                 }
                             });
+
+                            // Reset the scroll position
+                            playerList.setSelectionFromTop(indexPosition, top);
+
                         } catch (JSONException e) {
                             gameDeleted();
                         }
