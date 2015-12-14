@@ -36,12 +36,13 @@ public class HostingActivity extends AppCompatActivity {
     public void showRoomActivity(View view) {
         if (createdGame)
             return;
-        createdGame = true;
 
         if (getMaxPlayers() > MAX_PLAYERS) {
             Toast.makeText(this, getString(R.string.over_max_players), Toast.LENGTH_SHORT).show();
             return;
         }
+
+        createdGame = true;
 
         EditText nameBox = (EditText) findViewById(R.id.game_name);
         final String gameName = nameBox.getText().toString();
